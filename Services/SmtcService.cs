@@ -190,7 +190,6 @@ public class SmtcService : IHostedService
         _playbackTimer.Tick += PlaybackTimer_Tick;
         _smtcListener.PlaybackInfoChanged += OnPlaybackInfoChanged;
         _smtcListener.TimelinePropertiesChanged += OnTimelinePropertiesChanged;
-
         UpdatePlayingState();
     }
 

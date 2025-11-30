@@ -18,13 +18,17 @@ public static class LyricHelper
     internal const string EndPoint = "http://localhost:5117";
     public static async Task<LyricData?> GetLyricByQid(string id)
     {
-        var hc = App.Services.GetRequiredService<IHttpClientFactory>().CreateClient();
-        hc.BaseAddress=new Uri(EndPoint);
-        var data = await hc.GetStringAsync($"/lrc?id={id}");
-        if(JsonNode.Parse(data) is { } json)
+        try
         {
-            return new() { Id=id, Lyric=json["lyrics"]?.ToString(), Romaji = json["romaji"]?.ToString(), Trans = json["trans"]?.ToString(),Type=LyricType.QQ };
+            var hc = App.Services.GetRequiredService<IHttpClientFactory>().CreateClient();
+            hc.BaseAddress = new Uri(EndPoint);
+            var data = await hc.GetStringAsync($"/lrc?id={id}");
+            if (JsonNode.Parse(data) is { } json)
+            {
+                return new() { Id = id, Lyric = json["lyrics"]?.ToString(), Romaji = json["romaji"]?.ToString(), Trans = json["trans"]?.ToString(), Type = LyricType.QQ };
+            }
         }
+        catch { }
         return null;
     }
 

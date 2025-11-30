@@ -14,7 +14,7 @@ using System.Windows.Media.Animation;
 using Windows.Media.Control;
 
 namespace LemonLite.Views.UserControls;
-public record class LrcLine(ILineInfo Lrc, string? Trans = null, ILineInfo? Romaji = null);
+
 public sealed class SelectiveLyricLine : Border
 {
     public  LyricLineControl LyricLine { get; init; }
@@ -72,11 +72,9 @@ public partial class LyricHost : UserControl
     }
 
     private readonly Dictionary<ILineInfo, SelectiveLyricLine> lrcs = [];
-    private ILineInfo? currentLrc,notifiedLrc;
+    private ILineInfo? currentLrc;
     private bool _isPureLrc = false;
     private DateTime _interruptedTime;
-
-    public event Action<LrcLine>? OnNextLrcReached;
 
     public void Reset()
     {
@@ -191,19 +189,12 @@ public partial class LyricHost : UserControl
             target = lrcs.LastOrDefault(a => a.Key.StartTime <= ms);
         }
 
-        //next found. 对于LyricPage希望准确使用当前时间来定位歌词，对于OnNextLrcReached事件则希望使用上一次结束时跳转
+        //next found. 对于LyricPage希望准确使用当前时间来定位歌词
         if (target != null && target.HasValue)
         {
             var line = target.Value.Key;
             var control = target.Value.Value;
             if (line == null || control == null) return;
-
-            //Notify the change in current line
-            if (line != notifiedLrc)
-            {
-                OnNextLrcReached?.Invoke(new(line, control.LyricLine.TranslationLrc.Text, control.LyricLine.RomajiSyllables));
-                notifiedLrc = line;
-            }
 
             if (line.StartTime > ms || (line.EndTime??int.MaxValue) < ms) return;//skip if not in range.
 

@@ -5,6 +5,7 @@ using LemonLite.Configs;
 using LemonLite.Services;
 using LemonLite.Utils;
 using LemonLite.Views.UserControls;
+using Lyricify.Lyrics.Helpers.Types;
 using Lyricify.Lyrics.Models;
 using System;
 using System.Linq;
@@ -21,36 +22,54 @@ public partial class DesktopLyricWindowViewModel:ObservableObject
 {
     public DesktopLyricWindowViewModel(
         SmtcService smtcService,
+        LyricService lyricService,
         AppSettingService appSettingsService)
     {
         _smtcService = smtcService;
+        _lyricService = lyricService;
         IsPlaying = _smtcService.IsPlaying;
         _settingsMgr = appSettingsService.GetConfigMgr<DesktopLyricOption>();
         _settingsMgr.OnDataChanged += _settingsMgr_OnDataChanged;
         ShowTranslation = _settingsMgr.Data.ShowTranslation;
 
         _smtcService.PlayingStateChanged += _smtcService_PlayingStateChanged;
-        _smtcService.SmtcListener.MediaPropertiesChanged += SmtcListener_MediaPropertiesChanged;
-        _smtcService.PositionChanged += _smtcService_PositionChanged;
+        _lyricService.CurrentLineChanged += OnCurrentLineChanged;
+        _lyricService.TimeUpdated += OnTimeUpdated;
+        _lyricService.MediaChanged += OnMediaChanged;
         CustomLyricControlStyle();
+        LyricControl.Dispatcher.Invoke(() => Update(_lyricService.CurrentLine));
     }
 
-    private void _smtcService_PositionChanged(double s)
+    public void Dispose()
+    {
+        _settingsMgr.OnDataChanged -= _settingsMgr_OnDataChanged;
+        _smtcService.PlayingStateChanged -= _smtcService_PlayingStateChanged;
+        _lyricService.CurrentLineChanged -= OnCurrentLineChanged;
+        _lyricService.TimeUpdated -= OnTimeUpdated;
+        _lyricService.MediaChanged -= OnMediaChanged;
+    }
+
+    private void OnMediaChanged()
+    {
+        LyricControl.Dispatcher.Invoke(() => LyricControl.ClearAll());
+    }
+
+    private void OnTimeUpdated(int ms)
     {
         if (LyricControl.IsVisible)
         {
             LyricControl.Dispatcher.Invoke(() =>
             {
-                LyricControl.UpdateTime((int)s * 1000);
-                var block = LyricControl.MainSyllableLrcs.FirstOrDefault(x => x.Key.StartTime > (int)s * 1000).Value;
+                LyricControl.UpdateTime(ms);
+                var block = LyricControl.MainSyllableLrcs.FirstOrDefault(x => x.Key.StartTime > ms).Value;
                 ScrollLrc?.Invoke(block);
             });
         }
     }
 
-    private void SmtcListener_MediaPropertiesChanged(object? sender, EventArgs e)
+    private void OnCurrentLineChanged(LrcLine lrc)
     {
-        LyricControl.ClearAll();
+        LyricControl.Dispatcher.Invoke(() => Update(lrc));
     }
 
     private void _smtcService_PlayingStateChanged(bool isPlaying)
@@ -98,6 +117,7 @@ public partial class DesktopLyricWindowViewModel:ObservableObject
     }
 
     private readonly SmtcService _smtcService;
+    private readonly LyricService _lyricService;
     private readonly SettingsMgr<DesktopLyricOption> _settingsMgr;
     [ObservableProperty]
     private bool _isPlaying=false;
@@ -115,7 +135,7 @@ public partial class DesktopLyricWindowViewModel:ObservableObject
             LyricControl.RomajiLrcContainer.Visibility = visible;
         }
     }
-    public async void Update(LrcLine lrc)
+    private async void Update(LrcLine lrc)
     {
         UpdateAnimation?.Invoke();
         double fontSize = _settingsMgr.Data.LrcFontSize;

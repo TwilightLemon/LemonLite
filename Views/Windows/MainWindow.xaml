@@ -93,7 +93,6 @@
                                Margin="48,0"
                                HorizontalAlignment="Stretch"
                                VerticalAlignment="Top"
-                               LineHeight="30"
                                Foreground="{DynamicResource ForeColor}"
                                TextAlignment="Center"
                                TextWrapping="Wrap">
@@ -101,6 +100,7 @@
                              FontSize="18"
                              FontWeight="Bold"
                              Text="{Binding MediaInfo.Title, TargetNullValue=Welcome~, Mode=OneWay}" />
+                        <LineBreak />
                         <LineBreak />
                         <Run d:Text="Taylor Swift"
                              FontSize="14"
@@ -206,11 +206,11 @@
                     Background="{DynamicResource MaskColor}"
                     CornerRadius="8">
                 <StackPanel>
-                    <ws:ToggleButton x:Name="SwitchLrcImmerseModeBtn"
+                    <!--<ws:ToggleButton x:Name="SwitchLrcImmerseModeBtn"
                                      Height="36"
                                      Padding="10"
                                      Style="{StaticResource IconToggleButton}"
-                                     Tag="{DynamicResource LyricImmerseIcon}" />
+                                     Tag="{DynamicResource LyricImmerseIcon}" />-->
                     <ws:Button Height="36"
                                Padding="10"
                                Command="{Binding LyricView.FontSizeUpCommand}"

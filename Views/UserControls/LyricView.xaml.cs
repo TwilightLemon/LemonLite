@@ -1,14 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.Input;
 using LemonApp.Common.Funcs;
 using LemonLite.Configs;
-using LemonLite.Entities;
 using LemonLite.Services;
-using LemonLite.Utils;
-using Lyricify.Lyrics.Helpers;
-using Lyricify.Lyrics.Models;
-using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -26,13 +20,20 @@ namespace LemonLite.Views.UserControls
     public partial class LyricView : UserControl
     {
         private readonly SettingsMgr<LyricOption> _settings;
+        private readonly LyricService _lyricService;
 
-        public LyricView(AppSettingService appSettingService)
+        public LyricView(AppSettingService appSettingService, LyricService lyricService)
         {
             InitializeComponent();
             _settings = appSettingService.GetConfigMgr<LyricOption>();
+            _lyricService = lyricService;
             _settings.OnDataChanged += Settings_OnDataChanged;
             Loaded += LyricView_Loaded;
+
+            // 订阅LyricService事件
+            _lyricService.LyricLoaded += OnLyricLoaded;
+            _lyricService.TimeUpdated += OnTimeUpdated;
+            _lyricService.MediaChanged += OnMediaChanged;
         }
 
 
@@ -42,7 +43,14 @@ namespace LemonLite.Views.UserControls
         /// </summary>
         private void LyricView_Loaded(object sender, RoutedEventArgs e)
         {
+            Window.GetWindow(this).Closed += delegate {
+                _lyricService.LyricLoaded -= OnLyricLoaded;
+                _lyricService.TimeUpdated -= OnTimeUpdated;
+                _lyricService.MediaChanged -= OnMediaChanged;
+            };
             ApplySettings();
+            if (_lyricService.CurrentLyric != null)
+                OnLyricLoaded(new(_lyricService.CurrentLyric, _lyricService.CurrentTrans, _lyricService.CurrentRomaji, _lyricService.IsPureLrc));
         }
 
         private async void Settings_OnDataChanged()
@@ -151,53 +159,50 @@ namespace LemonLite.Views.UserControls
             _settings.Data.ShowRomaji = show;
             LrcHost.SetShowRomaji(show);
         }
-        public event Action<(LyricsData? lrc, LyricsData? trans, LyricsData? romaji, bool isPureLrc)>? OnLyricLoaded;
 
-        private string? _handlingMusic = null;
-        public void LoadFromQid(string id)
+        #region LyricService Event Handlers
+        private void OnMediaChanged()
         {
-            async Task beginInit()
-            {
-                Dispatcher.Invoke(LrcHost.Reset);
-                _handlingMusic = id;
-                if (await LyricHelper.GetLyricByQmId(id) is { } dt && _handlingMusic == id)
-                {
-                    var model = LyricHelper.LoadLrc(dt);
-                    if (model.lrc == null) return;
-                    Dispatcher.Invoke(() =>
-                    {
-                        IsTranslationAvailable = model.trans != null;
-                        IsRomajiAvailable = model.romaji != null;
-                        LrcHost.Load(model.lrc, model.trans, model.romaji, model.isPureLrc);
-                        RefreshHostSettings();
-                        OnLyricLoaded?.Invoke(model);
-
-                        Dispatcher.Invoke(async () =>
-                        {
-                            await Task.Delay(100);
-                            //fade-out animation after loaded
-                            var blurEffect = new BlurEffect() { Radius = 20 };
-                            LrcHost.Effect = blurEffect;
-                            var aniBlur = new DoubleAnimation(20, 0, TimeSpan.FromMilliseconds(300));
-                            var aniOpac = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(300));
-                            blurEffect.BeginAnimation(BlurEffect.RadiusProperty, aniBlur);
-                            LrcHost.BeginAnimation(OpacityProperty, aniOpac);
-                        }, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
-                    });
-                }
-            }
-
+            Dispatcher.Invoke(() =>
             {
                 //a fade-out animation before load lrc.
                 var blurEffect = new BlurEffect() { Radius = 0 };
                 LrcHost.Effect = blurEffect;
                 var aniBlur = new DoubleAnimation(0, 20, TimeSpan.FromMilliseconds(300));
                 var aniOpac = new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(300));
-                aniOpac.Completed += delegate { _ = beginInit(); };
+                aniOpac.Completed += delegate { LrcHost.Reset(); };
                 blurEffect.BeginAnimation(BlurEffect.RadiusProperty, aniBlur);
                 LrcHost.BeginAnimation(OpacityProperty, aniOpac);
-            }
+            });
         }
-        
+
+        private void OnLyricLoaded(LyricLoadedEventArgs args)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                IsTranslationAvailable = args.Trans != null;
+                IsRomajiAvailable = args.Romaji != null;
+                LrcHost.Load(args.Lyric, args.Trans, args.Romaji, args.IsPureLrc);
+                RefreshHostSettings();
+
+                Dispatcher.Invoke(async () =>
+                {
+                    await Task.Delay(100);
+                    //fade-in animation after loaded
+                    var blurEffect = new BlurEffect() { Radius = 20 };
+                    LrcHost.Effect = blurEffect;
+                    var aniBlur = new DoubleAnimation(20, 0, TimeSpan.FromMilliseconds(300));
+                    var aniOpac = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(300));
+                    blurEffect.BeginAnimation(BlurEffect.RadiusProperty, aniBlur);
+                    LrcHost.BeginAnimation(OpacityProperty, aniOpac);
+                }, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+            });
+        }
+
+        private void OnTimeUpdated(int ms)
+        {
+            Dispatcher.Invoke(() => LrcHost.UpdateTime(ms));
+        }
+        #endregion
     }
 }

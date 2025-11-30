@@ -18,22 +18,27 @@ public partial class MainWindowViewModel : ObservableObject
     private readonly SmtcService _smtc;
     private readonly UIResourceService uiResourceService;
 
-    public MainWindowViewModel(LyricView lyricView,UIResourceService uiResourceService, SmtcService playback)
+    public MainWindowViewModel(LyricView lyricView, UIResourceService uiResourceService, SmtcService playback)
     {
         _smtcListener = playback.SmtcListener;
         LyricView = lyricView;
         this.uiResourceService = uiResourceService;
 
-
         _smtc = playback;
         _smtc.PositionChanged += OnPositionChanged;
         _smtc.DurationChanged += OnDurationChanged;
         _smtc.PlayingStateChanged += OnPlayingStateChanged;
-
+        _smtcListener.MediaPropertiesChanged += SmtcListener_MediaPropertiesChanged;
         uiResourceService.OnColorModeChanged += UiResourceService_OnColorModeChanged;
 
         UpdateSmtcInfo();
-        _smtcListener.MediaPropertiesChanged += SmtcListener_MediaPropertiesChanged;
+        InitPlaybackStatus();
+    }
+    private void InitPlaybackStatus()
+    {
+        IsPlaying = _smtc.IsPlaying;
+        OnPositionChanged(_smtc.Position);
+        OnDurationChanged(_smtc.Duration);
     }
 
     private void UiResourceService_OnColorModeChanged()
@@ -79,7 +84,7 @@ public partial class MainWindowViewModel : ObservableObject
     {
         CurrentPlayingPosition = position;
         CurrentPlayingPositionText = TimeSpan.FromSeconds(position).ToString(@"mm\:ss");
-        LyricView.Dispatcher.Invoke(() => { LyricView.LrcHost.UpdateTime((int)(position * 1000)); });
+        // 时间同步由LyricService处理
     }
 
     private void OnDurationChanged(double duration)
@@ -102,17 +107,12 @@ public partial class MainWindowViewModel : ObservableObject
     {
         // clean up previous info
         MediaInfo = null;
-        _smtc.Reset();
 
         if (await _smtcListener.GetMediaInfoAsync() is { PlaybackType: Windows.Media.MediaPlaybackType.Music } info)
         {
             MediaInfo = info;
             UpdateCover();
-            // load lyric
-            if (await LyricHelper.SearchQid(info.Title, info.Artist) is { } id)
-            {
-                _ = LyricView.Dispatcher.BeginInvoke(() => { LyricView.LoadFromQid(id); });
-            }
+            // 歌词加载由LyricService处理
         }
     }
 

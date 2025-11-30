@@ -22,6 +22,8 @@ namespace LemonLite.Views.Windows
     /// </summary>
     public partial class DesktopLyricWindow : Window
     {
+        private readonly DropShadowEffect shadowEffect = new() { BlurRadius = 5, Direction = 0, ShadowDepth = 0 };
+        private readonly DesktopLyricWindowViewModel vm;
         public DesktopLyricWindow(DesktopLyricWindowViewModel vm, AppSettingService appSettingsService)
         {
             InitializeComponent();
@@ -33,15 +35,22 @@ namespace LemonLite.Views.Windows
             var sc = SystemParameters.WorkArea;
             Top = sc.Bottom - Height;
             Left = (sc.Right - Width) / 2;
-            Closing += delegate {
-                vm.UpdateAnimation = null; 
-                _settingsMgr.Data.WindowSize = new Size(Width, Height);
-            };
+
             Loaded += DesktopLyricWindow_Loaded;
             MouseEnter += DesktopLyricWindow_MouseEnter;
             MouseLeave += DesktopLyricWindow_MouseLeave;
             MouseDoubleClick += DesktopLyricWindow_MouseDoubleClick;
+            Closing += DesktopLyricWindow_Closing;
+            this.vm = vm;
         }
+
+        private void DesktopLyricWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
+        {
+            vm.UpdateAnimation = null;
+            _settingsMgr.Data.WindowSize = new Size(Width, Height);
+            vm.Dispose();
+        }
+
         private FrameworkElement? currentBlock = null;
         private readonly SettingsMgr<DesktopLyricOption> _settingsMgr;
         private void ScrollLrc(FrameworkElement block)
@@ -86,7 +95,7 @@ namespace LemonLite.Views.Windows
             var sc = SystemParameters.WorkArea;
             Left = (sc.Right - Width) / 2;
         }
-        private readonly DropShadowEffect shadowEffect = new() { BlurRadius = 5, Direction = 0, ShadowDepth = 0 };
+
         private void DesktopLyricWindow_MouseLeave(object sender, MouseEventArgs e)
         {
             cancelShowFunc?.Cancel();

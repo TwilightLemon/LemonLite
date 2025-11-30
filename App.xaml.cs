@@ -29,13 +29,16 @@ public partial class App : Application
         services.AddHttpClient();
         services.AddHostedService(p=>p.GetRequiredService<AppSettingService>()
                                                             .AddConfig<LyricOption>()
-                                                            .AddConfig<Appearance>());
+                                                            .AddConfig<Appearance>()
+                                                            .AddConfig<DesktopLyricOption>()
+                                                            .AddConfig<AppOption>());
         services.AddHostedService(p => p.GetRequiredService<SmtcService>());
 
         services.AddSingleton<AppSettingService>();
         services.AddSingleton<NotifyIconService>();
         services.AddSingleton<UIResourceService>();
         services.AddSingleton<SmtcService>();
+        services.AddSingleton<LyricService>();
 
         services.AddTransient<MainWindowViewModel>();
         services.AddTransient<MainWindow>();
@@ -62,10 +65,15 @@ public partial class App : Application
             ui.UpdateColorMode();
         }, null);
     }
+    public static void CreateDesktopLyricWindow()
+    {
+        var window = Services.GetRequiredService<DesktopLyricWindow>();
+        window.Show();
+        window.Activate();
+    }
     private async void App_Startup(object sender, StartupEventArgs e)
     {
         Host.Start();
-        CreateMainWindow();
         Services.GetRequiredService<NotifyIconService>().InitNotifyIcon();
     }
     private void App_Exit(object sender, ExitEventArgs e)
