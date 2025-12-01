@@ -54,12 +54,11 @@ public partial class MainWindow : Window
             {
                 this.Width = _mgr.Data.Window.Width;
                 this.Height = _mgr.Data.Window.Height;
-            }
-
-            if (_mgr.Data.Window.X >= 0 && _mgr.Data.Window.Y >= 0)
-            {
-                this.Left = _mgr.Data.Window.X;
-                this.Top = _mgr.Data.Window.Y;
+                if (_mgr.Data.Window.X >= 0 && _mgr.Data.Window.Y >= 0)
+                {
+                    this.Left = _mgr.Data.Window.X;
+                    this.Top = _mgr.Data.Window.Y;
+                }
             }
         }
         Topmost = _mgr.Data.TopMost;
