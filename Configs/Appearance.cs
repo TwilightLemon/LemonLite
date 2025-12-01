@@ -5,10 +5,6 @@ namespace LemonLite.Configs;
 
 public class Appearance
 {
-    /// <summary>
-    /// 窗口大小
-    /// </summary>
-    public Size WindowSize { get; set; } = new(0, 0);
     public enum ColorModeType { Auto, Dark, Light }
 
     /// <summary>
@@ -22,4 +18,14 @@ public class Appearance
         ColorModeType.Auto => !SystemThemeAPI.GetIsLightTheme(),
         _ => true //default to dark
     };
+
+    /// <summary>
+    /// 主窗口置顶
+    /// </summary>
+    public bool TopMost { get; set; }
+
+    /// <summary>
+    /// 主窗口大小和位置
+    /// </summary>
+    public Rect Window { get; set; }
 }

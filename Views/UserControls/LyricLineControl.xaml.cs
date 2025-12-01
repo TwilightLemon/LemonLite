@@ -307,8 +307,6 @@ public partial class LyricLineControl : UserControl
                             var anim = new DoubleAnimation(0.0, 1.0, new Duration(duration));
                             var animDelay = new DoubleAnimation(0.0, 1.0, new Duration(duration))
                             {
-                                //using an easing function (EaseOut) to make the latter part slower, but make sure
-                                //it will end at the same time
                                 EasingFunction = _lrcAnimationEasing
                             };
                             brush.GradientStops[1].BeginAnimation(GradientStop.OffsetProperty, animDelay);

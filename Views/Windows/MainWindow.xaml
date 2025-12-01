@@ -10,6 +10,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:LemonLite.ViewModels"
         xmlns:ws="https://schemas.elecho.dev/wpfsuite"
+        x:Name="window"
         Title="MainWindow"
         Width="874"
         Height="504"
@@ -21,7 +22,7 @@
     <Window.Resources>
         <WindowChrome x:Key="windowChrome"
                       CaptionHeight="24"
-                      ResizeBorderThickness="12" />
+                      ResizeBorderThickness="4" />
     </Window.Resources>
     <fluent:WindowMaterial.Material>
         <fluent:WindowMaterial MaterialMode="Acrylic"
@@ -32,76 +33,99 @@
         <behavior:WindowDragMoveBehavior />
     </i:Interaction.Behaviors>
     <ws:BoxPanel>
+        <!--  Image Background  -->
         <Border Opacity="0.86">
             <Border.Background>
-                <ImageBrush ImageSource="{Binding BackgroundImageSource, Mode=OneWay}" />
+                <ImageBrush ImageSource="{Binding BackgroundImageSource, Mode=OneWay}" Stretch="UniformToFill">
+                    <ImageBrush.RelativeTransform>
+                        <TransformGroup>
+                            <ScaleTransform CenterX="0.5" CenterY="0.5" ScaleX="1.4" ScaleY="1.4" />
+                            <RotateTransform x:Name="LyricImgRT" Angle="0" CenterX="0.5" CenterY="0.5" />
+                            <TranslateTransform />
+                        </TransformGroup>
+                    </ImageBrush.RelativeTransform>
+                </ImageBrush>
             </Border.Background>
+            <i:Interaction.Behaviors>
+                <behavior:FadeBorderBehavior Source="{Binding BackgroundImageSource}" Duration="00:00:1.5" />
+            </i:Interaction.Behaviors>
         </Border>
-        <Grid>
+
+        <Grid x:Name="RootGrid">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="6*" />
-                <ColumnDefinition Width="7*" />
+                <ColumnDefinition x:Name="LeftColumn" Width="6*" />
+                <ColumnDefinition x:Name="RightColumn" Width="7*" />
             </Grid.ColumnDefinitions>
-            <Grid>
+            <!--  歌曲信息容器  -->
+            <Grid x:Name="SongInfoPanel">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="2*" />
-                    <RowDefinition Height="1*" />
+                    <RowDefinition x:Name="CoverRow" Height="3*" />
+                    <RowDefinition x:Name="InfoRow" Height="2*" />
                 </Grid.RowDefinitions>
-                <!--<uc:RoundedAudioVisualizer x:Name="roundVisualizer"
-                                                   Height="{Binding ActualWidth, ElementName=LyricPage_Img}"
-                                                   Width="{Binding ActualWidth, ElementName=LyricPage_Img}"
-                                                   WaveAmplitude="170"
-                                                   SampleCount="60"
-                                                   Opacity="0.6"
-                                                   Fill="{DynamicResource HighlightThemeColor}"
-                                                   Stroke="{DynamicResource HighlightThemeColor}"
-                                                   StrokeThickness="0"
-                                                   RotationSpeed="0.3"
-                                                   IsPlaying="{Binding IsPlaying}" />-->
-                <Border x:Name="LyricPage_ImgEdge"
-                        MinWidth="200"
-                        MaxWidth="500"
-                        Margin="60" />
-                <Border x:Name="LyricPage_Img"
-                        Height="{Binding ActualWidth, ElementName=LyricPage_Img}"
-                        HorizontalAlignment="Stretch"
-                        d:Background="Pink"
-                        CornerRadius="12"
-                        RenderOptions.BitmapScalingMode="HighQuality">
-                    <i:Interaction.Behaviors>
-                        <behavior:FadeBorderBehavior Brush="{Binding CoverImage, TargetNullValue={StaticResource HighlightThemeColor}}" Duration="00:00:1" />
-                    </i:Interaction.Behaviors>
-                    <Border.Width>
-                        <MultiBinding Converter="{x:Static converters:MinValueConverter.Instance}">
-                            <Binding ElementName="LyricPage_ImgEdge" Path="ActualWidth" />
-                            <Binding ElementName="LyricPage_ImgEdge" Path="ActualHeight" />
-                        </MultiBinding>
-                    </Border.Width>
-                    <Border.Effect>
-                        <DropShadowEffect BlurRadius="30"
-                                          Direction="0"
-                                          Opacity="0.6"
-                                          ShadowDepth="0"
-                                          Color="Black" />
-                    </Border.Effect>
-                </Border>
-                <ws:FlexPanel Grid.Row="1"
-                              Margin="0,-50,0,40"
-                              Direction="Column"
-                              MainAlignment="SpaceEvenly">
-                    <TextBlock MinWidth="150"
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition x:Name="CoverCol" Width="*" />
+                    <ColumnDefinition x:Name="InfoCol" Width="0" />
+                </Grid.ColumnDefinitions>
+
+                <!--  封面区域  -->
+                <Grid x:Name="CoverArea"
+                      Grid.Row="0"
+                      Grid.Column="0">
+                    <Border x:Name="LyricPage_ImgEdge"
+                            MinWidth="200"
+                            MaxWidth="500"
+                            Margin="60" />
+                    <Border x:Name="LyricPage_Img"
+                            Height="{Binding ActualWidth, ElementName=LyricPage_Img}"
+                            HorizontalAlignment="Stretch"
+                            d:Background="Pink"
+                            CornerRadius="12"
+                            RenderOptions.BitmapScalingMode="HighQuality">
+                        <i:Interaction.Behaviors>
+                            <behavior:FadeBorderBehavior Brush="{Binding CoverImage, TargetNullValue={StaticResource HighlightThemeColor}}" Duration="00:00:1" />
+                        </i:Interaction.Behaviors>
+                        <Border.Width>
+                            <MultiBinding Converter="{x:Static converters:MinValueConverter.Instance}">
+                                <Binding ElementName="LyricPage_ImgEdge" Path="ActualWidth" />
+                                <Binding ElementName="LyricPage_ImgEdge" Path="ActualHeight" />
+                            </MultiBinding>
+                        </Border.Width>
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="30"
+                                              Direction="0"
+                                              Opacity="0.6"
+                                              ShadowDepth="0"
+                                              Color="Black" />
+                        </Border.Effect>
+                    </Border>
+                </Grid>
+
+                <!--  歌曲文本信息和进度条  -->
+                <StackPanel x:Name="SongTextInfo"
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            Margin="0,-180,0,20"
+                            VerticalAlignment="Center">
+                    <TextBlock x:Name="SongTitleBlock"
+                               MinWidth="150"
+                               Margin="48,0,48,8"
+                               HorizontalAlignment="Stretch"
+                               VerticalAlignment="Top"
+                               d:Text="Dancing With Our Hands Tied"
+                               FontSize="18"
+                               FontWeight="Bold"
+                               Foreground="{DynamicResource ForeColor}"
+                               Text="{Binding MediaInfo.Title, TargetNullValue=Welcome~, Mode=OneWay}"
+                               TextAlignment="Center"
+                               TextWrapping="Wrap" />
+                    <TextBlock x:Name="SongArtistBlock"
+                               MinWidth="150"
                                Margin="48,0"
                                HorizontalAlignment="Stretch"
                                VerticalAlignment="Top"
                                Foreground="{DynamicResource ForeColor}"
                                TextAlignment="Center"
                                TextWrapping="Wrap">
-                        <Run d:Text="Dancing With Our Hands Tied"
-                             FontSize="18"
-                             FontWeight="Bold"
-                             Text="{Binding MediaInfo.Title, TargetNullValue=Welcome~, Mode=OneWay}" />
-                        <LineBreak />
-                        <LineBreak />
                         <Run d:Text="Taylor Swift"
                              FontSize="14"
                              Text="{Binding MediaInfo.Artist, TargetNullValue='', Mode=OneWay}" />
@@ -110,7 +134,9 @@
                              FontSize="14"
                              Text="{Binding MediaInfo.AlbumTitle, TargetNullValue='', Mode=OneWay}" />
                     </TextBlock>
-                    <Grid MaxWidth="480" Margin="60,0">
+                    <Grid x:Name="ProgressPanel"
+                          MaxWidth="480"
+                          Margin="60,20,60,0">
                         <TextBlock HorizontalAlignment="Left"
                                    VerticalAlignment="Center"
                                    d:Text="00:00"
@@ -125,66 +151,56 @@
                                 Style="{DynamicResource FluentSliderStyle}"
                                 Value="{Binding CurrentPlayingPosition, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
                     </Grid>
-                    <ws:FlexPanel MaxWidth="240"
-                                  Margin="32,0"
-                                  MainAlignment="SpaceEvenly">
-                        <ws:Button Width="42"
-                                   Height="42"
-                                   Command="{Binding PlayLastCommand}"
-                                   Style="{StaticResource SimpleIconButtonStyleForWs}"
-                                   ToolTip="Play the last one">
-                            <Path Height="18"
-                                  Data="{DynamicResource PlayIcon_Last}"
-                                  Fill="{DynamicResource ForeColor}"
-                                  Stretch="Uniform" />
-                        </ws:Button>
-                        <ws:Button Width="40"
-                                   Height="40"
-                                   Command="{Binding PlayPauseCommand}"
-                                   Style="{StaticResource SimpleIconButtonStyleForWs}"
-                                   ToolTip="Play or Pause">
-                            <ws:ConditionalControl Condition="{Binding IsPlaying}">
-                                <ws:ConditionalControl.ContentWhenFalse>
-                                    <Path Data="{DynamicResource PlayIcon_Play}"
-                                          Fill="{DynamicResource HighlightThemeColor}"
-                                          Stretch="Uniform" />
-                                </ws:ConditionalControl.ContentWhenFalse>
-                                <Path Data="{DynamicResource PlayIcon_Pause}"
+                </StackPanel>
+
+                <!--  播放控制按钮  -->
+                <ws:FlexPanel x:Name="PlayControlPanel"
+                              Grid.Row="1"
+                              Grid.Column="0"
+                              MaxWidth="240"
+                              Margin="32,0,32,100"
+                              VerticalAlignment="Bottom"
+                              MainAlignment="SpaceEvenly">
+                    <ws:Button Width="42"
+                               Height="42"
+                               Command="{Binding PlayLastCommand}"
+                               Style="{StaticResource SimpleIconButtonStyleForWs}"
+                               ToolTip="Play the last one">
+                        <Path Height="18"
+                              Data="{DynamicResource PlayIcon_Last}"
+                              Fill="{DynamicResource ForeColor}"
+                              Stretch="Uniform" />
+                    </ws:Button>
+                    <ws:Button Width="40"
+                               Height="40"
+                               Command="{Binding PlayPauseCommand}"
+                               Style="{StaticResource SimpleIconButtonStyleForWs}"
+                               ToolTip="Play or Pause">
+                        <ws:ConditionalControl Condition="{Binding IsPlaying}">
+                            <ws:ConditionalControl.ContentWhenFalse>
+                                <Path Data="{DynamicResource PlayIcon_Play}"
                                       Fill="{DynamicResource HighlightThemeColor}"
                                       Stretch="Uniform" />
-                            </ws:ConditionalControl>
-                        </ws:Button>
-                        <ws:Button Width="42"
-                                   Height="42"
-                                   Command="{Binding PlayNextCommand}"
-                                   Style="{StaticResource SimpleIconButtonStyleForWs}"
-                                   ToolTip="Play the next one">
-                            <Path Height="18"
-                                  Data="{DynamicResource PlayIcon_Next}"
-                                  Fill="{DynamicResource ForeColor}"
+                            </ws:ConditionalControl.ContentWhenFalse>
+                            <Path Data="{DynamicResource PlayIcon_Pause}"
+                                  Fill="{DynamicResource HighlightThemeColor}"
                                   Stretch="Uniform" />
-                        </ws:Button>
-                    </ws:FlexPanel>
-                    <!--<Grid MaxWidth="500" Margin="70,0">
-                        <Slider Margin="36,0"
-                                VerticalAlignment="Center"
-                                IsMoveToPointEnabled="True"
-                                Maximum="1"
-                                Style="{StaticResource FluentSliderStyle}"
-                                Value="{Binding CurrentPlayingVolume}" />
-                        <TextBlock Margin="10,0,0,0"
-                                   HorizontalAlignment="Left"
-                                   FontFamily="{StaticResource SegoeFluentIcon}"
-                                   FontSize="20"
-                                   Text="&#xE992;" />
-                        <TextBlock HorizontalAlignment="Right"
-                                   FontFamily="{StaticResource SegoeFluentIcon}"
-                                   FontSize="20"
-                                   Text="&#xE995;" />
-                    </Grid>-->
+                        </ws:ConditionalControl>
+                    </ws:Button>
+                    <ws:Button Width="42"
+                               Height="42"
+                               Command="{Binding PlayNextCommand}"
+                               Style="{StaticResource SimpleIconButtonStyleForWs}"
+                               ToolTip="Play the next one">
+                        <Path Height="18"
+                              Data="{DynamicResource PlayIcon_Next}"
+                              Fill="{DynamicResource ForeColor}"
+                              Stretch="Uniform" />
+                    </ws:Button>
                 </ws:FlexPanel>
             </Grid>
             <Border x:Name="LyricViewHost"
+                    Grid.Row="0"
                     Grid.Column="1"
                     Margin="10,20,80,20"
                     d:Background="White">
@@ -198,6 +214,7 @@
                 </Border.OpacityMask>
             </Border>
             <Border x:Name="LyricToolBar"
+                    Grid.Row="0"
                     Grid.Column="1"
                     Width="36"
                     Margin="0,0,36,0"
@@ -205,13 +222,21 @@
                     VerticalAlignment="Center"
                     Background="{DynamicResource MaskColor}"
                     CornerRadius="8">
-                <StackPanel>
+                <StackPanel x:Name="LyricToolBarPanel">
                     <!--<ws:ToggleButton x:Name="SwitchLrcImmerseModeBtn"
                                      Height="36"
                                      Padding="10"
                                      Style="{StaticResource IconToggleButton}"
                                      Tag="{DynamicResource LyricImmerseIcon}" />-->
-                    <ws:Button Height="36"
+                    <ws:ToggleButton x:Name="SwitchTopMostBtn"
+                                     Width="36"
+                                     Height="36"
+                                     Padding="10"
+                                     IsChecked="{Binding Topmost, ElementName=window}"
+                                     Style="{StaticResource IconToggleButton}"
+                                     Tag="{DynamicResource Icon_Topmost}" />
+                    <ws:Button Width="36"
+                               Height="36"
                                Padding="10"
                                Command="{Binding LyricView.FontSizeUpCommand}"
                                Style="{StaticResource SimpleIconButtonStyleForWs}">
@@ -219,7 +244,8 @@
                               Fill="{DynamicResource ForeColor}"
                               Stretch="Uniform" />
                     </ws:Button>
-                    <ws:Button Height="36"
+                    <ws:Button Width="36"
+                               Height="36"
                                Padding="10"
                                Command="{Binding LyricView.FontSizeDownCommand}"
                                Style="{StaticResource SimpleIconButtonStyleForWs}">
@@ -227,13 +253,15 @@
                               Fill="{DynamicResource ForeColor}"
                               Stretch="Uniform" />
                     </ws:Button>
-                    <ToggleButton Height="36"
+                    <ToggleButton Width="36"
+                                  Height="36"
                                   Padding="10"
                                   IsChecked="{Binding LyricView.IsShowTranslation}"
                                   Style="{StaticResource IconToggleButton}"
                                   Tag="{StaticResource Icon_Trans}"
                                   Visibility="{Binding LyricView.IsTranslationAvailable, Converter={StaticResource BoolToVisibility}}" />
-                    <ToggleButton Height="36"
+                    <ToggleButton Width="36"
+                                  Height="36"
                                   Padding="10"
                                   IsChecked="{Binding LyricView.IsShowRomaji}"
                                   Style="{StaticResource IconToggleButton}"

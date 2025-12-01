@@ -29,11 +29,19 @@ public partial class MainWindowViewModel : ObservableObject
         _smtc.DurationChanged += OnDurationChanged;
         _smtc.PlayingStateChanged += OnPlayingStateChanged;
         _smtcListener.MediaPropertiesChanged += SmtcListener_MediaPropertiesChanged;
+        _smtcListener.SessionExited += SmtcListener_SessionExited;
         uiResourceService.OnColorModeChanged += UiResourceService_OnColorModeChanged;
 
         UpdateSmtcInfo();
         InitPlaybackStatus();
     }
+
+    private void SmtcListener_SessionExited(object? sender, EventArgs e)
+    {
+        ResetCoverImg();
+        App.Current.Dispatcher.Invoke(() => { MediaInfo = null; });
+    }
+
     private void InitPlaybackStatus()
     {
         IsPlaying = _smtc.IsPlaying;
@@ -61,7 +69,7 @@ public partial class MainWindowViewModel : ObservableObject
     private GlobalSystemMediaTransportControlsSessionMediaProperties? mediaInfo;
 
     [ObservableProperty]
-    private ImageBrush? coverImage;
+    private Brush? coverImage;
     [ObservableProperty]
     private BitmapImage? backgroundImageSource;
 
@@ -116,7 +124,7 @@ public partial class MainWindowViewModel : ObservableObject
         }
     }
 
-    private async void UpdateCover()
+    private async void UpdateCover(int retryCount=0)
     {
         if (await _smtcListener.GetMediaInfoAsync() is { PlaybackType: Windows.Media.MediaPlaybackType.Music } info)
         {
@@ -152,8 +160,25 @@ public partial class MainWindowViewModel : ObservableObject
                     App.Current.Dispatcher.Invoke(() => BackgroundImageSource = background);
                 }
             }
-            catch { }
+            catch {
+                if (retryCount > 3)
+                    ResetCoverImg();
+                else
+                {
+                    await Task.Delay(retryCount * 200);
+                    UpdateCover(retryCount++);
+                }
+            }
         }
+    }
+
+    private void ResetCoverImg()
+    {
+        App.Current.Dispatcher.Invoke(() =>
+        {
+            CoverImage = Brushes.Azure;
+            BackgroundImageSource = null;
+        });
     }
 
     [RelayCommand]

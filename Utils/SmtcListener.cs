@@ -105,7 +105,7 @@ public class SmtcListener(GlobalSystemMediaTransportControlsSession session)
     public async Task<bool> SetPosition(TimeSpan position)
     {
         if (_globalSMTCSession == null) return false;
-        return await _globalSMTCSession.TryChangePlaybackPositionAsync((long)position.TotalMilliseconds);
+        return await _globalSMTCSession.TryChangePlaybackPositionAsync(position.Ticks);
     }
 
 }

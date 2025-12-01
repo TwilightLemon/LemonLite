@@ -15,7 +15,7 @@ namespace LemonLite.Utils;
 
 public static class LyricHelper
 {
-    internal const string EndPoint = "http://localhost:5117";
+    internal const string EndPoint = "https://lemonlite.azurewebsites.net/";
     public static async Task<LyricData?> GetLyricByQid(string id)
     {
         try

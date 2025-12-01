@@ -3,6 +3,7 @@ using LemonLite.Utils;
 using Lyricify.Lyrics.Models;
 using System;
 using System.Threading.Tasks;
+using Windows.Graphics.DirectX.Direct3D11;
 
 namespace LemonLite.Services;
 
@@ -51,6 +52,7 @@ public class LyricService
 
     #region State
     private string? _currentMusicId;
+    private string? _smtcSource;
     private LyricsData? _currentLyric;
     private LyricsData? _currentTrans;
     private LyricsData? _currentRomaji;
@@ -98,11 +100,12 @@ public class LyricService
     /// </summary>
     private async Task LoadLyricFromCurrentMediaAsync()
     {
-        Reset();
         MediaChanged?.Invoke();
 
         if (await _smtcService.SmtcListener.GetMediaInfoAsync() is { PlaybackType: Windows.Media.MediaPlaybackType.Music } info)
         {
+            var mediaId = _smtcService.SmtcListener.GetAppMediaId().ToLower();
+            _smtcSource = mediaId[..^4];
             if (await LyricHelper.SearchQid(info.Title, info.Artist) is { } id)
             {
                 await LoadLyricByIdAsync(id);
@@ -142,6 +145,7 @@ public class LyricService
     public void Reset()
     {
         _currentMusicId = null;
+        _smtcSource = null;
         _currentLyric = null;
         _currentTrans = null;
         _currentRomaji = null;

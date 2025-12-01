@@ -72,6 +72,7 @@ public class SmtcService : IHostedService
         _playbackTimer.Tick -= PlaybackTimer_Tick;
         _smtcListener.PlaybackInfoChanged -= OnPlaybackInfoChanged;
         _smtcListener.TimelinePropertiesChanged -= OnTimelinePropertiesChanged;
+        _smtcListener.SessionExited -= OnSessionExited;
     }
 
     private void OnPlaybackInfoChanged(object? sender, EventArgs e)
@@ -82,6 +83,13 @@ public class SmtcService : IHostedService
     private void OnTimelinePropertiesChanged(object? sender, EventArgs e)
     {
         SyncTimelineFromSmtc();
+    }
+
+    private void OnSessionExited(object? sender, EventArgs e)
+    {
+        Reset();
+        _isPlaying = false;
+        PlayingStateChanged?.Invoke(_isPlaying);
     }
 
     private void UpdatePlayingState()
@@ -190,6 +198,7 @@ public class SmtcService : IHostedService
         _playbackTimer.Tick += PlaybackTimer_Tick;
         _smtcListener.PlaybackInfoChanged += OnPlaybackInfoChanged;
         _smtcListener.TimelinePropertiesChanged += OnTimelinePropertiesChanged;
+        _smtcListener.SessionExited += OnSessionExited;
         UpdatePlayingState();
     }
 
