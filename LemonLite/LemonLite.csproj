@@ -8,7 +8,12 @@
 		<UseWindowsForms>true</UseWindowsForms>
 		<StartupObject>LemonLite.EntryPoint</StartupObject>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<ApplicationIcon>Resources\icon.ico</ApplicationIcon>
 	</PropertyGroup>
+
+	<ItemGroup>
+	  <Content Include="Resources\icon.ico" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />

@@ -169,7 +169,7 @@ public partial class MainWindow : Window
         Grid.SetColumn(LyricViewHost, 0);
         Grid.SetRow(LyricViewHost, 1);
         Grid.SetColumnSpan(LyricViewHost, 2);
-        LyricViewHost.Margin = new Thickness(20, 10, 20, 10);
+        LyricViewHost.Margin = new Thickness(20, 0, 20, 10);
 
         // 歌词工具栏移到歌词区域右侧
         Grid.SetColumn(LyricToolBar, 0);
