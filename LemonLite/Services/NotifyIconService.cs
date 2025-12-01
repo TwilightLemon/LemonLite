@@ -19,7 +19,7 @@ public class NotifyIconService(AppSettingService appSettingService)
         };
         NotifyIcon.MouseClick += NotifyIcon_MouseClick;
     }
-
+    //TODO: fix ContextMenu cannot be closed even if losing focus
     private void NotifyIcon_MouseClick(object? sender, System.Windows.Forms.MouseEventArgs e)
     {
         var menu = new ContextMenu()

@@ -6,9 +6,8 @@ using LemonLite.Configs;
 using LemonLite.Utils;
 
 namespace LemonLite.Services;
-/*
- UpdateColorMode: system msg -> ApplicationService -> UIResourceService -> other components
- */
+//TODO: now only MainWindow is reacting to the theme changed event of system.
+
 /// <summary>
 /// 设置全局UI资源
 /// </summary>

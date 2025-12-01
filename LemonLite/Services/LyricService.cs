@@ -3,7 +3,6 @@ using LemonLite.Utils;
 using Lyricify.Lyrics.Models;
 using System;
 using System.Threading.Tasks;
-using Windows.Graphics.DirectX.Direct3D11;
 
 namespace LemonLite.Services;
 

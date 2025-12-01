@@ -13,7 +13,7 @@ using System.Windows.Media;
 
 namespace LemonLite.ViewModels;
 /// <summary>
-/// [Singleton] ViewModel for DesktopLyricWindow, reserved at MainWindowViewModel.cs
+/// [Singleton] ViewModel for DesktopLyricWindow
 /// </summary>
 public partial class DesktopLyricWindowViewModel:ObservableObject
 {
