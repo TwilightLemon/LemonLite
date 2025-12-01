@@ -7,6 +7,7 @@ using LemonLite.Views.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
+using System.Threading;
 using System.Windows;
 
 namespace LemonLite;
@@ -24,58 +25,109 @@ public partial class App : Application
         Exit += App_Exit;
     }
 
-    private static void BuildHost(IServiceCollection services)
-    {
-        services.AddHttpClient();
-        services.AddHostedService(p=>p.GetRequiredService<AppSettingService>()
-                                                            .AddConfig<LyricOption>()
-                                                            .AddConfig<Appearance>()
-                                                            .AddConfig<DesktopLyricOption>()
-                                                            .AddConfig<AppOption>());
-        services.AddHostedService(p => p.GetRequiredService<SmtcService>());
-
-        services.AddSingleton<AppSettingService>();
-        services.AddSingleton<NotifyIconService>();
-        services.AddSingleton<UIResourceService>();
-        services.AddSingleton<SmtcService>();
-        services.AddSingleton<LyricService>();
-
-        services.AddTransient<MainWindowViewModel>();
-        services.AddTransient<MainWindow>();
-        services.AddTransient<LyricView>();
-
-        services.AddTransient<DesktopLyricWindow>();
-        services.AddTransient<DesktopLyricWindowViewModel>();
-    }
-    private IHost Host { get; init; }
     public static new App Current => (App)Application.Current;
-    public static IServiceProvider Services => Current.Host.Services;
+    public DesktopLyricWindow? DesktopLyricWindowInstance { get; set; }
+    public new MainWindow? MainWindow { get; set; }
+    private static readonly Lock _applyOptionsLock = new();
     public static void CreateMainWindow()
     {
-        if(Current.MainWindow is { IsLoaded: true} window)
+        if (Current.MainWindow is { IsLoaded: true } window)
         {
             window.Activate();
             return;
         }
         Current.MainWindow = Services.GetRequiredService<MainWindow>();
+        Current.MainWindow.Closed += MainWindow_Closed;
         Current.MainWindow.Show();
 
-        SystemThemeAPI.RegesterOnThemeChanged(Current.MainWindow, () => {
+        SystemThemeAPI.RegesterOnThemeChanged(Current.MainWindow, () =>
+        {
             var ui = Services.GetRequiredService<UIResourceService>();
             ui.UpdateColorMode();
         }, null);
     }
+
+    private static void MainWindow_Closed(object? sender, EventArgs e)
+    {
+        Current.MainWindow = null;
+    }
+
+    public static void DestroyMainWindow()
+    {
+        if (Current.MainWindow is { } window)
+        {
+            window.Close();
+            Current.MainWindow = null;
+        }
+    }
     public static void CreateDesktopLyricWindow()
     {
+        if (Current.DesktopLyricWindowInstance is { IsLoaded: true } exist)
+        {
+            exist.Activate();
+            return;
+        }
         var window = Services.GetRequiredService<DesktopLyricWindow>();
+        window.Closed += DesktopLyricWindow_Closed;
         window.Show();
-        window.Activate();
+        Current.DesktopLyricWindowInstance = window;
+    }
+
+    private static void DesktopLyricWindow_Closed(object? sender, EventArgs e)
+    {
+        Current.DesktopLyricWindowInstance = null;
+    }
+
+    public static void DestroyDesktopLyricWindow()
+    {
+        if (Current.DesktopLyricWindowInstance is { } window)
+        {
+            window.Close();
+            Current.DesktopLyricWindowInstance = null;
+        }
+    }
+
+    public static void ApplyAppOptions()
+    {
+        lock (_applyOptionsLock)
+        {
+            var smtc = Services.GetRequiredService<SmtcService>();
+            var opt = Services.GetRequiredService<AppSettingService>().GetConfigMgr<AppOption>();
+            if (smtc.SmtcListener.HasMusicSession)
+            {
+                if (opt.Data.StartWithMainWindow && Current.MainWindow == null)
+                {
+                    CreateMainWindow();
+                }
+                else if (!opt.Data.StartWithMainWindow && Current.MainWindow != null)
+                {
+                    DestroyMainWindow();
+                }
+
+                if (opt.Data.StartWithDesktopLyric && Current.DesktopLyricWindowInstance == null)
+                {
+                    CreateDesktopLyricWindow();
+                }
+                else if (!opt.Data.StartWithDesktopLyric && Current.DesktopLyricWindowInstance != null)
+                {
+                    DestroyDesktopLyricWindow();
+                }
+            }
+        }
     }
     private async void App_Startup(object sender, StartupEventArgs e)
     {
         Host.Start();
         Services.GetRequiredService<NotifyIconService>().InitNotifyIcon();
+
+        ApplyAppOptions();
+        var smtc = Services.GetRequiredService<SmtcService>();
+        smtc.SmtcListener.MediaPropertiesChanged += delegate
+        {
+            Dispatcher.Invoke(ApplyAppOptions);
+        };
     }
+
     private void App_Exit(object sender, ExitEventArgs e)
     {
         Host.StopAsync().Wait();

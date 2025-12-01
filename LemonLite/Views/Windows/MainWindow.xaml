@@ -150,6 +150,8 @@
                         <Slider Margin="42,0"
                                 VerticalAlignment="Center"
                                 Maximum="{Binding CurrentPlayingDuration}"
+                                PreviewMouseDown="PlaySlider_PreviewMouseDown"
+                                PreviewMouseUp="PlaySlider_PreviewMouseUp"
                                 Style="{DynamicResource FluentSliderStyle}"
                                 Value="{Binding CurrentPlayingPosition, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
                     </Grid>

@@ -1,10 +1,5 @@
-﻿using LemonApp.Common.Funcs;
+﻿using LemonLite.Utils;
 using LemonLite.Configs;
-using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Controls;
 
 namespace LemonLite.Services;
@@ -33,17 +28,17 @@ public class NotifyIconService(AppSettingService appSettingService)
             StaysOpen=false
         };
 
-        var openLrcWindow = new MenuItem() { Header = "Open Lyric Window" };
+        var openLrcWindow = new MenuItem() { Header = "Lyric Window",IsCheckable=true,IsChecked= opt.Data.StartWithMainWindow };
         openLrcWindow.Click += (s, e) =>
         {
-            opt.Data.StartWithMainWindow = true;
-            App.CreateMainWindow();
+            opt.Data.StartWithMainWindow = !opt.Data.StartWithMainWindow;
+            App.ApplyAppOptions();
         };
-        var desktop=new MenuItem() { Header= "Show Desktop Lyrics" };
+        var desktop=new MenuItem() { Header= "Desktop Lyrics", IsCheckable=true,IsChecked= opt.Data.StartWithDesktopLyric };
         desktop.Click += (s, e) =>
         {
-            opt.Data.StartWithDesktopLyric = true;
-            App.CreateDesktopLyricWindow();
+            opt.Data.StartWithDesktopLyric = !opt.Data.StartWithDesktopLyric;
+            App.ApplyAppOptions();
         };
         var exit = new MenuItem() { Header = "Exit" };
         exit.Click += (s, e) => App.Current.Shutdown();

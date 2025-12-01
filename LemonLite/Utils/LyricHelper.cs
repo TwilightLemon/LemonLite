@@ -1,12 +1,9 @@
-﻿using LemonApp.Common.Funcs;
-using LemonLite.Entities;
+﻿using LemonLite.Entities;
 using Lyricify.Lyrics.Helpers;
 using Lyricify.Lyrics.Models;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Generic;
 using System.Net.Http;
-using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using System.Web;

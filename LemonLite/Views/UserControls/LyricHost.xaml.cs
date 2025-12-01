@@ -76,13 +76,6 @@ public partial class LyricHost : UserControl
     private bool _isPureLrc = false;
     private DateTime _interruptedTime;
 
-    public void Reset()
-    {
-        lrcs.Clear();
-        currentLrc = null;
-        LrcContainer.Children.Clear();
-        scrollviewer.BeginAnimation(ScrollViewerUtils.VerticalOffsetProperty, null);
-    }
     private async Task WaitToScroll()
     {
         await Task.Delay(100);
@@ -123,6 +116,7 @@ public partial class LyricHost : UserControl
         _isPureLrc= isPureLrc;
         LrcContainer.Children.Clear();
         lrcs.Clear();
+        scrollviewer.BeginAnimation(ScrollViewerUtils.VerticalOffsetProperty, null);
         LrcContainer.Children.Add(new TextBlock() { Height = 300 ,Background=Brushes.Transparent});
         foreach (var line in lyricsData.Lines)
         {

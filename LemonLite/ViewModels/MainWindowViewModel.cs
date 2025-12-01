@@ -38,8 +38,7 @@ public partial class MainWindowViewModel : ObservableObject
 
     private void SmtcListener_SessionExited(object? sender, EventArgs e)
     {
-        ResetCoverImg();
-        App.Current.Dispatcher.Invoke(() => { MediaInfo = null; });
+        App.Current.Dispatcher.Invoke(App.DestroyMainWindow);
     }
 
     private void InitPlaybackStatus()
@@ -60,6 +59,7 @@ public partial class MainWindowViewModel : ObservableObject
         _smtc.DurationChanged -= OnDurationChanged;
         _smtc.PlayingStateChanged -= OnPlayingStateChanged;
         _smtcListener.MediaPropertiesChanged -= SmtcListener_MediaPropertiesChanged;
+        _smtcListener.SessionExited -= SmtcListener_SessionExited;
         uiResourceService.OnColorModeChanged -= UiResourceService_OnColorModeChanged;
     }
 

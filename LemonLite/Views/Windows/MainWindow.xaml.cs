@@ -1,11 +1,12 @@
-﻿using LemonApp.Common.Funcs;
-using LemonLite.Configs;
+﻿using LemonLite.Configs;
 using LemonLite.Services;
+using LemonLite.Utils;
 using LemonLite.ViewModels;
-using Lyricify.Lyrics.Providers.Web.QQMusic;
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Input;
 using System.Windows.Media.Animation;
 
 namespace LemonLite.Views.Windows;
@@ -16,19 +17,20 @@ namespace LemonLite.Views.Windows;
 public partial class MainWindow : Window
 {
     private readonly MainWindowViewModel vm;
+    private readonly SmtcService smtcService;
     private readonly SettingsMgr<Appearance> _mgr;
     private const double MobileLayoutThreshold = 600;
     private bool _isMobileLayout = false;
     private Storyboard? LyricImgRTAni;
 
-    public MainWindow(MainWindowViewModel vm,AppSettingService appSettingService)
+    public MainWindow(MainWindowViewModel vm,AppSettingService appSettingService, SmtcService smtcService)
     {
         InitializeComponent();
         this.DataContext = vm;
         _mgr = appSettingService.GetConfigMgr<Appearance>();
         LyricViewHost.Child = vm.LyricView;
         this.vm = vm;
-        
+        this.smtcService = smtcService;
         SizeChanged += MainWindow_SizeChanged;
         Loaded += MainWindow_Loaded;
         Closed += MainWindow_Closed;
@@ -39,7 +41,7 @@ public partial class MainWindow : Window
         ApplySettings();
     }
 
-    private void MainWindow_Closed(object? sender, System.EventArgs e)
+    private void MainWindow_Closed(object? sender, EventArgs e)
     {
         vm.Dispose();
         _mgr.Data.TopMost = Topmost;
@@ -77,6 +79,39 @@ public partial class MainWindow : Window
         };
         
         ControlRotationAnimation(vm.IsPlaying);
+    }
+
+    private bool _isSliderCtrl = false;
+    private void PlaySlider_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.LeftButton == MouseButtonState.Pressed && sender is Slider PlaySlider)
+        {
+            double perc = e.GetPosition(PlaySlider).X / PlaySlider.ActualWidth;
+            double value = perc * PlaySlider.Maximum;
+            //暂时移除PlaySlider的Value binding
+            BindingOperations.ClearBinding(PlaySlider, Slider.ValueProperty);
+            PlaySlider.Value = value;
+            _isSliderCtrl = true;
+        }
+    }
+
+    private async void PlaySlider_PreviewMouseUp(object sender, MouseButtonEventArgs e)
+    {
+        if (_isSliderCtrl && sender is Slider PlaySlider)
+        {
+            //提交value
+            await smtcService.SmtcListener.SetPosition(TimeSpan.FromSeconds(PlaySlider.Value));
+            vm.CurrentPlayingPosition = PlaySlider.Value;
+            //重新绑定PlaySlider的Value
+            var binding = new Binding("CurrentPlayingPosition")
+            {
+                Source = vm,
+                Mode = BindingMode.OneWay,
+                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+            };
+            PlaySlider.SetBinding(Slider.ValueProperty, binding);
+            _isSliderCtrl = false;
+        }
     }
 
     private void MainWindow_SizeChanged(object sender, SizeChangedEventArgs e)

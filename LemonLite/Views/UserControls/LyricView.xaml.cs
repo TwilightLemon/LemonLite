@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.Input;
-using LemonApp.Common.Funcs;
 using LemonLite.Configs;
 using LemonLite.Services;
+using LemonLite.Utils;
 using System;
 using System.Threading.Tasks;
 using System.Windows;
@@ -170,7 +170,6 @@ namespace LemonLite.Views.UserControls
                 LrcHost.Effect = blurEffect;
                 var aniBlur = new DoubleAnimation(0, 20, TimeSpan.FromMilliseconds(300));
                 var aniOpac = new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(300));
-                aniOpac.Completed += delegate { LrcHost.Reset(); };
                 blurEffect.BeginAnimation(BlurEffect.RadiusProperty, aniBlur);
                 LrcHost.BeginAnimation(OpacityProperty, aniOpac);
             });
@@ -178,24 +177,21 @@ namespace LemonLite.Views.UserControls
 
         private void OnLyricLoaded(LyricLoadedEventArgs args)
         {
-            Dispatcher.Invoke(() =>
+            Dispatcher.Invoke(async () =>
             {
                 IsTranslationAvailable = args.Trans != null;
                 IsRomajiAvailable = args.Romaji != null;
                 LrcHost.Load(args.Lyric, args.Trans, args.Romaji, args.IsPureLrc);
                 RefreshHostSettings();
 
-                Dispatcher.Invoke(async () =>
-                {
-                    await Task.Delay(100);
-                    //fade-in animation after loaded
-                    var blurEffect = new BlurEffect() { Radius = 20 };
-                    LrcHost.Effect = blurEffect;
-                    var aniBlur = new DoubleAnimation(20, 0, TimeSpan.FromMilliseconds(300));
-                    var aniOpac = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(300));
-                    blurEffect.BeginAnimation(BlurEffect.RadiusProperty, aniBlur);
-                    LrcHost.BeginAnimation(OpacityProperty, aniOpac);
-                }, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+                await Task.Delay(100);
+                //fade-in animation after loaded
+                var blurEffect = new BlurEffect() { Radius = 20 };
+                LrcHost.Effect = blurEffect;
+                var aniBlur = new DoubleAnimation(20, 0, TimeSpan.FromMilliseconds(300));
+                var aniOpac = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(300));
+                blurEffect.BeginAnimation(BlurEffect.RadiusProperty, aniBlur);
+                LrcHost.BeginAnimation(OpacityProperty, aniOpac);
             });
         }
 

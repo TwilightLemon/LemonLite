@@ -1,6 +1,5 @@
 ﻿using EleCho.WpfSuite;
 using FluentWpfCore.Helpers;
-using LemonApp.Common.Funcs;
 using LemonLite.Configs;
 using LemonLite.Services;
 using LemonLite.Utils;

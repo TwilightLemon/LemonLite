@@ -5,7 +5,7 @@ using System.Text.Json;
 using System;
 using System.Threading.Tasks;
 
-namespace LemonApp.Common.Funcs;
+namespace LemonLite.Utils;
 public interface ISettingsMgr
 {
     bool Load();

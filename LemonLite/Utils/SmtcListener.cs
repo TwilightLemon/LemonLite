@@ -20,6 +20,8 @@ public class SmtcListener(GlobalSystemMediaTransportControlsSession session)
         return smtcHelper;
     }
 
+    public bool HasMusicSession => _globalSMTCSession?.GetPlaybackInfo() is { PlaybackType: Windows.Media.MediaPlaybackType.Music };
+
     /// <summary>
     /// 当媒体信息发生变化时触发 例如Title ,Artist,Album等信息变更
     /// </summary>

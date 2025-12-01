@@ -30,9 +30,6 @@
                     <Setter Property="Foreground" Value="{DynamicResource ForeColor}" />
                 </Style.Setters>
             </Style>
-            <Style TargetType="{x:Type Page}">
-                <Setter Property="FontFamily" Value="{StaticResource DefaultFontFamily}" />
-            </Style>
             <!--  全局ContextMenu样式  -->
             <Style x:Key="GlobalContextMenuStyle"
                    BasedOn="{StaticResource FluentContextMenuStyle}"

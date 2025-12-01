@@ -1,16 +1,13 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using LemonApp.Common.Funcs;
+using LemonLite.Utils;
 using LemonLite.Configs;
 using LemonLite.Services;
-using LemonLite.Utils;
 using LemonLite.Views.UserControls;
-using Lyricify.Lyrics.Helpers.Types;
 using Lyricify.Lyrics.Models;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Timers;
 using System.Windows;
 using System.Windows.Media;
 
@@ -36,14 +33,21 @@ public partial class DesktopLyricWindowViewModel:ObservableObject
         _lyricService.CurrentLineChanged += OnCurrentLineChanged;
         _lyricService.TimeUpdated += OnTimeUpdated;
         _lyricService.MediaChanged += OnMediaChanged;
+        smtcService.SmtcListener.SessionExited += SmtcListener_SessionExited;
         CustomLyricControlStyle();
         LyricControl.Dispatcher.Invoke(() => Update(_lyricService.CurrentLine));
+    }
+
+    private void SmtcListener_SessionExited(object? sender, EventArgs e)
+    {
+        App.Current.Dispatcher.Invoke(App.DestroyDesktopLyricWindow);
     }
 
     public void Dispose()
     {
         _settingsMgr.OnDataChanged -= _settingsMgr_OnDataChanged;
         _smtcService.PlayingStateChanged -= _smtcService_PlayingStateChanged;
+        _smtcService.SmtcListener.SessionExited += SmtcListener_SessionExited;
         _lyricService.CurrentLineChanged -= OnCurrentLineChanged;
         _lyricService.TimeUpdated -= OnTimeUpdated;
         _lyricService.MediaChanged -= OnMediaChanged;
@@ -135,8 +139,9 @@ public partial class DesktopLyricWindowViewModel:ObservableObject
             LyricControl.RomajiLrcContainer.Visibility = visible;
         }
     }
-    private async void Update(LrcLine lrc)
+    private async void Update(LrcLine? lrc)
     {
+        if (lrc == null) return;
         UpdateAnimation?.Invoke();
         double fontSize = _settingsMgr.Data.LrcFontSize;
         await Task.Delay(200);
