@@ -73,6 +73,7 @@ public class SmtcService : IHostedService
         _smtcListener.PlaybackInfoChanged -= OnPlaybackInfoChanged;
         _smtcListener.TimelinePropertiesChanged -= OnTimelinePropertiesChanged;
         _smtcListener.SessionExited -= OnSessionExited;
+        _smtcListener.SessionChanged -= OnSessionChanged;
     }
 
     private void OnPlaybackInfoChanged(object? sender, EventArgs e)
@@ -90,6 +91,13 @@ public class SmtcService : IHostedService
         Reset();
         _isPlaying = false;
         PlayingStateChanged?.Invoke(_isPlaying);
+    }
+
+    private void OnSessionChanged(object? sender, EventArgs e)
+    {
+        // 会话切换时重新同步播放状态和时间线
+        Reset();
+        UpdatePlayingState();
     }
 
     private void UpdatePlayingState()
@@ -199,6 +207,7 @@ public class SmtcService : IHostedService
         _smtcListener.PlaybackInfoChanged += OnPlaybackInfoChanged;
         _smtcListener.TimelinePropertiesChanged += OnTimelinePropertiesChanged;
         _smtcListener.SessionExited += OnSessionExited;
+        _smtcListener.SessionChanged += OnSessionChanged;
         UpdatePlayingState();
     }
 

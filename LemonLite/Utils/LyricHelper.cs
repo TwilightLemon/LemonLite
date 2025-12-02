@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Net.Http;
 using System.Text.Json.Nodes;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 
@@ -12,36 +13,48 @@ namespace LemonLite.Utils;
 
 public static class LyricHelper
 {
-    internal const string EndPoint = "https://lemonlite.azurewebsites.net/";
-    public static async Task<LyricData?> GetLyricByQid(string id)
+    public static string EndPoint { get; set; } = "http://localhost:5000";
+    public static async Task<LyricData?> GetLyricByQid(string id, CancellationToken cancellationToken = default)
     {
         try
         {
-            var hc = App.Services.GetRequiredService<IHttpClientFactory>().CreateClient();
+            var hc = App.Services.GetRequiredService<IHttpClientFactory>().CreateClient(App.AzureLiteHttpClientFlag);
             hc.BaseAddress = new Uri(EndPoint);
-            var data = await hc.GetStringAsync($"/lrc?id={id}");
+            var data = await hc.GetStringAsync($"/lrc?id={id}", cancellationToken);
             if (JsonNode.Parse(data) is { } json)
             {
                 return new() { Id = id, Lyric = json["lyrics"]?.ToString(), Romaji = json["romaji"]?.ToString(), Trans = json["trans"]?.ToString(), Type = LyricType.QQ };
             }
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch { }
         return null;
     }
 
-    public static async Task<string?> SearchQid(string title,string artist)
+    public static async Task<string?> SearchQid(string title, string artist, CancellationToken cancellationToken = default)
     {
-        var hc = App.Services.GetRequiredService<IHttpClientFactory>().CreateClient();
-        hc.BaseAddress = new Uri(EndPoint);
-        var data = await hc.GetStringAsync($"/search?title={HttpUtility.UrlEncode(title)}&artist={HttpUtility.UrlEncode(artist)}");
-        if (JsonNode.Parse(data) is { } json)
+        try
         {
-            return json["id"]?.ToString();
+            var hc = App.Services.GetRequiredService<IHttpClientFactory>().CreateClient(App.AzureLiteHttpClientFlag);
+            hc.BaseAddress = new Uri(EndPoint);
+            var data = await hc.GetStringAsync($"/search?title={HttpUtility.UrlEncode(title)}&artist={HttpUtility.UrlEncode(artist)}", cancellationToken);
+            if (JsonNode.Parse(data) is { } json)
+            {
+                return json["id"]?.ToString();
+            }
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch { }
         return null;
     }
 
-    public static async Task<LyricData?> GetLyricByQmId(string id)
+    public static async Task<LyricData?> GetLyricByQmId(string id, CancellationToken cancellationToken = default)
     {
         var path = Settings.CachePath;
         path = System.IO.Path.Combine(path, id + ".lmrc");
@@ -51,7 +64,7 @@ public static class LyricHelper
         }
         else
         {
-            if (await GetLyricByQid(id) is { } ly)
+            if (await GetLyricByQid(id, cancellationToken) is { } ly)
             {
                 await Settings.SaveAsJsonAsync(ly, path, false);
                 return ly;

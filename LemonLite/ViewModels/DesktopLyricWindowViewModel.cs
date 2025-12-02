@@ -47,7 +47,7 @@ public partial class DesktopLyricWindowViewModel:ObservableObject
     {
         _settingsMgr.OnDataChanged -= _settingsMgr_OnDataChanged;
         _smtcService.PlayingStateChanged -= _smtcService_PlayingStateChanged;
-        _smtcService.SmtcListener.SessionExited += SmtcListener_SessionExited;
+        _smtcService.SmtcListener.SessionExited -= SmtcListener_SessionExited;
         _lyricService.CurrentLineChanged -= OnCurrentLineChanged;
         _lyricService.TimeUpdated -= OnTimeUpdated;
         _lyricService.MediaChanged -= OnMediaChanged;

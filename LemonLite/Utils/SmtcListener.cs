@@ -3,111 +3,313 @@ using System.Threading.Tasks;
 using Windows.Media.Control;
 
 namespace LemonLite.Utils;
-/*
-    SMTC Listener
-    https://github.com/TwilightLemon/MediaTest/blob/master/MediaTest/SMTCListener.cs
- */
-public class SmtcListener(GlobalSystemMediaTransportControlsSession session)
+public class SmtcListener
 {
-    private GlobalSystemMediaTransportControlsSession _globalSMTCSession = session;
+    private GlobalSystemMediaTransportControlsSession? _globalSMTCSession;
+    private readonly object _sessionLock = new();
+    private string? _currentSessionId;
+
     public static async Task<SmtcListener> CreateInstance()
     {
         var gsmtcsm = await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
-        var smtcHelper = new SmtcListener(gsmtcsm.GetCurrentSession());
+        var smtcHelper = new SmtcListener();
+        
+        // 订阅会话管理器的会话变化事件
         gsmtcsm.CurrentSessionChanged += (s, e) =>
-            smtcHelper.StartSMTCListener(gsmtcsm);
-        smtcHelper.StartSMTCListener(gsmtcsm);
+        {
+            smtcHelper.OnCurrentSessionChanged(gsmtcsm);
+        };
+        
+        // 初始化当前会话
+        smtcHelper.OnCurrentSessionChanged(gsmtcsm);
+        
         return smtcHelper;
     }
 
-    public bool HasMusicSession => _globalSMTCSession?.GetPlaybackInfo() is { PlaybackType: Windows.Media.MediaPlaybackType.Music };
+    public bool HasMusicSession
+    {
+        get
+        {
+            var session = GetSessionSnapshot();
+            if (session == null) return false;
+            
+            try
+            {
+                return session.GetPlaybackInfo() is { PlaybackType: Windows.Media.MediaPlaybackType.Music };
+            }
+            catch (System.Runtime.InteropServices.COMException)
+            {
+                return false;
+            }
+        }
+    }
 
     /// <summary>
     /// 当媒体信息发生变化时触发 例如Title ,Artist,Album等信息变更
     /// </summary>
     public event EventHandler? MediaPropertiesChanged;
+    
     /// <summary>
     /// 当媒体播放状态发生变化时触发 例如播放，暂停，停止等状态变更
     /// </summary>
     public event EventHandler? PlaybackInfoChanged;
+    
     /// <summary>
-    /// 当媒体会话退出时触发
+    /// 当所有媒体会话都退出时触发（没有任何活动会话）
     /// </summary>
     public event EventHandler? SessionExited;
+    
+    /// <summary>
+    /// 当切换到新的媒体会话时触发（包括从无会话到有会话，或从一个应用切换到另一个应用）
+    /// </summary>
+    public event EventHandler? SessionChanged;
+    
     public event EventHandler? TimelinePropertiesChanged;
-    private void StartSMTCListener(GlobalSystemMediaTransportControlsSessionManager mgr)
+
+    private void OnCurrentSessionChanged(GlobalSystemMediaTransportControlsSessionManager mgr)
     {
-        bool existed = _globalSMTCSession != null;
-        _globalSMTCSession = mgr.GetCurrentSession();
-        if (_globalSMTCSession == null)
+        GlobalSystemMediaTransportControlsSession? newSession = null;
+        GlobalSystemMediaTransportControlsSession? oldSession = null;
+        string? newSessionId = null;
+        string? oldSessionId = null;
+        bool sessionChanged = false;
+
+        try
         {
-            if (existed) SessionExited?.Invoke(this, null);
-            return;
+            newSession = mgr.GetCurrentSession();
+            newSessionId = newSession?.SourceAppUserModelId;
         }
-        //这些事件的e中没有任何有用信息；此外该监听可能会有延迟
-        _globalSMTCSession.MediaPropertiesChanged += (s, e) =>
+        catch (System.Runtime.InteropServices.COMException)
         {
-            MediaPropertiesChanged?.Invoke(this, null);
-        };
-        _globalSMTCSession.PlaybackInfoChanged += (s, e) =>
+            // 获取会话失败，视为无会话
+            newSession = null;
+            newSessionId = null;
+        }
+
+        lock (_sessionLock)
         {
-            PlaybackInfoChanged?.Invoke(this, null);
-        };
-        _globalSMTCSession.TimelinePropertiesChanged += (s, e) =>
+            oldSession = _globalSMTCSession;
+            oldSessionId = _currentSessionId;
+            
+            sessionChanged = oldSessionId != newSessionId;
+            
+            if (sessionChanged)
+            {
+                // 取消旧会话的事件订阅
+                if (oldSession != null)
+                {
+                    UnsubscribeSessionEvents(oldSession);
+                }
+                
+                // 更新会话引用
+                _globalSMTCSession = newSession;
+                _currentSessionId = newSessionId;
+                
+                // 订阅新会话的事件
+                if (newSession != null)
+                {
+                    SubscribeSessionEvents(newSession);
+                }
+            }
+        }
+
+        // 在锁外触发事件，避免死锁
+        if (sessionChanged)
         {
-            TimelinePropertiesChanged?.Invoke(this, null);
-        };
+            if (newSession == null)
+            {
+                // 所有会话都退出了
+                SessionExited?.Invoke(this, EventArgs.Empty);
+            }
+            else
+            {
+                // 切换到新会话（包括从无到有，或从一个应用切换到另一个）
+                SessionChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+    }
+
+    private void SubscribeSessionEvents(GlobalSystemMediaTransportControlsSession session)
+    {
+        try
+        {
+            session.MediaPropertiesChanged += OnSessionMediaPropertiesChanged;
+            session.PlaybackInfoChanged += OnSessionPlaybackInfoChanged;
+            session.TimelinePropertiesChanged += OnSessionTimelinePropertiesChanged;
+        }
+        catch (System.Runtime.InteropServices.COMException)
+        {
+            // 订阅失败，忽略
+        }
+    }
+
+    private void UnsubscribeSessionEvents(GlobalSystemMediaTransportControlsSession session)
+    {
+        try
+        {
+            session.MediaPropertiesChanged -= OnSessionMediaPropertiesChanged;
+            session.PlaybackInfoChanged -= OnSessionPlaybackInfoChanged;
+            session.TimelinePropertiesChanged -= OnSessionTimelinePropertiesChanged;
+        }
+        catch (System.Runtime.InteropServices.COMException)
+        {
+            // 取消订阅失败，忽略
+        }
+    }
+
+    private void OnSessionMediaPropertiesChanged(GlobalSystemMediaTransportControlsSession sender, MediaPropertiesChangedEventArgs args)
+    {
+        MediaPropertiesChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void OnSessionPlaybackInfoChanged(GlobalSystemMediaTransportControlsSession sender, PlaybackInfoChangedEventArgs args)
+    {
+        PlaybackInfoChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void OnSessionTimelinePropertiesChanged(GlobalSystemMediaTransportControlsSession sender, TimelinePropertiesChangedEventArgs args)
+    {
+        TimelinePropertiesChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>
+    /// 线程安全地获取当前会话的快照
+    /// 注意：返回的会话对象可能在使用时已失效，调用方需要捕获 COMException
+    /// </summary>
+    private GlobalSystemMediaTransportControlsSession? GetSessionSnapshot()
+    {
+        lock (_sessionLock)
+        {
+            return _globalSMTCSession;
+        }
     }
 
     public async Task<GlobalSystemMediaTransportControlsSessionMediaProperties?> GetMediaInfoAsync()
     {
-        if (_globalSMTCSession == null) return null;
-        return await _globalSMTCSession.TryGetMediaPropertiesAsync();
+        var session = GetSessionSnapshot();
+        if (session == null) return null;
+        
+        try
+        {
+            return await session.TryGetMediaPropertiesAsync();
+        }
+        catch (System.Runtime.InteropServices.COMException)
+        {
+            // Session was invalidated between the lock and the call
+            return null;
+        }
     }
 
     public GlobalSystemMediaTransportControlsSessionPlaybackStatus? GetPlaybackStatus()
     {
-        if (_globalSMTCSession == null) return null;
-        return _globalSMTCSession.GetPlaybackInfo().PlaybackStatus;
+        var session = GetSessionSnapshot();
+        if (session == null) return null;
+        
+        try
+        {
+            return session.GetPlaybackInfo().PlaybackStatus;
+        }
+        catch (System.Runtime.InteropServices.COMException)
+        {
+            return null;
+        }
     }
 
     public GlobalSystemMediaTransportControlsSessionTimelineProperties? GetTimeline()
     {
-        if (_globalSMTCSession == null) return null;
-        return _globalSMTCSession.GetTimelineProperties();
+        var session = GetSessionSnapshot();
+        if (session == null) return null;
+        
+        try
+        {
+            return session.GetTimelineProperties();
+        }
+        catch (System.Runtime.InteropServices.COMException)
+        {
+            return null;
+        }
     }
 
-    public string GetAppMediaId() => _globalSMTCSession.SourceAppUserModelId;
+    public string GetAppMediaId()
+    {
+        var session = GetSessionSnapshot();
+        if (session == null) return string.Empty;
+        
+        try
+        {
+            return session.SourceAppUserModelId;
+        }
+        catch (System.Runtime.InteropServices.COMException)
+        {
+            return string.Empty;
+        }
+    }
 
     public async Task<bool> PlayOrPause()
     {
-        if (_globalSMTCSession == null) return false;
-        if (_globalSMTCSession.GetPlaybackInfo().PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
+        var session = GetSessionSnapshot();
+        if (session == null) return false;
+        
+        try
         {
-            await _globalSMTCSession.TryPauseAsync();
-            return false;
+            if (session.GetPlaybackInfo().PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
+            {
+                await session.TryPauseAsync();
+                return false;
+            }
+            else
+            {
+                await session.TryPlayAsync();
+                return true;
+            }
         }
-        else
+        catch (System.Runtime.InteropServices.COMException)
         {
-            await _globalSMTCSession.TryPlayAsync();
-            return true;
+            return false;
         }
     }
     public async Task<bool> Previous()
     {
-        if (_globalSMTCSession == null) return false;
-        return await _globalSMTCSession.TrySkipPreviousAsync();
+        var session = GetSessionSnapshot();
+        if (session == null) return false;
+        
+        try
+        {
+            return await session.TrySkipPreviousAsync();
+        }
+        catch (System.Runtime.InteropServices.COMException)
+        {
+            return false;
+        }
     }
     public async Task<bool> Next()
     {
-        if (_globalSMTCSession == null) return false;
-        return await _globalSMTCSession.TrySkipNextAsync();
+        var session = GetSessionSnapshot();
+        if (session == null) return false;
+        
+        try
+        {
+            return await session.TrySkipNextAsync();
+        }
+        catch (System.Runtime.InteropServices.COMException)
+        {
+            return false;
+        }
     }
 
     public async Task<bool> SetPosition(TimeSpan position)
     {
-        if (_globalSMTCSession == null) return false;
-        return await _globalSMTCSession.TryChangePlaybackPositionAsync(position.Ticks);
+        var session = GetSessionSnapshot();
+        if (session == null) return false;
+        
+        try
+        {
+            return await session.TryChangePlaybackPositionAsync(position.Ticks);
+        }
+        catch (System.Runtime.InteropServices.COMException)
+        {
+            return false;
+        }
     }
 
 }

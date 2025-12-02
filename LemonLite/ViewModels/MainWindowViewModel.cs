@@ -30,6 +30,7 @@ public partial class MainWindowViewModel : ObservableObject
         _smtc.PlayingStateChanged += OnPlayingStateChanged;
         _smtcListener.MediaPropertiesChanged += SmtcListener_MediaPropertiesChanged;
         _smtcListener.SessionExited += SmtcListener_SessionExited;
+        _smtcListener.SessionChanged += SmtcListener_SessionChanged;
         uiResourceService.OnColorModeChanged += UiResourceService_OnColorModeChanged;
 
         UpdateSmtcInfo();
@@ -39,6 +40,12 @@ public partial class MainWindowViewModel : ObservableObject
     private void SmtcListener_SessionExited(object? sender, EventArgs e)
     {
         App.Current.Dispatcher.Invoke(App.DestroyMainWindow);
+    }
+
+    private void SmtcListener_SessionChanged(object? sender, EventArgs e)
+    {
+        // 会话切换时重新加载媒体信息
+        UpdateSmtcInfo();
     }
 
     private void InitPlaybackStatus()
@@ -60,6 +67,7 @@ public partial class MainWindowViewModel : ObservableObject
         _smtc.PlayingStateChanged -= OnPlayingStateChanged;
         _smtcListener.MediaPropertiesChanged -= SmtcListener_MediaPropertiesChanged;
         _smtcListener.SessionExited -= SmtcListener_SessionExited;
+        _smtcListener.SessionChanged -= SmtcListener_SessionChanged;
         uiResourceService.OnColorModeChanged -= UiResourceService_OnColorModeChanged;
     }
 
@@ -136,7 +144,7 @@ public partial class MainWindowViewModel : ObservableObject
                     using var streamRef = await info.Thumbnail.OpenReadAsync();
                     using var stream = streamRef.AsStreamForRead();
 
-                    var memoryStream = new MemoryStream();
+                    using var memoryStream = new MemoryStream();
                     await stream.CopyToAsync(memoryStream);
                     memoryStream.Position = 0;
 

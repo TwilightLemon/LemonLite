@@ -55,16 +55,13 @@ public partial class LyricLineControl : UserControl
 
     public void ClearAll()
     {
-        Dispatcher.Invoke(() =>
-        {
-            MainLrcContainer.Children.Clear();
-            RomajiLrcContainer.Children.Clear();
-            mainSyllableLrcs.Clear();
-            romajiSyllableLrcs.Clear();
-            mainSyllableBrushes.Clear();
-            mainSyllableAnimated.Clear();
-            TranslationLrc.Text = string.Empty;
-        });
+        MainLrcContainer.Children.Clear();
+        RomajiLrcContainer.Children.Clear();
+        mainSyllableLrcs.Clear();
+        romajiSyllableLrcs.Clear();
+        mainSyllableBrushes.Clear();
+        mainSyllableAnimated.Clear();
+        TranslationLrc.Text = string.Empty;
     }
     public void LoadPlainLrc(string lrc, double fontSize = 22)
     {
