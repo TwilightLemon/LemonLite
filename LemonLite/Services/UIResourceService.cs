@@ -1,9 +1,10 @@
+using LemonLite.Configs;
+using LemonLite.Utils;
 using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media;
-using LemonLite.Configs;
-using LemonLite.Utils;
+using static LemonLite.Configs.Appearance;
 
 namespace LemonLite.Services;
 //TODO: now only MainWindow is reacting to the theme changed event of system.
@@ -17,7 +18,7 @@ public class UIResourceService
     private readonly SettingsMgr<Appearance> _settingsMgr;
     public bool GetIsDarkMode() => _settingsMgr.Data?.GetIsDarkMode() == true;
     private bool _appCurrentDarkMode= false;
-
+    public SettingsMgr<Appearance> SettingsMgr=> _settingsMgr;
     public UIResourceService(AppSettingService appSettingsService)
     {
         _settingsMgr = appSettingsService.GetConfigMgr<Appearance>();
@@ -28,8 +29,9 @@ public class UIResourceService
 
     private void SettingsMgr_OnDataChanged()
     {
-        App.Current.Dispatcher.Invoke(() => { 
-        UpdateColorMode();
+        App.Current.Dispatcher.Invoke(() =>
+        {
+            UpdateColorMode();
         });
     }
 

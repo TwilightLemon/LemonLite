@@ -1,3 +1,4 @@
+using LemonLite.Configs;
 using LemonLite.Utils;
 using Microsoft.Extensions.Hosting;
 using System;
@@ -12,9 +13,10 @@ namespace LemonLite.Services;
 /// 播放时间同步服务
 /// 负责与SMTC同步播放时间，并提供平滑的时间更新
 /// </summary>
-public class SmtcService : IHostedService
+public class SmtcService(AppSettingService appSettingService) : IHostedService
 {
     private SmtcListener _smtcListener;
+    private readonly SettingsMgr<AppOption> appOption=appSettingService.GetConfigMgr<AppOption>();
     private readonly DispatcherTimer _playbackTimer = new()
     {
         Interval = TimeSpan.FromMilliseconds(200)
@@ -24,7 +26,7 @@ public class SmtcService : IHostedService
     private bool _isPlaying = false;
 
     public SmtcListener SmtcListener=> _smtcListener;
-
+    public bool IsSessionValid => _smtcListener.HasValidSession;
     /// <summary>
     /// 当前播放位置（秒）
     /// </summary>
@@ -200,15 +202,23 @@ public class SmtcService : IHostedService
         }
     }
 
-    public async Task StartAsync(CancellationToken cancellationToken)
+    private bool ValidSmtcSessionChecker(string? id)
     {
-        _smtcListener = await SmtcListener.CreateInstance();
+        if(string.IsNullOrEmpty(id)) return false;
+        return appOption.Data.SmtcMediaIds.Contains(id.ToLower());
+    }
+
+    public Task StartAsync(CancellationToken cancellationToken)
+    {
+        _smtcListener = SmtcListener.CreateInstance().GetAwaiter().GetResult();
+        _smtcListener.SessionIdFlitter = ValidSmtcSessionChecker;
         _playbackTimer.Tick += PlaybackTimer_Tick;
         _smtcListener.PlaybackInfoChanged += OnPlaybackInfoChanged;
         _smtcListener.TimelinePropertiesChanged += OnTimelinePropertiesChanged;
         _smtcListener.SessionExited += OnSessionExited;
         _smtcListener.SessionChanged += OnSessionChanged;
         UpdatePlayingState();
+        return Task.CompletedTask;
     }
 
     public Task StopAsync(CancellationToken cancellationToken)

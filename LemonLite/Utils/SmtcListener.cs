@@ -25,25 +25,7 @@ public class SmtcListener
         
         return smtcHelper;
     }
-
-    public bool HasMusicSession
-    {
-        get
-        {
-            var session = GetSessionSnapshot();
-            if (session == null) return false;
-            
-            try
-            {
-                return session.GetPlaybackInfo() is { PlaybackType: Windows.Media.MediaPlaybackType.Music };
-            }
-            catch (System.Runtime.InteropServices.COMException)
-            {
-                return false;
-            }
-        }
-    }
-
+    public bool HasValidSession => _globalSMTCSession != null && _currentSessionId != null;
     /// <summary>
     /// 当媒体信息发生变化时触发 例如Title ,Artist,Album等信息变更
     /// </summary>
@@ -65,6 +47,8 @@ public class SmtcListener
     public event EventHandler? SessionChanged;
     
     public event EventHandler? TimelinePropertiesChanged;
+
+    public Func<string?,bool> SessionIdFlitter { get; set; } = (_) => true;
 
     private void OnCurrentSessionChanged(GlobalSystemMediaTransportControlsSessionManager mgr)
     {
@@ -93,7 +77,7 @@ public class SmtcListener
             
             sessionChanged = oldSessionId != newSessionId;
             
-            if (sessionChanged)
+            if (sessionChanged&&SessionIdFlitter(newSessionId))
             {
                 // 取消旧会话的事件订阅
                 if (oldSession != null)
@@ -110,6 +94,15 @@ public class SmtcListener
                 {
                     SubscribeSessionEvents(newSession);
                 }
+            }
+            if (newSession == null&&SessionIdFlitter(oldSessionId))
+            {
+                if (oldSession != null)
+                {
+                    UnsubscribeSessionEvents(oldSession);
+                }
+                _globalSMTCSession = null;
+                _currentSessionId = null;
             }
         }
 

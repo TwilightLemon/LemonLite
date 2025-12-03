@@ -1,0 +1,75 @@
+﻿<Page x:Class="LemonLite.Views.Pages.AppSettingsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:base="clr-namespace:LemonLite.Utils"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:local="clr-namespace:LemonLite.Views.Pages"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:ws="https://schemas.elecho.dev/wpfsuite"
+      Title="AppSettingsPage"
+      d:DataContext="{d:DesignInstance local:AppSettingsPage}"
+      d:DesignHeight="450"
+      d:DesignWidth="800"
+      Foreground="{DynamicResource ForeColor}"
+      mc:Ignorable="d">
+
+    <base:ScrollViewer Style="{DynamicResource SimpleVerticalScrollViewerStyle}">
+        <ws:StackPanel x:Name="SettingsList" Spacing="8">
+            <!--  App settings  -->
+            <ws:StackPanel Spacing="8">
+                <TextBlock Margin="0,8"
+                           FontSize="22"
+                           Text="App Settings" />
+
+                <Border Height="48"
+                        Background="{DynamicResource MaskColor}"
+                        CornerRadius="12">
+                    <ToggleButton Margin="12,0,12,0"
+                                  Content="Enable Main Window"
+                                  IsChecked="{Binding EnableMainWindow}"
+                                  Style="{DynamicResource RoundToggleButtonStyle}" />
+                </Border>
+
+                <Border Height="48"
+                        Background="{DynamicResource MaskColor}"
+                        CornerRadius="12">
+                    <ToggleButton Margin="12,0,12,0"
+                                  Content="Enable Desktop Lyric"
+                                  IsChecked="{Binding EnableDesktopLyricWindow}"
+                                  Style="{DynamicResource RoundToggleButtonStyle}" />
+                </Border>
+            </ws:StackPanel>
+            <!--  Appearance  -->
+            <ws:StackPanel Spacing="8">
+                <TextBlock Margin="0,8"
+                           FontSize="22"
+                           Text="Appearance" />
+
+                <Border Height="48"
+                        Background="{DynamicResource MaskColor}"
+                        CornerRadius="12">
+                    <Grid>
+                        <TextBlock Margin="12,0"
+                                   HorizontalAlignment="Left"
+                                   VerticalAlignment="Center"
+                                   Text="Theme Mode" />
+                        <ws:StackPanel Margin="0,0,32,0"
+                                       HorizontalAlignment="Right"
+                                       VerticalAlignment="Center"
+                                       Orientation="Horizontal"
+                                       Spacing="8">
+                            <ws:StackPanel.Resources>
+                                <Style BasedOn="{StaticResource PlainRadioButtonStyle}" TargetType="RadioButton">
+                                    <Setter Property="Padding" Value="8,4" />
+                                </Style>
+                            </ws:StackPanel.Resources>
+                            <RadioButton Content="Light" IsChecked="{Binding IsLightMode}" />
+                            <RadioButton Content="Dark" IsChecked="{Binding IsDarkMode}" />
+                            <RadioButton Content="System" IsChecked="{Binding IsSystemMode}" />
+                        </ws:StackPanel>
+                    </Grid>
+                </Border>
+            </ws:StackPanel>
+        </ws:StackPanel>
+    </base:ScrollViewer>
+</Page>

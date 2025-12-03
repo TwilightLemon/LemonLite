@@ -1,6 +1,7 @@
 ﻿using LemonLite.Configs;
 using LemonLite.Services;
 using LemonLite.ViewModels;
+using LemonLite.Views.Pages;
 using LemonLite.Views.UserControls;
 using LemonLite.Views.Windows;
 using Microsoft.Extensions.DependencyInjection;
@@ -48,6 +49,11 @@ public partial class App
 
         services.AddTransient<DesktopLyricWindow>();
         services.AddTransient<DesktopLyricWindowViewModel>();
+
+        services.AddTransient<SettingsWindow>();
+        services.AddTransient<SettingsWindowViewModel>();
+        services.AddTransient<AppSettingsPage>();
+        services.AddTransient<AboutPage>();
     }
     private IHost Host { get; init; }
     public static IServiceProvider Services => Current.Host.Services;

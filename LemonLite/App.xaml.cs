@@ -86,8 +86,9 @@ public partial class App : Application
     {
         var smtc = Services.GetRequiredService<SmtcService>();
         var opt = Services.GetRequiredService<AppSettingService>().GetConfigMgr<AppOption>();
-        Thread.Sleep(800);  //Session刚刚创建之时，可能还没有媒体信息，先等待。。。 TODO: 设置mediaId白名单，替换此方法。。
-        if (smtc.SmtcListener.HasMusicSession)
+        LyricHelper.EndPoint = opt.Data.LiteLyricServerHost;
+
+        if (smtc.IsSessionValid)
         {
             lock (_applyOptionsLock)
             {
@@ -116,9 +117,6 @@ public partial class App : Application
     {
         Host.Start();
         Services.GetRequiredService<NotifyIconService>().InitNotifyIcon();
-
-        var opt = Services.GetRequiredService<AppSettingService>().GetConfigMgr<AppOption>();
-        LyricHelper.EndPoint = opt.Data.LiteLyricServerHost;
 
         ApplyAppOptions();
         var smtc = Services.GetRequiredService<SmtcService>();

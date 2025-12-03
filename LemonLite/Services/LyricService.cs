@@ -2,6 +2,7 @@ using LemonLite.Entities;
 using LemonLite.Utils;
 using Lyricify.Lyrics.Models;
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -52,7 +53,7 @@ public class LyricService
     #endregion
 
     #region State
-    private string? _currentMusicId;
+    private string? _currentMusicInfo;
     private string? _smtcSource;
     private LyricsData? _currentLyric;
     private LyricsData? _currentTrans;
@@ -61,7 +62,6 @@ public class LyricService
     private LrcLine? _currentLine;
     private ILineInfo? _notifiedLine;
     private CancellationTokenSource? _loadingCts;
-    private int _loadingSessionId;
 
     /// <summary>
     /// 当前歌词数据
@@ -79,16 +79,11 @@ public class LyricService
     public LyricsData? CurrentRomaji => _currentRomaji;
 
     /// <summary>
-    /// 是否为纯歌词（无时间轴）
+    /// 是否为纯歌词（无逐词时间）
     /// </summary>
     public bool IsPureLrc => _isPureLrc;
 
     public LrcLine? CurrentLine=>_currentLine;
-
-    /// <summary>
-    /// 当前音乐ID
-    /// </summary>
-    public string? CurrentMusicId => _currentMusicId;
     #endregion
 
     #region Media Change Handling
@@ -103,70 +98,50 @@ public class LyricService
     /// </summary>
     private async Task LoadLyricFromCurrentMediaAsync()
     {
+        if (await _smtcService.SmtcListener.GetMediaInfoAsync() is not { PlaybackType: Windows.Media.MediaPlaybackType.Music } info) return;
+        var newInfo=info.Title + info.Artist;
+        if (_currentMusicInfo == newInfo) return;
+        _currentMusicInfo = newInfo;
+
+        Reset();
+        MediaChanged?.Invoke();
+        Debug.WriteLine("New session!!");
+
         _loadingCts?.Cancel();
         _loadingCts?.Dispose();
         _loadingCts = new CancellationTokenSource();
-        var currentSessionId = ++_loadingSessionId;
         var cancellationToken = _loadingCts.Token;
 
         try
         {
-            if (await _smtcService.SmtcListener.GetMediaInfoAsync() is { PlaybackType: Windows.Media.MediaPlaybackType.Music } info)
+            if (await LyricHelper.SearchQid(info.Title, info.Artist, cancellationToken) is { } id)
             {
-                if (cancellationToken.IsCancellationRequested || currentSessionId != _loadingSessionId) return;
+                if (cancellationToken.IsCancellationRequested) return;
 
-                if (await LyricHelper.SearchQid(info.Title, info.Artist, cancellationToken) is { } id)
-                {
-                    if (cancellationToken.IsCancellationRequested || currentSessionId != _loadingSessionId) return;
-                    
-                    // 如果是同一首歌，不需要重新加载
-                    if (_currentMusicId == id) return;
+                var mediaId = _smtcService.SmtcListener.GetAppMediaId().ToLower();
+                _smtcSource = mediaId[..^4];
 
-                    // 不同的歌曲，重置状态并加载
-                    var mediaId = _smtcService.SmtcListener.GetAppMediaId().ToLower();
-                    _smtcSource = mediaId[..^4];
-                    
-                    ResetPlaybackState();
-                    MediaChanged?.Invoke();
-                    
-                    await LoadLyricByIdAsync(id, currentSessionId, cancellationToken);
-                }
-                else
-                {
-                    // 搜索不到歌曲ID，重置状态
-                    Reset();
-                    MediaChanged?.Invoke();
-                }
-            }
-            else
-            {
-                // 没有音乐播放，重置状态
-                Reset();
-                MediaChanged?.Invoke();
+                await LoadLyricByIdAsync(id, cancellationToken);
             }
         }
-        catch (OperationCanceledException)
-        {
-        }
+        catch (OperationCanceledException) { }
     }
 
     /// <summary>
     /// 通过ID加载歌词
     /// </summary>
-    private async Task LoadLyricByIdAsync(string id, int sessionId, CancellationToken cancellationToken)
+    private async Task LoadLyricByIdAsync(string id, CancellationToken cancellationToken)
     {
-        _currentMusicId = id;
-
         try
         {
             if (await LyricHelper.GetLyricByQmId(id, cancellationToken) is { } dt)
             {
-                if (cancellationToken.IsCancellationRequested || sessionId != _loadingSessionId) return;
+                if (cancellationToken.IsCancellationRequested ) return;
 
                 var model = LyricHelper.LoadLrc(dt);
                 if (model.lrc == null) return;
 
-                if (cancellationToken.IsCancellationRequested || sessionId != _loadingSessionId) return;
+                if (cancellationToken.IsCancellationRequested) return;
 
                 _currentLyric = model.lrc;
                 _currentTrans = model.trans;
@@ -187,20 +162,10 @@ public class LyricService
     }
 
     /// <summary>
-    /// 重置播放状态（保留音乐ID用于判断）
-    /// </summary>
-    private void ResetPlaybackState()
-    {
-        _currentLine = null;
-        _notifiedLine = null;
-    }
-
-    /// <summary>
     /// 完全重置歌词状态
     /// </summary>
     public void Reset()
     {
-        _currentMusicId = null;
         _smtcSource = null;
         _currentLyric = null;
         _currentTrans = null;

@@ -4,6 +4,8 @@ using System.Windows.Controls;
 using System.Windows;
 using H.NotifyIcon;
 using System.Windows.Input;
+using Microsoft.Extensions.DependencyInjection;
+using LemonLite.Views.Windows;
 
 namespace LemonLite.Services;
 
@@ -58,11 +60,17 @@ public class NotifyIconService(AppSettingService appSettingService, UIResourceSe
             App.ApplyAppOptions();
         };
 
+        var settings =new MenuItem { Header = "Settings" };
+        settings.Click += (s, e) => {
+            App.Services.GetRequiredService<SettingsWindow>().Show();
+        };
+
         var exit = new MenuItem { Header = "Exit" };
         exit.Click += (s, e) => App.Current.Shutdown();
 
         contextMenu.Items.Add(openLrcWindow);
         contextMenu.Items.Add(desktop);
+        contextMenu.Items.Add(settings);
         contextMenu.Items.Add(exit);
 
         _notifyIcon.ContextMenu = contextMenu;
