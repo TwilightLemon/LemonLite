@@ -17,7 +17,7 @@
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
 		<PackageReference Include="EleCho.WpfSuite" Version="0.8.1" />
-		<PackageReference Include="FluentWpfCore" Version="1.0.0.3" />
+		<PackageReference Include="FluentWpfCore" Version="1.0.0.4" />
 		<PackageReference Include="H.NotifyIcon.Wpf" Version="2.1.4" />
 		<PackageReference Include="Lyricify.Lyrics.Helper" Version="0.1.4" />
 		<PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />

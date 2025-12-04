@@ -210,8 +210,7 @@ public class SmtcService(AppSettingService appSettingService) : IHostedService
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        _smtcListener = SmtcListener.CreateInstance().GetAwaiter().GetResult();
-        _smtcListener.SessionIdFlitter = ValidSmtcSessionChecker;
+        _smtcListener = SmtcListener.CreateInstance(ValidSmtcSessionChecker).GetAwaiter().GetResult();
         _playbackTimer.Tick += PlaybackTimer_Tick;
         _smtcListener.PlaybackInfoChanged += OnPlaybackInfoChanged;
         _smtcListener.TimelinePropertiesChanged += OnTimelinePropertiesChanged;

@@ -19,6 +19,7 @@
         d:DataContext="{d:DesignInstance vm:MainWindowViewModel}"
         fluent:WindowMaterial.WindowCorner="Round"
         Background="Transparent"
+        FontFamily="{DynamicResource DefaultFontFamily}"
         Foreground="{DynamicResource ForeColor}"
         mc:Ignorable="d">
     <Window.Resources>

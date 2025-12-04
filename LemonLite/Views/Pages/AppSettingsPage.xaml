@@ -13,7 +13,7 @@
       Foreground="{DynamicResource ForeColor}"
       mc:Ignorable="d">
 
-    <base:ScrollViewer Style="{DynamicResource SimpleVerticalScrollViewerStyle}">
+    <base:ScrollViewer Padding="12,0" Style="{DynamicResource SimpleVerticalScrollViewerStyle}">
         <ws:StackPanel x:Name="SettingsList" Spacing="8">
             <!--  App settings  -->
             <ws:StackPanel Spacing="8">
@@ -37,6 +37,73 @@
                                   Content="Enable Desktop Lyric"
                                   IsChecked="{Binding EnableDesktopLyricWindow}"
                                   Style="{DynamicResource RoundToggleButtonStyle}" />
+                </Border>
+
+                <Border Background="{DynamicResource MaskColor}" CornerRadius="12">
+                    <ws:StackPanel Margin="12" Spacing="8">
+                        <Grid>
+                            <TextBlock HorizontalAlignment="Left"
+                                       VerticalAlignment="Center"
+                                       Text="SMTC Whitelist" />
+                            <ws:Button Padding="8"
+                                       Margin="0 0 6 0"
+                                       HorizontalAlignment="Right"
+                                       Command="{Binding AddSmtcMediaIdCommand}"
+                                       Content="&#xf8aa;"
+                                       FontFamily="{StaticResource SegoeFluentIcon}"
+                                       FontSize="11"
+                                       Style="{StaticResource AccentButtonStyleForWs}" />
+                        </Grid>
+                        <ItemsControl d:ItemsSource="{d:SampleData ItemCount=5}" ItemsSource="{Binding SmtcMediaIds}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Margin="0,2"
+                                            Name="ItemRoot"
+                                            Padding="8,6"
+                                            Background="Transparent"
+                                            CornerRadius="8">
+                                        <Grid>
+                                            <TextBlock HorizontalAlignment="Left"
+                                                       VerticalAlignment="Center"
+                                                       Text="{Binding}" />
+                                            <ws:Button Name="DeleteButton"
+                                                       Padding="6"
+                                                       HorizontalAlignment="Right"
+                                                       Command="{Binding DataContext.RemoveSmtcMediaIdCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                       CommandParameter="{Binding}"
+                                                       Content="&#xf78a;"
+                                                       FontFamily="{StaticResource SegoeFluentIcon}"
+                                                       FontSize="11"
+                                                       Opacity="0"
+                                                       Style="{DynamicResource SimpleIconButtonStyleForWs}" />
+                                        </Grid>
+                                        <Border.Triggers>
+                                            <EventTrigger RoutedEvent="MouseEnter">
+                                                <BeginStoryboard>
+                                                    <Storyboard>
+                                                        <DoubleAnimation Storyboard.TargetName="DeleteButton"
+                                                                         Storyboard.TargetProperty="Opacity"
+                                                                         To="1"
+                                                                         Duration="0:0:0.2" />
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </EventTrigger>
+                                            <EventTrigger RoutedEvent="MouseLeave">
+                                                <BeginStoryboard>
+                                                    <Storyboard>
+                                                        <DoubleAnimation Storyboard.TargetName="DeleteButton"
+                                                                         Storyboard.TargetProperty="Opacity"
+                                                                         To="0"
+                                                                         Duration="0:0:0.2" />
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </EventTrigger>
+                                        </Border.Triggers>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ws:StackPanel>
                 </Border>
             </ws:StackPanel>
             <!--  Appearance  -->

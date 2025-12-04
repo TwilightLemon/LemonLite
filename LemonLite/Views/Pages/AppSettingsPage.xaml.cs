@@ -4,6 +4,7 @@ using LemonLite.Configs;
 using LemonLite.Services;
 using LemonLite.Utils;
 using Microsoft.Extensions.DependencyInjection;
+using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using static LemonLite.Configs.Appearance;
@@ -40,6 +41,12 @@ namespace LemonLite.Views.Pages
             EnableMainWindow = settings.Data.StartWithMainWindow;
             EnableDesktopLyricWindow = settings.Data.StartWithDesktopLyric;
             LiteServerHost = settings.Data.LiteLyricServerHost;
+            
+            SmtcMediaIds.Clear();
+            foreach (var id in settings.Data.SmtcMediaIds)
+            {
+                SmtcMediaIds.Add(id);
+            }
         }
 
         [ObservableProperty]
@@ -74,6 +81,41 @@ namespace LemonLite.Views.Pages
         {
             get => ColorMode == ColorModeType.Auto;
             set { if (value) ColorMode = ColorModeType.Auto; }
+        }
+
+        public ObservableCollection<string> SmtcMediaIds { get; } = new();
+
+        [RelayCommand]
+        private void AddSmtcMediaId()
+        {
+            var dialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Title = "Add SMTC Media ID",
+                Filter = "Executable Files (*.exe)|*.exe|All Files (*.*)|*.*",
+                FileName = "example.exe",
+                CheckFileExists = false,
+                CheckPathExists = false,
+                OverwritePrompt = false
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                var fileName = System.IO.Path.GetFileName(dialog.FileName).ToLower();
+                if (!string.IsNullOrWhiteSpace(fileName) && !SmtcMediaIds.Contains(fileName))
+                {
+                    SmtcMediaIds.Add(fileName);
+                    settings.Data.SmtcMediaIds.Add(fileName);
+                }
+            }
+        }
+
+        [RelayCommand]
+        private void RemoveSmtcMediaId(string mediaId)
+        {
+            if (SmtcMediaIds.Remove(mediaId))
+            {
+                settings.Data.SmtcMediaIds.Remove(mediaId);
+            }
         }
     }
 }

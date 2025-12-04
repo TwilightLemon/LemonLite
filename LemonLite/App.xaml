@@ -21,6 +21,9 @@
                     <Setter Property="TextBlock.TextTrimming" Value="CharacterEllipsis" />
                 </Style.Setters>
             </Style>
+            <Style TargetType="{x:Type Page}">
+                <Setter Property="FontFamily" Value="{StaticResource DefaultFontFamily}" />
+            </Style>
             <!--  全局ToolTip样式  -->
             <Style TargetType="{x:Type ToolTip}">
                 <Style.Setters>
@@ -42,6 +45,7 @@
             <Style x:Key="GlobalMenuItemStyle"
                    BasedOn="{StaticResource FluentMenuItemStyle}"
                    TargetType="MenuItem">
+                <Setter Property="FontFamily" Value="{StaticResource DefaultFontFamily}" />
                 <Setter Property="Foreground" Value="{DynamicResource ForeColor}" />
                 <Setter Property="Height" Value="36" />
                 <Setter Property="VerticalContentAlignment" Value="Center" />

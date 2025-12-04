@@ -30,7 +30,7 @@
                             <Setter Property="FocusVisualStyle" Value="{StaticResource OptionMarkFocusVisual}" />
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="true">
-                            <Setter TargetName="templateRoot" Property="Background" Value="{DynamicResource HighlightThemeColor}" />
+                            <Setter TargetName="templateRoot" Property="Background" Value="{DynamicResource FocusAccentColor}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="false">
                             <Setter TargetName="contentPresenter" Property="Opacity" Value="0.6" />
@@ -650,9 +650,6 @@
     </FontFamily>
     <FontFamily x:Key="DefaultFontFamily">
         .PingFang SC,Segoe UI
-    </FontFamily>
-    <FontFamily x:Key="LyricFont">
-        Georgia,STZhongsong
     </FontFamily>
     <Style x:Key="FluentWindowStyle" TargetType="{x:Type Window}">
         <Setter Property="Background" Value="{DynamicResource WindowBackgroundColor}" />

@@ -9,10 +9,10 @@ public class SmtcListener
     private readonly object _sessionLock = new();
     private string? _currentSessionId;
 
-    public static async Task<SmtcListener> CreateInstance()
+    public static async Task<SmtcListener> CreateInstance(Func<string?, bool> sessionIdFlitter)
     {
         var gsmtcsm = await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
-        var smtcHelper = new SmtcListener();
+        var smtcHelper = new SmtcListener() { SessionIdFlitter = sessionIdFlitter };
         
         // 订阅会话管理器的会话变化事件
         gsmtcsm.CurrentSessionChanged += (s, e) =>

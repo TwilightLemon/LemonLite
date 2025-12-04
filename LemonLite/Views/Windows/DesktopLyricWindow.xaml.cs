@@ -60,7 +60,6 @@ namespace LemonLite.Views.Windows
             }
             var position=block.TransformToVisual(LrcHost);
             Point p = position.Transform(new Point(0, 0));
-            Debug.WriteLine(p.X);
             LrcScrollViewer.BeginAnimation(ScrollViewerUtils.HorizontalOffsetProperty,
                     new DoubleAnimation(p.X  - LrcScrollViewer.ViewportWidth *0.4, TimeSpan.FromMilliseconds(500)));
             currentBlock = block;

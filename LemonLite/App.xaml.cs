@@ -24,6 +24,12 @@ public partial class App : Application
         Host = new HostBuilder().ConfigureServices(BuildHost).Build();
         Startup += App_Startup;
         Exit += App_Exit;
+
+        //override default style for Pages
+        FrameworkElement.StyleProperty.OverrideMetadata(typeof(System.Windows.Controls.Page), new FrameworkPropertyMetadata
+        {
+            DefaultValue = App.Current.FindResource(typeof(System.Windows.Controls.Page))
+        });
     }
 
     public static new App Current => (App)Application.Current;

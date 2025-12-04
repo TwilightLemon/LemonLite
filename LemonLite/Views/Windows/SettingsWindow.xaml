@@ -12,6 +12,7 @@
         Width="800"
         Height="480"
         Background="Transparent"
+        FontFamily="{DynamicResource DefaultFontFamily}"
         Foreground="{DynamicResource ForeColor}"
         ResizeMode="NoResize"
         mc:Ignorable="d">
@@ -98,7 +99,7 @@
             </ws:ListBox>
         </Border>
         <ws:Frame x:Name="WindowFrame"
-                  Margin="8"
+                  Margin="0,8"
                   NavigationUIVisibility="Hidden">
             <ws:Frame.Transition>
                 <ws:SlideFadeTransition Distance="50"
