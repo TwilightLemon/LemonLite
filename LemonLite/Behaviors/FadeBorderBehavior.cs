@@ -73,20 +73,20 @@ public class FadeBorderBehavior:Behavior<Border>
         {
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Stretch,
-            Background=newBrush,
+            Background=AssociatedObject.Background,
             CornerRadius=AssociatedObject.CornerRadius
         };
         AssociatedObject.Child = cover;
+        AssociatedObject.Background = newBrush;
         var ani = new DoubleAnimation
         {
-            From = 0,
-            To=1,
+            From = 1,
+            To=0,
             Duration = Duration,
             EasingFunction=new CubicEase()
         };
         ani.Completed += delegate {
             AssociatedObject.Child = null;
-            AssociatedObject.Background = newBrush;
         };
         cover.BeginAnimation(UIElement.OpacityProperty, ani);
     }

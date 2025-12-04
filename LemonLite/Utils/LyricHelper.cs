@@ -34,13 +34,13 @@ public static class LyricHelper
         return null;
     }
 
-    public static async Task<string?> SearchQid(string title, string artist, CancellationToken cancellationToken = default)
+    public static async Task<string?> SearchQid(string title, string artist,string album, CancellationToken cancellationToken = default)
     {
         try
         {
             var hc = App.Services.GetRequiredService<IHttpClientFactory>().CreateClient(App.AzureLiteHttpClientFlag);
             hc.BaseAddress = new Uri(EndPoint);
-            var data = await hc.GetStringAsync($"/search?title={HttpUtility.UrlEncode(title)}&artist={HttpUtility.UrlEncode(artist)}", cancellationToken);
+            var data = await hc.GetStringAsync($"/search?title={HttpUtility.UrlEncode(title)}&artist={HttpUtility.UrlEncode(artist)}&album={HttpUtility.UrlEncode(album)}", cancellationToken);
             if (JsonNode.Parse(data) is { } json)
             {
                 return json["id"]?.ToString();

@@ -114,7 +114,7 @@ public class LyricService
 
         try
         {
-            if (await LyricHelper.SearchQid(info.Title, info.Artist, cancellationToken) is { } id)
+            if (await LyricHelper.SearchQid(info.Title, info.Artist,info.AlbumTitle, cancellationToken) is { } id)
             {
                 if (cancellationToken.IsCancellationRequested) return;
 
