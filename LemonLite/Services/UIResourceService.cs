@@ -4,11 +4,8 @@ using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media;
-using static LemonLite.Configs.Appearance;
 
 namespace LemonLite.Services;
-//TODO: now only MainWindow is reacting to the theme changed event of system.
-
 /// <summary>
 /// 设置全局UI资源
 /// </summary>
@@ -24,7 +21,15 @@ public class UIResourceService
         _settingsMgr = appSettingsService.GetConfigMgr<Appearance>();
         _settingsMgr.OnDataChanged += SettingsMgr_OnDataChanged;
 
+        UpdateAppFontFamily();
         UpdateColorMode();
+    }
+
+    public void UpdateAppFontFamily()
+    {
+        var fontFamily = _settingsMgr.Data?.DefaultFontFamily;
+        if (string.IsNullOrEmpty(fontFamily)) return; 
+        App.Current.Resources["DefaultFontFamily"] = new FontFamily(fontFamily);
     }
 
     private void SettingsMgr_OnDataChanged()

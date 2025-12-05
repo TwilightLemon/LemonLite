@@ -14,6 +14,12 @@
                 <ResourceDictionary Source="/Resources/ThemeColor_Light.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+            <FontFamily x:Key="SegoeFluentIcon">
+                pack://application:,,,/LemonLite;component/Resources/Segoe Fluent Icons.ttf#Segoe Fluent Icons
+            </FontFamily>
+            <FontFamily x:Key="DefaultFontFamily">
+                .PingFang SC,Segoe UI
+            </FontFamily>
             <!--  全局TextBlock文本样式  -->
             <Style TargetType="{x:Type TextBlock}">
                 <Style.Setters>
@@ -22,7 +28,7 @@
                 </Style.Setters>
             </Style>
             <Style TargetType="{x:Type Page}">
-                <Setter Property="FontFamily" Value="{StaticResource DefaultFontFamily}" />
+                <Setter Property="FontFamily" Value="{DynamicResource DefaultFontFamily}" />
             </Style>
             <!--  全局ToolTip样式  -->
             <Style TargetType="{x:Type ToolTip}">

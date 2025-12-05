@@ -645,12 +645,6 @@
         <Setter Property="PressedForeground" Value="{DynamicResource ForeColor}" />
     </Style>
 
-    <FontFamily x:Key="SegoeFluentIcon">
-        pack://application:,,,/LemonLite;component/Resources/Segoe Fluent Icons.ttf#Segoe Fluent Icons
-    </FontFamily>
-    <FontFamily x:Key="DefaultFontFamily">
-        .PingFang SC,Segoe UI
-    </FontFamily>
     <Style x:Key="FluentWindowStyle" TargetType="{x:Type Window}">
         <Setter Property="Background" Value="{DynamicResource WindowBackgroundColor}" />
         <Setter Property="Foreground" Value="{DynamicResource ForeColor}" />

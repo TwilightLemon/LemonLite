@@ -131,6 +131,11 @@ public class SettingsMgr<T>: ISettingsMgr where T : class
             OnDataChanged?.Invoke();
         }
     }
+
+    public void TriggerDataChanged()
+    {
+        OnDataChanged?.Invoke();
+    }
 }
 public static class Settings
 {

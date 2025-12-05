@@ -12,6 +12,8 @@ public partial class SettingsWindowViewModel:ObservableObject
     public record class SettingsMenuItem(string Title, Geometry Icon, Type PageType);
     public ObservableCollection<SettingsMenuItem> SettingsMenus{ get; set; } = [
         new SettingsMenuItem("General",(Geometry)App.Current.FindResource("Icon_Settings"),typeof(AppSettingsPage)),
+        new SettingsMenuItem("Lyric View",null!,typeof(LyricSettingsPage)),
+        new SettingsMenuItem("Desktop Lyric",null!,typeof(DesktopLyricSettingsPage)),
         new SettingsMenuItem("About",null!,typeof(AboutPage))
         ];
 

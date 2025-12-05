@@ -53,6 +53,8 @@ public partial class App
         services.AddTransient<SettingsWindow>();
         services.AddTransient<SettingsWindowViewModel>();
         services.AddTransient<AppSettingsPage>();
+        services.AddTransient<LyricSettingsPage>();
+        services.AddTransient<DesktopLyricSettingsPage>();
         services.AddTransient<AboutPage>();
     }
     private IHost Host { get; init; }

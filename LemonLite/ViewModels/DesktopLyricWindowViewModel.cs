@@ -81,9 +81,8 @@ public partial class DesktopLyricWindowViewModel:ObservableObject
         IsPlaying = isPlaying;
     }
 
-    private async void _settingsMgr_OnDataChanged()
+    private void _settingsMgr_OnDataChanged()
     {
-        await _settingsMgr.LoadAsync();
         LyricControl.Dispatcher.Invoke(ApplySettings);
     }
 

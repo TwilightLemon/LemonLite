@@ -53,9 +53,8 @@ namespace LemonLite.Views.UserControls
                 OnLyricLoaded(new(_lyricService.CurrentLyric, _lyricService.CurrentTrans, _lyricService.CurrentRomaji, _lyricService.IsPureLrc));
         }
 
-        private async void Settings_OnDataChanged()
+        private void Settings_OnDataChanged()
         {
-            await _settings.LoadAsync();
             ApplySettings();
         }
         private void ApplySettings()

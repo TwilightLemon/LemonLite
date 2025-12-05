@@ -41,7 +41,7 @@ namespace LemonLite.Views.Pages
             EnableMainWindow = settings.Data.StartWithMainWindow;
             EnableDesktopLyricWindow = settings.Data.StartWithDesktopLyric;
             LiteServerHost = settings.Data.LiteLyricServerHost;
-            
+            AppFontFamily = appearanceSettings.Data.DefaultFontFamily;
             SmtcMediaIds.Clear();
             foreach (var id in settings.Data.SmtcMediaIds)
             {
@@ -83,7 +83,7 @@ namespace LemonLite.Views.Pages
             set { if (value) ColorMode = ColorModeType.Auto; }
         }
 
-        public ObservableCollection<string> SmtcMediaIds { get; } = new();
+        public ObservableCollection<string> SmtcMediaIds { get; } = [];
 
         [RelayCommand]
         private void AddSmtcMediaId()
@@ -116,6 +116,23 @@ namespace LemonLite.Views.Pages
             {
                 settings.Data.SmtcMediaIds.Remove(mediaId);
             }
+        }
+
+        [ObservableProperty]
+        private string _appFontFamily = "";
+        private void ApplyAppFontFamily()
+        {
+            appearanceSettings.Data.DefaultFontFamily = AppFontFamily;
+            App.Services.GetRequiredService<UIResourceService>().UpdateAppFontFamily();
+        }
+        partial void OnAppFontFamilyChanged(string value)
+        {
+            ApplyAppFontFamily();
+        }
+
+        partial void OnLiteServerHostChanged(string value)
+        {
+            settings.Data.LiteLyricServerHost = value;
         }
     }
 }

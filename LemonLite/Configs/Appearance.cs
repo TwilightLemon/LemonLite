@@ -28,4 +28,9 @@ public class Appearance
     /// 主窗口大小和位置
     /// </summary>
     public Rect Window { get; set; }
+
+    /// <summary>
+    /// 应用内默认字体
+    /// </summary>
+    public string DefaultFontFamily { get; set; } = ".PingFang SC,Segoe UI";
 }

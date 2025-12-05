@@ -1,0 +1,70 @@
+<Page x:Class="LemonLite.Views.Pages.DesktopLyricSettingsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:base="clr-namespace:LemonLite.Utils"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:local="clr-namespace:LemonLite.Views.Pages"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:ws="https://schemas.elecho.dev/wpfsuite"
+      Title="DesktopLyricSettingsPage"
+      d:DataContext="{d:DesignInstance local:DesktopLyricSettingsPage}"
+      d:DesignHeight="450"
+      d:DesignWidth="800"
+      Foreground="{DynamicResource ForeColor}"
+      mc:Ignorable="d">
+
+    <base:ScrollViewer Padding="12,0" Style="{DynamicResource SimpleVerticalScrollViewerStyle}">
+        <ws:StackPanel x:Name="SettingsList" Spacing="8">
+            <TextBlock Margin="0,8"
+                       FontSize="22"
+                       Text="Desktop Lyric Settings" />
+
+            <Border Height="48"
+                    Background="{DynamicResource MaskColor}"
+                    CornerRadius="12">
+                <ToggleButton Margin="12,0,12,0"
+                              Content="Show Translation"
+                              IsChecked="{Binding ShowTranslation}"
+                              Style="{DynamicResource RoundToggleButtonStyle}" />
+            </Border>
+
+            <Border Height="48"
+                    Background="{DynamicResource MaskColor}"
+                    CornerRadius="12">
+                <Grid>
+                    <TextBlock Margin="12,0"
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               Text="Font Size" />
+                    <ws:TextBox Height="24"
+                                MinWidth="100"
+                                Margin="0,0,24,0"
+                                Padding="8,2"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                Style="{StaticResource SimpleTextBoxStyleForWs}"
+                                Text="{Binding LrcFontSize}" />
+                </Grid>
+            </Border>
+
+            <Border Height="48"
+                    Background="{DynamicResource MaskColor}"
+                    CornerRadius="12">
+                <Grid>
+                    <TextBlock Margin="12,0"
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               Text="Font Family" />
+                               <ws:TextBox Height="24"
+                                           MinWidth="220"
+                                           Margin="0,0,24,0"
+                                           Padding="8,2"
+                                           HorizontalAlignment="Right"
+                                           VerticalAlignment="Center"
+                                           Style="{StaticResource SimpleTextBoxStyleForWs}"
+                                           Text="{Binding LyricFontFamily}" />
+                </Grid>
+            </Border>
+        </ws:StackPanel>
+    </base:ScrollViewer>
+</Page>
