@@ -1,3 +1,13 @@
 <Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="ARM" />
+    <Platform Name="ARM64" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="LemonLite.PackagingProj/LemonLite.PackagingProj.wapproj" Type="c7167f0d-bc9f-4e6e-afe1-012c56b48db5" Id="55d84e6d-9f2d-41a9-99a8-a8c35b8eb2c3">
+    <Deploy />
+  </Project>
   <Project Path="LemonLite/LemonLite.csproj" />
 </Solution>

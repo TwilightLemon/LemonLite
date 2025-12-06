@@ -1,11 +1,10 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
+﻿using CommunityToolkit.Mvvm.Input;
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Reflection;
-using System.Windows;
+using Windows.ApplicationModel;
 using System.Windows.Controls;
+using System.Reflection;
 
 namespace LemonLite.Views.Pages
 {
@@ -26,8 +25,14 @@ namespace LemonLite.Views.Pages
         {
             get
             {
-                var version = Assembly.GetExecutingAssembly().GetName().Version;
-                return $"Version {version?.Major}.{version?.Minor}.{version?.Build}";
+                try
+                {
+                    var version = Package.Current.Id.Version;
+                    return $"Version {version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
+                }
+                catch { }
+                var versionInfo = Assembly.GetExecutingAssembly().GetName().Version;
+                return versionInfo != null ? $"Version {versionInfo}" : "Version Unknown";
             }
         }
 
