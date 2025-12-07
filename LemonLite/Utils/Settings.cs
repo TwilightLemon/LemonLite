@@ -220,6 +220,7 @@ public static class Settings
         if (!File.Exists(path))
             return null;
         var fs = File.OpenRead(path);
+        if (fs.Length == 0) return null;
         var data = await JsonSerializer.DeserializeAsync<T>(fs, useOptions ? _options : null);
         fs.Close();
         return data;
@@ -230,6 +231,7 @@ public static class Settings
         if (!File.Exists(path))
             return null;
         var fs = File.OpenRead(path);
+        if(fs.Length==0) return null;
         var data = JsonSerializer.Deserialize<T>(fs, useOptions ? _options : null);
         fs.Close();
         return data;

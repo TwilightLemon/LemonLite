@@ -33,4 +33,12 @@ public class Appearance
     /// 应用内默认字体
     /// </summary>
     public string DefaultFontFamily { get; set; } = ".PingFang SC,Segoe UI";
-}
+
+    //以下是新增的设置项
+    public enum BackgroundType { None,Acrylic,Image}
+    public BackgroundType Background { get; set; } = BackgroundType.Acrylic;
+    public double AcylicOpacity { get; set; } = 0.86d;
+
+    public string? BackgroundImagePath { get; set; } = string.Empty;
+    public double BackgroundOpacity { get; set; }
+    }

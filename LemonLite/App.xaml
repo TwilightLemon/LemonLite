@@ -8,10 +8,10 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/FluentWpfCore;component/Themes/Generic.xaml" />
-                <ResourceDictionary Source="/Resources/AccentColor.xaml" />
-                <ResourceDictionary Source="/Resources/IconData.xaml" />
-                <ResourceDictionary Source="/Resources/UITemplate.xaml" />
-                <ResourceDictionary Source="/Resources/ThemeColor_Light.xaml" />
+                <ResourceDictionary Source="/Styles/AccentColor.xaml" />
+                <ResourceDictionary Source="/Styles/IconData.xaml" />
+                <ResourceDictionary Source="/Styles/UITemplate.xaml" />
+                <ResourceDictionary Source="/Styles/ThemeColor_Light.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
             <FontFamily x:Key="SegoeFluentIcon">

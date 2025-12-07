@@ -46,13 +46,13 @@ public class UIResourceService
         if(IsDarkMode==_appCurrentDarkMode) return;
         _appCurrentDarkMode = IsDarkMode;
 
-        string uri = $"pack://application:,,,/LemonLite;component/Resources/ThemeColor_{IsDarkMode switch
+        string uri = $"pack://application:,,,/LemonLite;component/Styles/ThemeColor_{IsDarkMode switch
         {
             true => "Dark",
             false => "Light",
         }}.xaml";
         // 移除当前主题资源字典（如果存在）
-        var oldDict=App.Current.Resources.MergedDictionaries.FirstOrDefault(d=>d.Source!=null&&d.Source.OriginalString.Contains("Resources/ThemeColor"));
+        var oldDict=App.Current.Resources.MergedDictionaries.FirstOrDefault(d=>d.Source!=null&&d.Source.OriginalString.Contains("Styles/ThemeColor"));
         if(oldDict!=null)
             App.Current.Resources.MergedDictionaries.Remove(oldDict);
         // 添加新的主题资源字典

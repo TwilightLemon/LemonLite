@@ -55,14 +55,14 @@
                                HorizontalAlignment="Left"
                                VerticalAlignment="Center"
                                Text="Font Family" />
-                               <ws:TextBox Height="24"
-                                           MinWidth="220"
-                                           Margin="0,0,24,0"
-                                           Padding="8,2"
-                                           HorizontalAlignment="Right"
-                                           VerticalAlignment="Center"
-                                           Style="{StaticResource SimpleTextBoxStyleForWs}"
-                                           Text="{Binding LyricFontFamily}" />
+                    <ws:TextBox Height="24"
+                                MinWidth="220"
+                                Margin="0,0,24,0"
+                                Padding="8,2"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                Style="{StaticResource SimpleTextBoxStyleForWs}"
+                                Text="{Binding LyricFontFamily}" />
                 </Grid>
             </Border>
         </ws:StackPanel>

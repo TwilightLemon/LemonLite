@@ -28,7 +28,8 @@
                       ResizeBorderThickness="4" />
     </Window.Resources>
     <fluent:WindowMaterial.Material>
-        <fluent:WindowMaterial MaterialMode="Acrylic"
+        <fluent:WindowMaterial x:Name="material"
+                               MaterialMode="Acrylic"
                                UseWindowComposition="True"
                                WindowChromeEx="{StaticResource windowChrome}" />
     </fluent:WindowMaterial.Material>
@@ -37,7 +38,8 @@
     </i:Interaction.Behaviors>
     <ws:BoxPanel>
         <!--  Image Background  -->
-        <Border Opacity="0.86">
+        <Border x:Name="ImageBackground" />
+        <Border x:Name="AnimatedBackgroundBd" Opacity="0.86">
             <Border.Background>
                 <ImageBrush ImageSource="{Binding BackgroundImageSource, Mode=OneWay}" Stretch="UniformToFill">
                     <ImageBrush.RelativeTransform>

@@ -42,6 +42,10 @@ namespace LemonLite.Views.Pages
             EnableDesktopLyricWindow = settings.Data.StartWithDesktopLyric;
             LiteServerHost = settings.Data.LiteLyricServerHost;
             AppFontFamily = appearanceSettings.Data.DefaultFontFamily;
+            BackgroundType = appearanceSettings.Data.Background;
+            AcrylicOpacity = appearanceSettings.Data.AcylicOpacity;
+            BackgroundImagePath = appearanceSettings.Data.BackgroundImagePath ?? "";
+            BackgroundOpacity = appearanceSettings.Data.BackgroundOpacity;
             SmtcMediaIds.Clear();
             foreach (var id in settings.Data.SmtcMediaIds)
             {
@@ -133,6 +137,80 @@ namespace LemonLite.Views.Pages
         partial void OnLiteServerHostChanged(string value)
         {
             settings.Data.LiteLyricServerHost = value;
+        }
+ 
+        [ObservableProperty]
+        private BackgroundType _backgroundType;
+
+        partial void OnBackgroundTypeChanged(BackgroundType value)
+        {
+            appearanceSettings.Data.Background = value;
+            appearanceSettings.TriggerDataChanged();
+            OnPropertyChanged(nameof(IsBackgroundNone));
+            OnPropertyChanged(nameof(IsBackgroundAcrylic));
+            OnPropertyChanged(nameof(IsBackgroundImage));
+            OnPropertyChanged(nameof(AcrylicSettingsVisibility));
+            OnPropertyChanged(nameof(ImageSettingsVisibility));
+        }
+
+        public bool IsBackgroundNone
+        {
+            get => BackgroundType == BackgroundType.None;
+            set { if (value) BackgroundType = BackgroundType.None; }
+        }
+
+        public bool IsBackgroundAcrylic
+        {
+            get => BackgroundType == BackgroundType.Acrylic;
+            set { if (value) BackgroundType = BackgroundType.Acrylic; }
+        }
+
+        public bool IsBackgroundImage
+        {
+            get => BackgroundType == BackgroundType.Image;
+            set { if (value) BackgroundType = BackgroundType.Image; }
+        }
+
+        public Visibility AcrylicSettingsVisibility => BackgroundType == BackgroundType.Acrylic ? Visibility.Visible : Visibility.Collapsed;
+        public Visibility ImageSettingsVisibility => BackgroundType == BackgroundType.Image ? Visibility.Visible : Visibility.Collapsed;
+
+        [ObservableProperty]
+        private double _acrylicOpacity;
+
+        partial void OnAcrylicOpacityChanged(double value)
+        {
+            appearanceSettings.Data.AcylicOpacity = value;
+            appearanceSettings.TriggerDataChanged();
+        }
+
+        [ObservableProperty]
+        private string _backgroundImagePath = "";
+
+        [RelayCommand]
+        private void BrowseBackgroundImage()
+        {
+            var dialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Title = "Select Background Image",
+                Filter = "Image Files (*.png;*.jpg;*.jpeg;*.bmp)|*.png;*.jpg;*.jpeg;*.bmp|All Files (*.*)|*.*"
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                BackgroundImagePath = dialog.FileName;
+                appearanceSettings.Data.BackgroundImagePath = dialog.FileName;
+                appearanceSettings.TriggerDataChanged();
+            }
+        }
+
+        // Background Opacity
+        [ObservableProperty]
+        private double _backgroundOpacity;
+
+        partial void OnBackgroundOpacityChanged(double value)
+        {
+            appearanceSettings.Data.BackgroundOpacity = value;
+            appearanceSettings.TriggerDataChanged();
         }
     }
 }

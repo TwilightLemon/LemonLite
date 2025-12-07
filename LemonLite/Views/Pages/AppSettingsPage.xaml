@@ -8,7 +8,7 @@
       xmlns:ws="https://schemas.elecho.dev/wpfsuite"
       Title="AppSettingsPage"
       d:DataContext="{d:DesignInstance local:AppSettingsPage}"
-      d:DesignHeight="605.2"
+      d:DesignHeight="819.6"
       d:DesignWidth="800"
       Foreground="{DynamicResource ForeColor}"
       mc:Ignorable="d">
@@ -171,6 +171,115 @@
                                     VerticalAlignment="Center"
                                     Style="{StaticResource SimpleTextBoxStyleForWs}"
                                     Text="{Binding AppFontFamily}" />
+                    </Grid>
+                </Border>
+
+                <Border Height="48"
+                        Background="{DynamicResource MaskColor}"
+                        CornerRadius="12">
+                    <Grid>
+                        <TextBlock Margin="12,0"
+                                   HorizontalAlignment="Left"
+                                   VerticalAlignment="Center"
+                                   Text="Background Type" />
+                        <ws:StackPanel Margin="0,0,32,0"
+                                       HorizontalAlignment="Right"
+                                       VerticalAlignment="Center"
+                                       Orientation="Horizontal"
+                                       Spacing="8">
+                            <ws:StackPanel.Resources>
+                                <Style BasedOn="{StaticResource PlainRadioButtonStyle}" TargetType="RadioButton">
+                                    <Setter Property="Padding" Value="8,4" />
+                                </Style>
+                            </ws:StackPanel.Resources>
+                            <RadioButton Content="None" IsChecked="{Binding IsBackgroundNone}" />
+                            <RadioButton Content="Acrylic" IsChecked="{Binding IsBackgroundAcrylic}" />
+                            <RadioButton Content="Image" IsChecked="{Binding IsBackgroundImage}" />
+                        </ws:StackPanel>
+                    </Grid>
+                </Border>
+
+                <Border Height="48"
+                        Background="{DynamicResource MaskColor}"
+                        CornerRadius="12"
+                        Visibility="{Binding AcrylicSettingsVisibility}">
+                    <Grid>
+                        <TextBlock Margin="12,0"
+                                   HorizontalAlignment="Left"
+                                   VerticalAlignment="Center"
+                                   Text="Acrylic Opacity" />
+                        <ws:StackPanel Margin="0,0,24,0"
+                                       HorizontalAlignment="Right"
+                                       VerticalAlignment="Center"
+                                       Orientation="Horizontal"
+                                       Spacing="8">
+                            <Slider Width="150"
+                                    VerticalAlignment="Center"
+                                    Maximum="1"
+                                    Minimum="0"
+                                    Style="{StaticResource FluentSliderStyle}"
+                                    Value="{Binding AcrylicOpacity}" />
+                            <TextBlock Width="36"
+                                       VerticalAlignment="Center"
+                                       Text="{Binding AcrylicOpacity, StringFormat={}{0:P0}}" />
+                        </ws:StackPanel>
+                    </Grid>
+                </Border>
+
+                <Border Height="48"
+                        Background="{DynamicResource MaskColor}"
+                        CornerRadius="12"
+                        Visibility="{Binding ImageSettingsVisibility}">
+                    <Grid>
+                        <TextBlock Margin="12,0"
+                                   HorizontalAlignment="Left"
+                                   VerticalAlignment="Center"
+                                   Text="Background Image" />
+                        <ws:StackPanel Margin="0,0,24,0"
+                                       HorizontalAlignment="Right"
+                                       VerticalAlignment="Center"
+                                       Orientation="Horizontal"
+                                       Spacing="8">
+                            <ws:TextBox Height="24"
+                                        MinWidth="230"
+                                        MaxWidth="340"
+                                        Padding="8,2"
+                                        VerticalAlignment="Center"
+                                        IsReadOnly="True"
+                                        Style="{StaticResource SimpleTextBoxStyleForWs}"
+                                        Text="{Binding BackgroundImagePath, Mode=OneWay}" />
+                            <ws:Button Padding="8,4"
+                                       Command="{Binding BrowseBackgroundImageCommand}"
+                                       Content="Browse"
+                                       Style="{StaticResource AccentButtonStyleForWs}" />
+                        </ws:StackPanel>
+                    </Grid>
+                </Border>
+
+                <Border Height="48"
+                        Background="{DynamicResource MaskColor}"
+                        CornerRadius="12"
+                        Visibility="{Binding ImageSettingsVisibility}">
+                    <Grid>
+                        <TextBlock Margin="12,0"
+                                   HorizontalAlignment="Left"
+                                   VerticalAlignment="Center"
+                                   Text="Background Opacity" />
+                        <ws:StackPanel Margin="0,0,24,0"
+                                       HorizontalAlignment="Right"
+                                       VerticalAlignment="Center"
+                                       Orientation="Horizontal"
+                                       Spacing="8">
+                            <Slider Width="150"
+                                    VerticalAlignment="Center"
+                                    Maximum="1"
+                                    Minimum="0"
+                                    Style="{StaticResource FluentSliderStyle}"
+                                    Value="{Binding BackgroundOpacity}" />
+                            <TextBlock Width="36"
+                                       VerticalAlignment="Center"
+                                       Text="{Binding BackgroundOpacity, StringFormat={}{0:P0}}" />
+                        </ws:StackPanel>
                     </Grid>
                 </Border>
             </ws:StackPanel>

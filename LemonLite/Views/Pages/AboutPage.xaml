@@ -1,8 +1,8 @@
 ﻿<Page x:Class="LemonLite.Views.Pages.AboutPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:base="clr-namespace:LemonLite.Utils"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:local="clr-namespace:LemonLite.Views.Pages"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:ws="https://schemas.elecho.dev/wpfsuite"
@@ -14,65 +14,68 @@
       mc:Ignorable="d">
 
     <base:ScrollViewer Padding="12,0" Style="{DynamicResource SimpleVerticalScrollViewerStyle}">
-        <ws:StackPanel Spacing="20" Margin="0,20,0,20">
+        <ws:StackPanel Margin="0,20,0,20" Spacing="20">
             <!--  App Info Header  -->
-            <Border Background="{DynamicResource MaskColor}"
-                    CornerRadius="16"
-                    Padding="32,40">
+            <Border Padding="32,40"
+                    Background="{DynamicResource MaskColor}"
+                    CornerRadius="16">
                 <ws:StackPanel HorizontalAlignment="Center" Spacing="16">
                     <!--  App Icon  -->
                     <Image Width="80"
                            Height="80"
-                           Source="/Resources/icon.ico"
-                           RenderOptions.BitmapScalingMode="HighQuality" />
+                           RenderOptions.BitmapScalingMode="HighQuality"
+                           Source="/Resources/icon.ico" />
 
                     <!--  App Name  -->
-                    <TextBlock Text="{Binding AppName}"
+                    <TextBlock HorizontalAlignment="Center"
                                FontSize="32"
                                FontWeight="SemiBold"
-                               HorizontalAlignment="Center"
+                               Text="{Binding AppName}"
                                TextAlignment="Center" />
 
                     <!--  Version  -->
-                    <TextBlock Text="{Binding AppVersion}"
+                    <TextBlock HorizontalAlignment="Center"
                                FontSize="16"
                                Opacity="0.7"
-                               HorizontalAlignment="Center"
+                               Text="{Binding AppVersion}"
                                TextAlignment="Center" />
 
                     <!--  Description  -->
-                    <TextBlock Text="{Binding Description}"
+                    <TextBlock MaxWidth="400"
+                               Margin="0,8,0,0"
+                               HorizontalAlignment="Center"
                                FontSize="14"
                                Opacity="0.6"
-                               HorizontalAlignment="Center"
+                               Text="{Binding Description}"
                                TextAlignment="Center"
-                               TextWrapping="Wrap"
-                               MaxWidth="400"
-                               Margin="0,8,0,0" />
+                               TextWrapping="Wrap" />
 
                     <!--  Publisher  -->
-                    <ws:StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Spacing="4">
-                        <TextBlock Text="Published by" Opacity="0.6" />
-                        <TextBlock Text="{Binding Publisher}" FontWeight="Medium" />
+                    <ws:StackPanel HorizontalAlignment="Center"
+                                   Orientation="Horizontal"
+                                   Spacing="4">
+                        <TextBlock Opacity="0.6" Text="Published by" />
+                        <TextBlock FontWeight="Medium" Text="{Binding Publisher}" />
                     </ws:StackPanel>
 
                     <!--  Copyright  -->
-                    <TextBlock Text="{Binding CopyrightYear}"
+                    <TextBlock Margin="0,8,0,0"
+                               HorizontalAlignment="Center"
                                FontSize="12"
                                Opacity="0.5"
-                               HorizontalAlignment="Center"
-                               TextAlignment="Center"
-                               Margin="0,8,0,0" />
+                               Text="{Binding CopyrightYear}"
+                               TextAlignment="Center" />
 
                     <!--  GitHub Button  -->
-                    <ws:Button  Command="{Binding OpenGitHubCommand}"
-                                Padding="16,10"
-                                Margin="0,16,0,0"
-                                HorizontalAlignment="Center"
-                                Style="{StaticResource AccentButtonStyleForWs}">
+                    <ws:Button Margin="0,16,0,0"
+                               Padding="16,10"
+                               HorizontalAlignment="Center"
+                               Command="{Binding OpenGitHubCommand}"
+                               Style="{StaticResource AccentButtonStyleForWs}">
                         <TextBlock>
-                            <Run Text="&#xE8A7;" BaselineAlignment="Center"
-                                 FontFamily="{StaticResource SegoeFluentIcon}" />
+                            <Run BaselineAlignment="Center"
+                                 FontFamily="{StaticResource SegoeFluentIcon}"
+                                 Text="&#xE8A7;" />
                             <Run Text="  View on GitHub" />
                         </TextBlock>
                     </ws:Button>
@@ -81,26 +84,26 @@
 
             <!--  Open Source Components  -->
             <ws:StackPanel Spacing="12">
-                <TextBlock Text="Open Source Components"
+                <TextBlock Margin="0,8,0,0"
                            FontSize="22"
                            FontWeight="SemiBold"
-                           Margin="0,8,0,0" />
+                           Text="Open Source Components" />
 
-                <Border Background="{DynamicResource MaskColor}"
-                        CornerRadius="12"
-                        Padding="16">
+                <Border Padding="16"
+                        Background="{DynamicResource MaskColor}"
+                        CornerRadius="12">
                     <ItemsControl ItemsSource="{Binding OpenSourceComponents}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border Background="Transparent"
+                                <Border Margin="0,4"
                                         Padding="12,12"
-                                        Margin="0,4"
+                                        Background="Transparent"
                                         CornerRadius="8"
                                         Cursor="Hand">
                                     <Border.InputBindings>
-                                        <MouseBinding MouseAction="LeftClick"
-                                                      Command="{Binding DataContext.OpenUrlCommand, RelativeSource={RelativeSource AncestorType=Page}}"
-                                                      CommandParameter="{Binding Url}" />
+                                        <MouseBinding Command="{Binding DataContext.OpenUrlCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                      CommandParameter="{Binding Url}"
+                                                      MouseAction="LeftClick" />
                                     </Border.InputBindings>
                                     <Border.Style>
                                         <Style TargetType="Border">
@@ -118,9 +121,9 @@
                                         </Grid.ColumnDefinitions>
 
                                         <ws:StackPanel Grid.Column="0" Spacing="4">
-                                            <TextBlock Text="{Binding Name}"
-                                                       FontSize="15"
-                                                       FontWeight="Medium" />
+                                            <TextBlock FontSize="15"
+                                                       FontWeight="Medium"
+                                                       Text="{Binding Name}" />
                                             <TextBlock Opacity="0.6">
                                                 <Run Text="Version" />
                                                 <Run Text="{Binding Version}" />
@@ -131,12 +134,12 @@
                                         </ws:StackPanel>
 
                                         <TextBlock Grid.Column="1"
-                                                   Text="&#xE8A7;"
+                                                   Margin="8,0,0,0"
+                                                   VerticalAlignment="Center"
                                                    FontFamily="{StaticResource SegoeFluentIcon}"
                                                    FontSize="14"
-                                                   VerticalAlignment="Center"
                                                    Opacity="0.5"
-                                                   Margin="8,0,0,0" />
+                                                   Text="&#xE8A7;" />
                                     </Grid>
                                 </Border>
                             </DataTemplate>
@@ -146,22 +149,22 @@
             </ws:StackPanel>
 
             <!--  Additional Info  -->
-            <Border Background="{DynamicResource MaskColor}"
-                    CornerRadius="12"
-                    Padding="20">
-                <ws:StackPanel Spacing="8" HorizontalAlignment="Center">
-                    <TextBlock FontSize="14"
-                               Opacity="0.6"
-                               HorizontalAlignment="Center"
-                               TextAlignment="Center">
-                        <Run Text="Built with" />
-                        <Run Text="❤️"  Foreground="OrangeRed"/>
-                        <Run Text="using .NET 8 and WPF" />
-                    </TextBlock>
-                    <TextBlock Text="Thank you for using LemonLite!"
+            <Border Padding="20"
+                    Background="{DynamicResource MaskColor}"
+                    CornerRadius="12">
+                <ws:StackPanel HorizontalAlignment="Center" Spacing="8">
+                    <TextBlock HorizontalAlignment="Center"
                                FontSize="14"
                                Opacity="0.6"
-                               HorizontalAlignment="Center"
+                               TextAlignment="Center">
+                        <Run Text="Built with" />
+                        <Run Foreground="OrangeRed" Text="❤️" />
+                        <Run Text="using .NET 8 and WPF" />
+                    </TextBlock>
+                    <TextBlock HorizontalAlignment="Center"
+                               FontSize="14"
+                               Opacity="0.6"
+                               Text="Thank you for using LemonLite!"
                                TextAlignment="Center" />
                 </ws:StackPanel>
             </Border>

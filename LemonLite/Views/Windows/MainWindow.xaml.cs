@@ -1,13 +1,18 @@
-﻿using LemonLite.Configs;
+﻿using FluentWpfCore.Interop;
+using LemonLite.Configs;
 using LemonLite.Services;
 using LemonLite.Utils;
 using LemonLite.ViewModels;
 using System;
+using System.Security.Policy;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 
 namespace LemonLite.Views.Windows;
 
@@ -28,6 +33,7 @@ public partial class MainWindow : Window
         InitializeComponent();
         this.DataContext = vm;
         _mgr = appSettingService.GetConfigMgr<Appearance>();
+        _mgr.OnDataChanged += Appearance_OnDataChanged;
         LyricViewHost.Child = vm.LyricView;
         this.vm = vm;
         this.smtcService = smtcService;
@@ -41,11 +47,17 @@ public partial class MainWindow : Window
         ApplySettings();
     }
 
+    private void Appearance_OnDataChanged()
+    {
+        Dispatcher.BeginInvoke(ApplySettings);
+    }
+
     private void MainWindow_Closed(object? sender, EventArgs e)
     {
         vm.Dispose();
         _mgr.Data.TopMost = Topmost;
         _mgr.Data.Window = new Rect(Left, Top, Width, Height);
+        _mgr.OnDataChanged -= Appearance_OnDataChanged;
     }
 
     private void ApplySettings()
@@ -64,6 +76,39 @@ public partial class MainWindow : Window
             }
         }
         Topmost = _mgr.Data.TopMost;
+
+        //Background Type
+        if (_mgr.Data.Background == Appearance.BackgroundType.Acrylic)
+        {
+            material.MaterialMode = MaterialType.Acrylic;
+            material.UseWindowComposition = true;
+            AnimatedBackgroundBd.Visibility = Visibility.Visible;
+            AnimatedBackgroundBd.Opacity = _mgr.Data.AcylicOpacity;
+            Background = Brushes.Transparent;
+            ImageBackground.Background = null;
+
+        }
+        else if (_mgr.Data.Background == Appearance.BackgroundType.Image)
+        {
+            if (!string.IsNullOrEmpty(_mgr.Data.BackgroundImagePath))
+            {
+                material.MaterialMode = MaterialType.None;
+                material.UseWindowComposition = false;
+                AnimatedBackgroundBd.Visibility= Visibility.Collapsed;
+                SetResourceReference(BackgroundProperty, "BackgroundColor");
+                ImageBackground.Opacity= _mgr.Data.BackgroundOpacity;
+                ImageBackground.Background = new ImageBrush(new BitmapImage(new Uri(_mgr.Data.BackgroundImagePath))) { Stretch = Stretch.UniformToFill };
+            }
+        }
+        else
+        {
+            AnimatedBackgroundBd.Visibility = Visibility.Visible;
+            AnimatedBackgroundBd.Opacity = 1;
+            material.MaterialMode = MaterialType.None;
+            material.UseWindowComposition = false;
+            SetResourceReference(BackgroundProperty, "BackgroundColor");
+            ImageBackground.Background = null;
+        }
     }
 
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
