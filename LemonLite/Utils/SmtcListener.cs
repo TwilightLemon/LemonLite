@@ -3,25 +3,26 @@ using System.Threading.Tasks;
 using Windows.Media.Control;
 
 namespace LemonLite.Utils;
-public class SmtcListener
+public class SmtcListener(GlobalSystemMediaTransportControlsSessionManager mgr)
 {
     private GlobalSystemMediaTransportControlsSession? _globalSMTCSession;
     private readonly object _sessionLock = new();
     private string? _currentSessionId;
+    public GlobalSystemMediaTransportControlsSessionManager SessionManager { get; private set; } = mgr;
 
     public static async Task<SmtcListener> CreateInstance(Func<string?, bool> sessionIdFlitter)
     {
         var gsmtcsm = await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
-        var smtcHelper = new SmtcListener() { SessionIdFlitter = sessionIdFlitter };
+        var smtcHelper = new SmtcListener(gsmtcsm) { SessionIdFlitter = sessionIdFlitter };
         
         // 订阅会话管理器的会话变化事件
         gsmtcsm.CurrentSessionChanged += (s, e) =>
         {
-            smtcHelper.OnCurrentSessionChanged(gsmtcsm);
+            smtcHelper.OnCurrentSessionChanged();
         };
         
         // 初始化当前会话
-        smtcHelper.OnCurrentSessionChanged(gsmtcsm);
+        smtcHelper.OnCurrentSessionChanged();
         
         return smtcHelper;
     }
@@ -50,7 +51,7 @@ public class SmtcListener
 
     public Func<string?,bool> SessionIdFlitter { get; set; } = (_) => true;
 
-    private void OnCurrentSessionChanged(GlobalSystemMediaTransportControlsSessionManager mgr)
+    private void OnCurrentSessionChanged()
     {
         GlobalSystemMediaTransportControlsSession? newSession = null;
         GlobalSystemMediaTransportControlsSession? oldSession = null;
@@ -60,7 +61,7 @@ public class SmtcListener
 
         try
         {
-            newSession = mgr.GetCurrentSession();
+            newSession = SessionManager.GetCurrentSession();
             newSessionId = newSession?.SourceAppUserModelId;
         }
         catch (System.Runtime.InteropServices.COMException)

@@ -19,7 +19,7 @@ public class SmtcService(AppSettingService appSettingService) : IHostedService
     private readonly SettingsMgr<AppOption> appOption=appSettingService.GetConfigMgr<AppOption>();
     private readonly DispatcherTimer _playbackTimer = new()
     {
-        Interval = TimeSpan.FromMilliseconds(200)
+        Interval = TimeSpan.FromMilliseconds(100)
     };
     private DateTime _lastUpdateTime;
     private bool _hasValidTimeline = false;
@@ -43,7 +43,7 @@ public class SmtcService(AppSettingService appSettingService) : IHostedService
     public bool IsPlaying => _isPlaying;
 
     /// <summary>
-    /// 当播放位置更新时触发（约200ms一次）
+    /// 当播放位置更新时触发
     /// </summary>
     public event Action<double>? PositionChanged;
 
@@ -72,6 +72,7 @@ public class SmtcService(AppSettingService appSettingService) : IHostedService
     {
         _playbackTimer.Stop();
         _playbackTimer.Tick -= PlaybackTimer_Tick;
+        _smtcListener.MediaPropertiesChanged -= OnSessionChanged;
         _smtcListener.PlaybackInfoChanged -= OnPlaybackInfoChanged;
         _smtcListener.TimelinePropertiesChanged -= OnTimelinePropertiesChanged;
         _smtcListener.SessionExited -= OnSessionExited;
@@ -202,6 +203,18 @@ public class SmtcService(AppSettingService appSettingService) : IHostedService
         }
     }
 
+    /// <summary>
+    /// 设置备用时长（当SMTC未提供有效时间线时使用）
+    /// </summary>
+    /// <param name="durationSeconds">时长（秒）</param>
+    public void SetFallbackDuration(double durationSeconds)
+    {
+        if (!_hasValidTimeline && durationSeconds > 0)
+        {
+            UpdateDuration(durationSeconds);
+        }
+    }
+
     private bool ValidSmtcSessionChecker(string? id)
     {
         if(string.IsNullOrEmpty(id)) return false;
@@ -212,6 +225,7 @@ public class SmtcService(AppSettingService appSettingService) : IHostedService
     {
         _smtcListener = SmtcListener.CreateInstance(ValidSmtcSessionChecker).GetAwaiter().GetResult();
         _playbackTimer.Tick += PlaybackTimer_Tick;
+        _smtcListener.MediaPropertiesChanged += OnSessionChanged;
         _smtcListener.PlaybackInfoChanged += OnPlaybackInfoChanged;
         _smtcListener.TimelinePropertiesChanged += OnTimelinePropertiesChanged;
         _smtcListener.SessionExited += OnSessionExited;

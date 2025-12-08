@@ -64,14 +64,33 @@
                             <TextBlock HorizontalAlignment="Left"
                                        VerticalAlignment="Center"
                                        Text="SMTC Whitelist" />
-                            <ws:Button Margin="0,0,6,0"
-                                       Padding="8"
-                                       HorizontalAlignment="Right"
-                                       Command="{Binding AddSmtcMediaIdCommand}"
-                                       Content="&#xf8aa;"
-                                       FontFamily="{StaticResource SegoeFluentIcon}"
-                                       FontSize="11"
-                                       Style="{StaticResource AccentButtonStyleForWs}" />
+                            <ws:StackPanel Margin="0,0,6,0"
+                                           HorizontalAlignment="Right"
+                                           Orientation="Horizontal"
+                                           Spacing="10">
+                                <ws:Button Height="32"
+                                           Padding="8"
+                                           Command="{Binding AddCurrentSMTCMediaIdCommand}"
+                                           Style="{StaticResource AccentButtonStyleForWs}">
+                                    <TextBlock>
+                                        <Run BaselineAlignment="Center"
+                                             FontFamily="{StaticResource SegoeFluentIcon}"
+                                             Text="&#xe710;" />
+                                        <Run BaselineAlignment="Center" Text=" Add Current" />
+                                    </TextBlock>
+                                </ws:Button>
+                                <ws:Button Height="32"
+                                           Padding="8"
+                                           Command="{Binding AddSmtcMediaIdCommand}"
+                                           Style="{StaticResource SimpleButtonStyleForWs}">
+                                    <TextBlock>
+                                        <Run BaselineAlignment="Center"
+                                             FontFamily="{StaticResource SegoeFluentIcon}"
+                                             Text="&#xec50;" />
+                                        <Run BaselineAlignment="Center" Text=" Select File" />
+                                    </TextBlock>
+                                </ws:Button>
+                            </ws:StackPanel>
                         </Grid>
                         <ItemsControl d:ItemsSource="{d:SampleData ItemCount=5}" ItemsSource="{Binding SmtcMediaIds}">
                             <ItemsControl.ItemTemplate>

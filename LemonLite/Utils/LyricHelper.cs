@@ -4,6 +4,7 @@ using Lyricify.Lyrics.Models;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Net.Http;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
@@ -34,16 +35,16 @@ public static class LyricHelper
         return null;
     }
 
-    public static async Task<string?> SearchQid(string title, string artist,string album, CancellationToken cancellationToken = default)
+    public static async Task<MusicMetaData?> SearchMusicAsync(string title, string artist, string album, int durationMs, CancellationToken cancellationToken = default)
     {
         try
         {
             var hc = App.Services.GetRequiredService<IHttpClientFactory>().CreateClient(App.AzureLiteHttpClientFlag);
             hc.BaseAddress = new Uri(EndPoint);
-            var data = await hc.GetStringAsync($"/search?title={HttpUtility.UrlEncode(title)}&artist={HttpUtility.UrlEncode(artist)}&album={HttpUtility.UrlEncode(album)}", cancellationToken);
-            if (JsonNode.Parse(data) is { } json)
+            var data = await hc.GetStringAsync($"/search?title={HttpUtility.UrlEncode(title)}&artist={HttpUtility.UrlEncode(artist)}&album={HttpUtility.UrlEncode(album)}&ms={durationMs}", cancellationToken);
+            if (!string.IsNullOrEmpty(data))
             {
-                return json["id"]?.ToString();
+                return JsonSerializer.Deserialize<MusicMetaData>(data);
             }
         }
         catch (OperationCanceledException)

@@ -8,7 +8,6 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Windows.Media.Control;
 
 namespace LemonLite.ViewModels;
 
@@ -16,13 +15,15 @@ public partial class MainWindowViewModel : ObservableObject
 {
     private readonly SmtcListener _smtcListener;
     private readonly SmtcService _smtc;
+    private readonly LyricService _lyricService;
     private readonly UIResourceService uiResourceService;
 
-    public MainWindowViewModel(LyricView lyricView, UIResourceService uiResourceService, SmtcService playback)
+    public MainWindowViewModel(LyricView lyricView, UIResourceService uiResourceService, SmtcService playback, LyricService lyricService)
     {
         _smtcListener = playback.SmtcListener;
         LyricView = lyricView;
         this.uiResourceService = uiResourceService;
+        _lyricService = lyricService;
 
         _smtc = playback;
         _smtc.PositionChanged += OnPositionChanged;
@@ -31,6 +32,7 @@ public partial class MainWindowViewModel : ObservableObject
         _smtcListener.MediaPropertiesChanged += SmtcListener_MediaPropertiesChanged;
         _smtcListener.SessionExited += SmtcListener_SessionExited;
         _smtcListener.SessionChanged += SmtcListener_SessionChanged;
+        _lyricService.MediaMetaDataUpdated += OnMediaMetaDataUpdated;
         uiResourceService.OnColorModeChanged += UiResourceService_OnColorModeChanged;
 
         UpdateSmtcInfo();
@@ -68,13 +70,20 @@ public partial class MainWindowViewModel : ObservableObject
         _smtcListener.MediaPropertiesChanged -= SmtcListener_MediaPropertiesChanged;
         _smtcListener.SessionExited -= SmtcListener_SessionExited;
         _smtcListener.SessionChanged -= SmtcListener_SessionChanged;
+        _lyricService.MediaMetaDataUpdated -= OnMediaMetaDataUpdated;
         uiResourceService.OnColorModeChanged -= UiResourceService_OnColorModeChanged;
     }
 
     public LyricView LyricView { get; set; }
 
     [ObservableProperty]
-    private GlobalSystemMediaTransportControlsSessionMediaProperties? mediaInfo;
+    private string _title = "Welcome~";
+
+    [ObservableProperty]
+    private string _artist = string.Empty;
+
+    [ObservableProperty]
+    private string _album = string.Empty;
 
     [ObservableProperty]
     private Brush? coverImage;
@@ -119,14 +128,37 @@ public partial class MainWindowViewModel : ObservableObject
         UpdateSmtcInfo();
     }
 
+    private void OnMediaMetaDataUpdated(MediaMetaDataUpdatedEventArgs args)
+    {
+        App.Current.Dispatcher.Invoke(() =>
+        {
+            if (!string.IsNullOrEmpty(args.Title))
+                Title = args.Title;
+            if (!string.IsNullOrEmpty(args.Artist))
+                Artist = args.Artist;
+            if (!string.IsNullOrEmpty(args.Album))
+                Album = args.Album;
+        });
+    }
+
     private async void UpdateSmtcInfo()
     {
         // clean up previous info
-        MediaInfo = null;
+        App.Current.Dispatcher.Invoke(() =>
+        {
+            Title = "Welcome~";
+            Artist = string.Empty;
+            Album = string.Empty;
+        });
 
         if (await _smtcListener.GetMediaInfoAsync() is { PlaybackType: Windows.Media.MediaPlaybackType.Music } info)
         {
-            MediaInfo = info;
+            App.Current.Dispatcher.Invoke(() =>
+            {
+                Title = info.Title ?? "Welcome~";
+                Artist = info.Artist ?? string.Empty;
+                Album = info.AlbumTitle ?? string.Empty;
+            });
             UpdateCover();
             // 歌词加载由LyricService处理
         }

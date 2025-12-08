@@ -44,12 +44,12 @@ public partial class MainWindow : Window
         this.MouseEnter += MainWindow_MouseEnter;
         this.MouseLeave += MainWindow_MouseLeave;
 
-        ApplySettings();
+        ApplySettings(isFirstCall: true);
     }
 
     private void Appearance_OnDataChanged()
     {
-        Dispatcher.BeginInvoke(ApplySettings);
+        Dispatcher.BeginInvoke(()=> ApplySettings());
     }
 
     private void MainWindow_Closed(object? sender, EventArgs e)
@@ -60,9 +60,10 @@ public partial class MainWindow : Window
         _mgr.OnDataChanged -= Appearance_OnDataChanged;
     }
 
-    private void ApplySettings()
+    private void ApplySettings(bool isFirstCall=false)
     {
-        if (!_mgr.Data.Window.IsEmpty)
+        //窗口rect只允许在启动时更新（读取上次的位置）
+        if (isFirstCall && !_mgr.Data.Window.IsEmpty)
         {
             if (_mgr.Data.Window.Width >= MinWidth && _mgr.Data.Window.Height >= MinHeight)
             {

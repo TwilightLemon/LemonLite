@@ -9,6 +9,16 @@ using System.Threading.Tasks;
 namespace LemonLite.Services;
 
 /// <summary>
+/// 媒体元数据更新事件参数
+/// </summary>
+public record class MediaMetaDataUpdatedEventArgs(
+    string? Title,
+    string? Artist,
+    string? Album,
+    int DurationMs
+);
+
+/// <summary>
 /// 歌词行数据
 /// </summary>
 public record class LrcLine(ILineInfo Lrc, string? Trans = null, ILineInfo? Romaji = null);
@@ -50,11 +60,17 @@ public class LyricService
     /// 当媒体变更（需要重置）时触发
     /// </summary>
     public event Action? MediaChanged;
+
+    /// <summary>
+    /// 当媒体元数据从搜索结果更新时触发
+    /// </summary>
+    public event Action<MediaMetaDataUpdatedEventArgs>? MediaMetaDataUpdated;
     #endregion
 
     #region State
     private string? _currentMusicInfo;
     private string? _smtcSource;
+    private MusicMetaData? _currentMusicMetaData;
     private LyricsData? _currentLyric;
     private LyricsData? _currentTrans;
     private LyricsData? _currentRomaji;
@@ -84,6 +100,11 @@ public class LyricService
     public bool IsPureLrc => _isPureLrc;
 
     public LrcLine? CurrentLine=>_currentLine;
+
+    /// <summary>
+    /// 当前音乐元数据
+    /// </summary>
+    public MusicMetaData? CurrentMusicMetaData => _currentMusicMetaData;
     #endregion
 
     #region Media Change Handling
@@ -111,17 +132,33 @@ public class LyricService
         _loadingCts?.Dispose();
         _loadingCts = new CancellationTokenSource();
         var cancellationToken = _loadingCts.Token;
-
+        int durationMs=(int)_smtcService.Duration * 1000;
         try
         {
-            if (await LyricHelper.SearchQid(info.Title, info.Artist,info.AlbumTitle, cancellationToken) is { } id)
+            if (await LyricHelper.SearchMusicAsync(info.Title, info.Artist, info.AlbumTitle, durationMs, cancellationToken) is { Id: not null } musicMetaData)
             {
                 if (cancellationToken.IsCancellationRequested) return;
+
+                _currentMusicMetaData = musicMetaData;
+
+                // 更新备用时长（当SMTC未提供有效时间线时）
+                if (musicMetaData.DurationMs > 0)
+                {
+                    _smtcService.SetFallbackDuration(musicMetaData.DurationMs / 1000.0);
+                }
+
+                // 通知媒体元数据更新
+                MediaMetaDataUpdated?.Invoke(new MediaMetaDataUpdatedEventArgs(
+                    musicMetaData.Title,
+                    musicMetaData.ArtistString,
+                    musicMetaData.Album,
+                    musicMetaData.DurationMs
+                ));
 
                 var mediaId = _smtcService.SmtcListener.GetAppMediaId().ToLower();
                 _smtcSource = mediaId[..^4];
 
-                await LoadLyricByIdAsync(id, cancellationToken);
+                await LoadLyricByIdAsync(musicMetaData.Id, cancellationToken);
             }
         }
         catch (OperationCanceledException) { }
@@ -167,6 +204,7 @@ public class LyricService
     public void Reset()
     {
         _smtcSource = null;
+        _currentMusicMetaData = null;
         _currentLyric = null;
         _currentTrans = null;
         _currentRomaji = null;

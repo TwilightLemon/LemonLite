@@ -114,12 +114,26 @@ namespace LemonLite.Views.Pages
             if (dialog.ShowDialog() == true)
             {
                 var fileName = System.IO.Path.GetFileName(dialog.FileName).ToLower();
-                if (!string.IsNullOrWhiteSpace(fileName) && !SmtcMediaIds.Contains(fileName))
-                {
-                    SmtcMediaIds.Add(fileName);
-                    settings.Data.SmtcMediaIds.Add(fileName);
-                }
+                AddSmtcMediaId(fileName);
             }
+        }
+
+        private void AddSmtcMediaId(string mediaId)
+        {
+            if (!string.IsNullOrWhiteSpace(mediaId) && !SmtcMediaIds.Contains(mediaId))
+            {
+                SmtcMediaIds.Add(mediaId);
+                settings.Data.SmtcMediaIds.Add(mediaId);
+            }
+        }
+
+        [RelayCommand]
+        private void AddCurrentSMTCMediaId()
+        {
+            var smtc = App.Services.GetRequiredService<SmtcService>();
+            var cur = smtc.SmtcListener.SessionManager.GetCurrentSession();
+            var mediaId = cur.SourceAppUserModelId.ToLower();
+            AddSmtcMediaId(mediaId);
         }
 
         [RelayCommand]

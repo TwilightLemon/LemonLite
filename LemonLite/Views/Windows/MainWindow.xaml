@@ -120,7 +120,7 @@
                                FontSize="18"
                                FontWeight="Bold"
                                Foreground="{DynamicResource ForeColor}"
-                               Text="{Binding MediaInfo.Title, TargetNullValue=Welcome~, Mode=OneWay}"
+                               Text="{Binding Title, Mode=OneWay}"
                                TextAlignment="Center"
                                TextWrapping="Wrap" />
                     <TextBlock x:Name="SongArtistBlock"
@@ -133,11 +133,11 @@
                                TextWrapping="Wrap">
                         <Run d:Text="Taylor Swift"
                              FontSize="14"
-                             Text="{Binding MediaInfo.Artist, TargetNullValue='', Mode=OneWay}" />
+                             Text="{Binding Artist, Mode=OneWay}" />
                         <Run BaselineAlignment="Center" Text="·" />
                         <Run d:Text="reputation"
                              FontSize="14"
-                             Text="{Binding MediaInfo.AlbumTitle, TargetNullValue='', Mode=OneWay}" />
+                             Text="{Binding Album, Mode=OneWay}" />
                     </TextBlock>
                     <Grid x:Name="ProgressPanel"
                           MaxWidth="480"
