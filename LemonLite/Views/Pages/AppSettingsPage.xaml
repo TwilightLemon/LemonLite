@@ -8,7 +8,7 @@
       xmlns:ws="https://schemas.elecho.dev/wpfsuite"
       Title="AppSettingsPage"
       d:DataContext="{d:DesignInstance local:AppSettingsPage}"
-      d:DesignHeight="819.6"
+      d:DesignHeight="927.6"
       d:DesignWidth="800"
       Foreground="{DynamicResource ForeColor}"
       mc:Ignorable="d">

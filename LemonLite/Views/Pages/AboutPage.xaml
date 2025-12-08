@@ -8,7 +8,7 @@
       xmlns:ws="https://schemas.elecho.dev/wpfsuite"
       Title="AboutPage"
       d:DataContext="{d:DesignInstance local:AboutPage}"
-      d:DesignHeight="687.661"
+      d:DesignHeight="812.025"
       d:DesignWidth="800"
       Foreground="{DynamicResource ForeColor}"
       mc:Ignorable="d">
@@ -145,6 +145,96 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
+                </Border>
+            </ws:StackPanel>
+
+            <!--  Legal  -->
+            <ws:StackPanel Spacing="12">
+                <TextBlock Margin="0,8,0,0"
+                           FontSize="22"
+                           FontWeight="SemiBold"
+                           Text="Legal" />
+
+                <Border Padding="16"
+                        Background="{DynamicResource MaskColor}"
+                        CornerRadius="12">
+                    <ws:StackPanel Spacing="8">
+                        <Border Padding="12"
+                                Background="Transparent"
+                                CornerRadius="8"
+                                Cursor="Hand">
+                            <Border.InputBindings>
+                                <MouseBinding Command="{Binding OpenUrlCommand}"
+                                              CommandParameter="https://github.com/TwilightLemon/LemonLite/blob/master/Privacy%20Policy.md"
+                                              MouseAction="LeftClick" />
+                            </Border.InputBindings>
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="{DynamicResource FocusMaskColor}" />
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <Grid>
+                                <ws:StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock VerticalAlignment="Center"
+                                               FontFamily="{StaticResource SegoeFluentIcon}"
+                                               FontSize="16"
+                                               Text="&#xE72E;" />
+                                    <TextBlock VerticalAlignment="Center"
+                                               FontSize="15"
+                                               FontWeight="Medium"
+                                               Text="Privacy Policy" />
+                                </ws:StackPanel>
+                                <TextBlock HorizontalAlignment="Right"
+                                           VerticalAlignment="Center"
+                                           FontFamily="{StaticResource SegoeFluentIcon}"
+                                           FontSize="14"
+                                           Opacity="0.5"
+                                           Text="&#xE8A7;" />
+                            </Grid>
+                        </Border>
+
+                        <Border Padding="12"
+                                Background="Transparent"
+                                CornerRadius="8"
+                                Cursor="Hand">
+                            <Border.InputBindings>
+                                <MouseBinding Command="{Binding OpenUrlCommand}"
+                                              CommandParameter="https://github.com/TwilightLemon/LemonLite/blob/master/DISCLAIMER.md"
+                                              MouseAction="LeftClick" />
+                            </Border.InputBindings>
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="{DynamicResource FocusMaskColor}" />
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <Grid>
+                                <ws:StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock VerticalAlignment="Center"
+                                               FontFamily="{StaticResource SegoeFluentIcon}"
+                                               FontSize="16"
+                                               Text="&#xE7BA;" />
+                                    <TextBlock VerticalAlignment="Center"
+                                               FontSize="15"
+                                               FontWeight="Medium"
+                                               Text="Disclaimer" />
+                                </ws:StackPanel>
+                                <TextBlock HorizontalAlignment="Right"
+                                           VerticalAlignment="Center"
+                                           FontFamily="{StaticResource SegoeFluentIcon}"
+                                           FontSize="14"
+                                           Opacity="0.5"
+                                           Text="&#xE8A7;" />
+                            </Grid>
+                        </Border>
+                    </ws:StackPanel>
                 </Border>
             </ws:StackPanel>
 

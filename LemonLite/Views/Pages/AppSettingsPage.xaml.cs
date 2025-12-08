@@ -57,6 +57,15 @@ namespace LemonLite.Views.Pages
         private bool _enableMainWindow;
         [ObservableProperty]
         private bool _enableDesktopLyricWindow;
+
+        partial void OnEnableMainWindowChanged(bool value)
+        {
+            settings.Data.StartWithMainWindow = value;
+        }
+        partial void OnEnableDesktopLyricWindowChanged(bool value)
+        {
+            settings.Data.StartWithDesktopLyric = value;
+        }
         [ObservableProperty]
         private string _liteServerHost = "";
         
