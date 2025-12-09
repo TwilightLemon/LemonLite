@@ -227,10 +227,12 @@ public partial class MainWindow : Window
         SongTextInfo.VerticalAlignment = VerticalAlignment.Top;
         SongTitleBlock.Margin = new Thickness(0, 0, 0, 4);
         SongTitleBlock.TextAlignment = TextAlignment.Left;
+        SongTitleBlock.TextWrapping = TextWrapping.NoWrap;
         SongTitleBlock.HorizontalAlignment = HorizontalAlignment.Stretch;
         SongArtistBlock.Margin = new Thickness(0);
         SongArtistBlock.TextAlignment = TextAlignment.Left;
         SongArtistBlock.HorizontalAlignment = HorizontalAlignment.Stretch;
+        SongArtistBlock.TextWrapping = TextWrapping.NoWrap;
 
         //ProgressPanel.Margin = new Thickness(0, 10, 0, 0);
         //ProgressPanel.MaxWidth = double.PositiveInfinity;
@@ -330,9 +332,11 @@ public partial class MainWindow : Window
         SongTitleBlock.Margin = new Thickness(48, 0, 48, 8);
         SongTitleBlock.TextAlignment = TextAlignment.Center;
         SongTitleBlock.HorizontalAlignment = HorizontalAlignment.Stretch;
+        SongTitleBlock.TextWrapping = TextWrapping.Wrap;
         SongArtistBlock.Margin = new Thickness(48, 0, 48, 0);
         SongArtistBlock.TextAlignment = TextAlignment.Center;
         SongArtistBlock.HorizontalAlignment = HorizontalAlignment.Stretch;
+        SongArtistBlock.TextWrapping = TextWrapping.Wrap;
 
         ProgressPanel.Margin = new Thickness(60, 20, 60, 0);
         ProgressPanel.MaxWidth = 480;

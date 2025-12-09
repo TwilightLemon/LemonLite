@@ -33,6 +33,10 @@ namespace LemonLite.Views.Pages
 
         private void AppSettingsPage_Unloaded(object sender, RoutedEventArgs e)
         {
+            if (_isSmtcWhiteListChanged)
+            {
+                App.Services.GetRequiredService<SmtcService>().SmtcListener.RefreshCurrentSession();
+            }
             App.ApplyAppOptions();
         }
 
@@ -117,13 +121,14 @@ namespace LemonLite.Views.Pages
                 AddSmtcMediaId(fileName);
             }
         }
-
+        private bool _isSmtcWhiteListChanged = false;
         private void AddSmtcMediaId(string mediaId)
         {
             if (!string.IsNullOrWhiteSpace(mediaId) && !SmtcMediaIds.Contains(mediaId))
             {
                 SmtcMediaIds.Add(mediaId);
                 settings.Data.SmtcMediaIds.Add(mediaId);
+                _isSmtcWhiteListChanged = true;
             }
         }
 
@@ -142,6 +147,7 @@ namespace LemonLite.Views.Pages
             if (SmtcMediaIds.Remove(mediaId))
             {
                 settings.Data.SmtcMediaIds.Remove(mediaId);
+                _isSmtcWhiteListChanged = true;
             }
         }
 

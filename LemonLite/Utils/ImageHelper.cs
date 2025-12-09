@@ -518,7 +518,7 @@ public static class ImageHelper
 
     public static void ApplyMicaEffect(this Bitmap bitmap, bool isDarkmode)
     {
-        bitmap.AdjustContrast(isDarkmode ? -1 : -20);
+        bitmap.AdjustContrast(isDarkmode ? -20 : -30);
         bitmap.AddMask(isDarkmode);
         bitmap.ScaleImage(2);
         var rect = new Rectangle(0, 0, bitmap.Width, bitmap.Height);

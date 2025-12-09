@@ -50,6 +50,7 @@ public class SmtcListener(GlobalSystemMediaTransportControlsSessionManager mgr)
     public event EventHandler? TimelinePropertiesChanged;
 
     public Func<string?,bool> SessionIdFlitter { get; set; } = (_) => true;
+    public void RefreshCurrentSession() => OnCurrentSessionChanged();
 
     private void OnCurrentSessionChanged()
     {

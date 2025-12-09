@@ -2,7 +2,7 @@
 
 public enum LyricType
 {
-    QQ,Wyy,PureWyy
+    QQ,Netease,PureLrc
 }
 public class LyricData
 {

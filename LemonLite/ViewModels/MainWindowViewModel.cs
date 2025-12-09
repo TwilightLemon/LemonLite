@@ -77,6 +77,8 @@ public partial class MainWindowViewModel : ObservableObject
     public LyricView LyricView { get; set; }
 
     [ObservableProperty]
+    private string _sourceIdentifier = string.Empty;
+    [ObservableProperty]
     private string _title = "Welcome~";
 
     [ObservableProperty]
@@ -138,6 +140,8 @@ public partial class MainWindowViewModel : ObservableObject
                 Artist = args.Artist;
             if (!string.IsNullOrEmpty(args.Album))
                 Album = args.Album;
+            if (!string.IsNullOrEmpty(args.SourceIdentifier))
+                SourceIdentifier = args.SourceIdentifier;
         });
     }
 

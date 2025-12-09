@@ -15,16 +15,30 @@ namespace LemonLite.Utils;
 public static class LyricHelper
 {
     public static string EndPoint { get; set; } = "http://localhost:5000";
-    public static async Task<LyricData?> GetLyricByQid(string id, CancellationToken cancellationToken = default)
+    private static async Task<LyricData?> GetLyricOnline(string id,string source, CancellationToken cancellationToken = default)
     {
         try
         {
             var hc = App.Services.GetRequiredService<IHttpClientFactory>().CreateClient(App.AzureLiteHttpClientFlag);
             hc.BaseAddress = new Uri(EndPoint);
-            var data = await hc.GetStringAsync($"/lrc?id={id}", cancellationToken);
+            var data = await hc.GetStringAsync($"/lrc?id={id}&source={source}", cancellationToken);
             if (JsonNode.Parse(data) is { } json)
             {
-                return new() { Id = id, Lyric = json["lyrics"]?.ToString(), Romaji = json["romaji"]?.ToString(), Trans = json["trans"]?.ToString(), Type = LyricType.QQ };
+                var result = new LyricData
+                {
+                    Id = id,
+                    Lyric = json["lyrics"]?.ToString(),
+                    Romaji = json["romaji"]?.ToString(),
+                    Trans = json["trans"]?.ToString(),
+                    Type = source.ToLower() switch
+                    {
+                        "qqmusic" => LyricType.QQ,
+                        "netease" or "cloudmusic" => LyricType.Netease,
+                        _ => throw new InvalidOperationException()
+                    }
+                };
+                if (json["isPureTimeline"]?.GetValue<bool>() is true) result.Type = LyricType.PureLrc;
+                return result;
             }
         }
         catch (OperationCanceledException)
@@ -55,7 +69,7 @@ public static class LyricHelper
         return null;
     }
 
-    public static async Task<LyricData?> GetLyricByQmId(string id, CancellationToken cancellationToken = default)
+    public static async Task<LyricData?> GetLyricById(string id,string source, CancellationToken cancellationToken = default)
     {
         var path = Settings.CachePath;
         path = System.IO.Path.Combine(path, id + ".lmrc");
@@ -65,7 +79,7 @@ public static class LyricHelper
         }
         else
         {
-            if (await GetLyricByQid(id, cancellationToken) is { } ly)
+            if (await GetLyricOnline(id,source, cancellationToken) is { } ly)
             {
                 await Settings.SaveAsJsonAsync(ly, path, false);
                 return ly;
@@ -79,8 +93,8 @@ public static class LyricHelper
         if (dt.Lyric == null) return (null, null, null, false);
         var rawType = dt.Type switch
         {
-            LyricType.Wyy => LyricsRawTypes.Yrc,
-            LyricType.PureWyy => LyricsRawTypes.Lrc,
+            LyricType.Netease => LyricsRawTypes.Yrc,
+            LyricType.PureLrc => LyricsRawTypes.Lrc,
             LyricType.QQ => LyricsRawTypes.Qrc,
             _ => LyricsRawTypes.Lrc
         };
@@ -93,7 +107,7 @@ public static class LyricHelper
             romaji = ParseHelper.ParseLyrics(dt.Romaji, rawType);
 
         if (lrc != null)
-            return (lrc, trans, romaji, dt.Type == LyricType.PureWyy);
+            return (lrc, trans, romaji, dt.Type == LyricType.PureLrc);
         return (null, null, null, false);
     }
 }

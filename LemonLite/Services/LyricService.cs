@@ -15,7 +15,8 @@ public record class MediaMetaDataUpdatedEventArgs(
     string? Title,
     string? Artist,
     string? Album,
-    int DurationMs
+    int DurationMs,
+    string? SourceIdentifier
 );
 
 /// <summary>
@@ -152,13 +153,15 @@ public class LyricService
                     musicMetaData.Title,
                     musicMetaData.ArtistString,
                     musicMetaData.Album,
-                    musicMetaData.DurationMs
+                    musicMetaData.DurationMs,
+                    musicMetaData.Searcher?.DisplayName ?? "Unknown Source"
                 ));
 
                 var mediaId = _smtcService.SmtcListener.GetAppMediaId().ToLower();
-                _smtcSource = mediaId[..^4];
+                _smtcSource = _smtcSource?.EndsWith(".exe") is true ? mediaId[..^4] : mediaId;
 
-                await LoadLyricByIdAsync(musicMetaData.Id, cancellationToken);
+                var source = musicMetaData.Searcher?.Name?.ToLower();
+                await LoadLyricByIdAsync(musicMetaData.Id,source, cancellationToken);
             }
         }
         catch (OperationCanceledException) { }
@@ -167,11 +170,11 @@ public class LyricService
     /// <summary>
     /// 通过ID加载歌词
     /// </summary>
-    private async Task LoadLyricByIdAsync(string id, CancellationToken cancellationToken)
+    private async Task LoadLyricByIdAsync(string id,string source, CancellationToken cancellationToken)
     {
         try
         {
-            if (await LyricHelper.GetLyricByQmId(id, cancellationToken) is { } dt)
+            if (await LyricHelper.GetLyricById(id,source, cancellationToken) is { } dt)
             {
                 if (cancellationToken.IsCancellationRequested ) return;
 
