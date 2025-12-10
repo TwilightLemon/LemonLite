@@ -233,7 +233,7 @@ public class LyricService
     /// </summary>
     private void UpdateCurrentLine(int ms)
     {
-        if (_currentLyric?.Lines == null) return;
+        if (_currentLyric?.Lines == null||ms==0) return;
 
         ILineInfo? target = null;
         ILineInfo? lastItem = null;

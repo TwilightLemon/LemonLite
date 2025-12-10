@@ -77,9 +77,7 @@ public class SmtcListener(GlobalSystemMediaTransportControlsSessionManager mgr)
             oldSession = _globalSMTCSession;
             oldSessionId = _currentSessionId;
             
-            sessionChanged = oldSessionId != newSessionId;
-            
-            if (sessionChanged&&SessionIdFlitter(newSessionId))
+            if (oldSessionId != newSessionId && SessionIdFlitter(newSessionId))
             {
                 // 取消旧会话的事件订阅
                 if (oldSession != null)
@@ -96,6 +94,7 @@ public class SmtcListener(GlobalSystemMediaTransportControlsSessionManager mgr)
                 {
                     SubscribeSessionEvents(newSession);
                 }
+                sessionChanged = true;
             }
             if (newSession == null&&SessionIdFlitter(oldSessionId))
             {
@@ -105,6 +104,7 @@ public class SmtcListener(GlobalSystemMediaTransportControlsSessionManager mgr)
                 }
                 _globalSMTCSession = null;
                 _currentSessionId = null;
+                sessionChanged = true;
             }
         }
 

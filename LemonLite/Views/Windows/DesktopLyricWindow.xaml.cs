@@ -54,15 +54,19 @@ namespace LemonLite.Views.Windows
         private readonly SettingsMgr<DesktopLyricOption> _settingsMgr;
         private void ScrollLrc(FrameworkElement block)
         {
-            if (block == currentBlock ||block ==null)
+            try
             {
-                return;
+                if (block == currentBlock || block == null)
+                {
+                    return;
+                }
+                var position = block.TransformToVisual(LrcHost);
+                Point p = position.Transform(new Point(0, 0));
+                LrcScrollViewer.BeginAnimation(ScrollViewerUtils.HorizontalOffsetProperty,
+                        new DoubleAnimation(p.X - LrcScrollViewer.ViewportWidth * 0.4, TimeSpan.FromMilliseconds(500)));
+                currentBlock = block;
             }
-            var position=block.TransformToVisual(LrcHost);
-            Point p = position.Transform(new Point(0, 0));
-            LrcScrollViewer.BeginAnimation(ScrollViewerUtils.HorizontalOffsetProperty,
-                    new DoubleAnimation(p.X  - LrcScrollViewer.ViewportWidth *0.4, TimeSpan.FromMilliseconds(500)));
-            currentBlock = block;
+            catch { }
         }
 
         private void ShowLyricAnimation()

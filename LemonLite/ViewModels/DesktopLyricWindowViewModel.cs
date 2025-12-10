@@ -140,7 +140,11 @@ public partial class DesktopLyricWindowViewModel:ObservableObject
     }
     private async void Update(LrcLine? lrc)
     {
-        if (lrc == null) return;
+        if (lrc == null)
+        {
+            LyricControl.ClearAll();
+            return;
+        }
         UpdateAnimation?.Invoke();
         double fontSize = _settingsMgr.Data.LrcFontSize;
         await Task.Delay(200);

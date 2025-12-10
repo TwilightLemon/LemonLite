@@ -58,6 +58,12 @@ public class FluentWindowBase : Window
         _behaviors.Add(_blurBehavior);
     }
 
+    protected override void OnClosed(EventArgs e)
+    {
+        _behaviors.Clear();
+        base.OnClosed(e);
+    }
+
     public override void OnApplyTemplate()
     {
         base.OnApplyTemplate();
@@ -108,7 +114,7 @@ public class FluentWindowBase : Window
         ApplyResizeMode();
     }
 
-    public bool ExitOnCloseBtnClicked { get; set; } = false;
+    public bool ExitOnCloseBtnClicked { get; set; } = true;
 
     private void CloseBtn_Click(object sender, RoutedEventArgs e)
     {

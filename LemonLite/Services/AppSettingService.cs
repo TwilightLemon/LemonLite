@@ -45,8 +45,7 @@ public class AppSettingService : IHostedService
     {
         foreach (var mgr in _settingsMgrs.Values)
         {
-            if (!mgr.Load())
-                throw new Exception($"failed to load AppSettings: {mgr}");
+            mgr.Load();
         }
     }
     private void Save()

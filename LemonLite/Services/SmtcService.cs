@@ -64,6 +64,9 @@ public class SmtcService(AppSettingService appSettingService) : IHostedService
     {
         Position = 0;
         Duration = 0;
+        _isPlaying = false;
+        _playbackTimer.Stop();
+        PlayingStateChanged?.Invoke(_isPlaying);
         PositionChanged?.Invoke(Position);
         DurationChanged?.Invoke(Duration);
     }
@@ -92,8 +95,6 @@ public class SmtcService(AppSettingService appSettingService) : IHostedService
     private void OnSessionExited(object? sender, EventArgs e)
     {
         Reset();
-        _isPlaying = false;
-        PlayingStateChanged?.Invoke(_isPlaying);
     }
 
     private void OnSessionChanged(object? sender, EventArgs e)

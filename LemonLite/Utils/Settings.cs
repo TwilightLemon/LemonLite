@@ -33,10 +33,6 @@ public class SettingsMgr<T>: ISettingsMgr where T : class
     /// 为json序列化保留的构造函数
     /// </summary>
     public SettingsMgr() { }
-    static SettingsMgr()
-    {
-        Settings.LoadPath();
-    }
     public SettingsMgr(string Sign, string pkgName,Settings.sType type=Settings.sType.Settings)
     {
         this.Sign = Sign;
@@ -73,6 +69,7 @@ public class SettingsMgr<T>: ISettingsMgr where T : class
         }
         catch
         {
+            Data = Activator.CreateInstance<T>();
             return false;
         }
     }

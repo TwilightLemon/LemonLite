@@ -9,6 +9,7 @@ using Microsoft.Extensions.Hosting;
 using System;
 using System.Diagnostics;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace LemonLite;
@@ -21,6 +22,13 @@ public partial class App : Application
     public App()
     {
         InitializeComponent();
+
+        Settings.LoadPath();
+
+        AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+        Current.DispatcherUnhandledException += Current_DispatcherUnhandledException;
+        TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
+        
         Host = new HostBuilder().ConfigureServices(BuildHost).Build();
         Startup += App_Startup;
         Exit += App_Exit;
@@ -135,5 +143,25 @@ public partial class App : Application
     private void App_Exit(object sender, ExitEventArgs e)
     {
         Host.StopAsync().Wait();
+    }
+
+    private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+    {
+        if (e.ExceptionObject is Exception ex)
+        {
+            Logger.Fatal("AppDomain Unhandled Exception", ex);
+        }
+    }
+
+    private void Current_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+    {
+        Logger.Error("Dispatcher Unhandled Exception", e.Exception);
+        e.Handled = true;
+    }
+
+    private void TaskScheduler_UnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+    {
+        Logger.Error("TaskScheduler Unobserved Task Exception", e.Exception);
+        e.SetObserved();
     }
 }
