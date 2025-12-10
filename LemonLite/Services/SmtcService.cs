@@ -121,10 +121,10 @@ public class SmtcService(AppSettingService appSettingService) : IHostedService
         if (_hasValidTimeline)
         {
             // SMTC提供了有效Timeline，使用SMTC数据
-            var duration = timeline!.EndTime - timeline.StartTime;
+            var duration = timeline!.EndTime;
             UpdateDuration(duration.TotalSeconds);
 
-            var position = timeline.Position - timeline.StartTime;
+            var position = timeline.Position;
             UpdatePosition(position.TotalSeconds);
         }
 
@@ -156,11 +156,11 @@ public class SmtcService(AppSettingService appSettingService) : IHostedService
             _hasValidTimeline = true;
 
             // 更新时长
-            var duration = timeline.EndTime - timeline.StartTime;
+            var duration = timeline.EndTime;
             UpdateDuration(duration.TotalSeconds);
 
             // 更新位置
-            var position = timeline.Position - timeline.StartTime;
+            var position = timeline.Position;
             UpdatePosition(position.TotalSeconds);
 
             // 重置计时器基准

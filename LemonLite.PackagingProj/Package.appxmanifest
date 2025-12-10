@@ -10,7 +10,7 @@
   <Identity
     Name="TwilightLemon.LemonLite"
     Publisher="CN=B67FA582-E91E-438D-B8CB-385EE5B450A4"
-    Version="1.0.1.0" />
+    Version="1.0.2.0" />
 
   <Properties>
     <DisplayName>LemonLite</DisplayName>

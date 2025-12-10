@@ -4,6 +4,8 @@ using Lyricify.Lyrics.Models;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Net.Http;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
@@ -49,16 +51,37 @@ public static class LyricHelper
         return null;
     }
 
+    private static string GetSearchCacheKey(string title, string artist, string album, int durationMs)
+    {
+        var input = $"{title}|{artist}|{album}|{durationMs}";
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(input));
+        return Convert.ToHexString(hash)[..16];
+    }
+
     public static async Task<MusicMetaData?> SearchMusicAsync(string title, string artist, string album, int durationMs, CancellationToken cancellationToken = default)
     {
         try
         {
+            // Try to load from cache first
+            var cacheKey = GetSearchCacheKey(title, artist, album, durationMs);
+            var cachePath = System.IO.Path.Combine(Settings.CachePath, $"{cacheKey}.meta");
+            if (await Settings.LoadFromJsonAsync<MusicMetaData>(cachePath, false) is { Id: not null } cached)
+            {
+                return cached;
+            }
+
             var hc = App.Services.GetRequiredService<IHttpClientFactory>().CreateClient(App.AzureLiteHttpClientFlag);
             hc.BaseAddress = new Uri(EndPoint);
             var data = await hc.GetStringAsync($"/search?title={HttpUtility.UrlEncode(title)}&artist={HttpUtility.UrlEncode(artist)}&album={HttpUtility.UrlEncode(album)}&ms={durationMs}", cancellationToken);
             if (!string.IsNullOrEmpty(data))
             {
-                return JsonSerializer.Deserialize<MusicMetaData>(data);
+                var result = JsonSerializer.Deserialize<MusicMetaData>(data);
+                // Cache the result if valid
+                if (result?.Id != null)
+                {
+                    await Settings.SaveAsJsonAsync(result, cachePath, false);
+                }
+                return result;
             }
         }
         catch (OperationCanceledException)

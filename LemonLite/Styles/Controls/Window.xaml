@@ -4,7 +4,7 @@
     <Style x:Key="FluentWindowStyle" TargetType="{x:Type Window}">
         <Setter Property="Background" Value="{DynamicResource WindowBackgroundColor}" />
         <Setter Property="Foreground" Value="{DynamicResource ForeColor}" />
-        <Setter Property="FontFamily" Value="{StaticResource DefaultFontFamily}" />
+        <Setter Property="FontFamily" Value="{DynamicResource DefaultFontFamily}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Window}">
@@ -20,7 +20,7 @@
                                        BorderThickness="0"
                                        Content="&#xE8BB;"
                                        Cursor="Hand"
-                                       FontFamily="{StaticResource SegoeFluentIcon}"
+                                       FontFamily="{DynamicResource SegoeFluentIcon}"
                                        FontSize="10"
                                        Foreground="{DynamicResource ForeColor}"
                                        HoverBackground="#FFE32820"
@@ -38,7 +38,7 @@
                                        Cursor="Hand"
                                        DisabledBackground="Transparent"
                                        DisabledForeground="{DynamicResource FocusMaskColor}"
-                                       FontFamily="{StaticResource SegoeFluentIcon}"
+                                       FontFamily="{DynamicResource SegoeFluentIcon}"
                                        FontSize="10"
                                        Foreground="{DynamicResource ForeColor}"
                                        HoverBackground="{DynamicResource MaskColor}"
@@ -63,7 +63,7 @@
                                        BorderThickness="0"
                                        Content="&#xE921;"
                                        Cursor="Hand"
-                                       FontFamily="{StaticResource SegoeFluentIcon}"
+                                       FontFamily="{DynamicResource SegoeFluentIcon}"
                                        FontSize="10"
                                        Foreground="{DynamicResource ForeColor}"
                                        HoverBackground="{DynamicResource MaskColor}"

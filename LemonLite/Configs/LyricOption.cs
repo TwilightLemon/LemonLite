@@ -8,5 +8,5 @@ public class LyricOption
     /// <summary>
     /// LyricView的字体选项
     /// </summary>
-    public string FontFamily { get; set; } = "Segou UI"; 
+    public string FontFamily { get; set; } = "Segoe UI"; 
 }

@@ -1,3 +1,4 @@
+using LemonLite.Behaviors;
 using LemonLite.Configs;
 using LemonLite.Utils;
 using System;
@@ -58,6 +59,7 @@ public class UIResourceService
         // 添加新的主题资源字典
         App.Current.Resources.MergedDictionaries.Add(new ResourceDictionary(){Source=new Uri(uri,UriKind.Absolute)});
 
+        BlurWindowBehavior.SetDarkMode(_appCurrentDarkMode);
         OnColorModeChanged?.Invoke();
     }
 

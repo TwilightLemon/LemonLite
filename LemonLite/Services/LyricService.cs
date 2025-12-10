@@ -121,6 +121,9 @@ public class LyricService
     private async Task LoadLyricFromCurrentMediaAsync()
     {
         if (await _smtcService.SmtcListener.GetMediaInfoAsync() is not { PlaybackType: Windows.Media.MediaPlaybackType.Music } info) return;
+        //不能没有title
+        if(string.IsNullOrEmpty(info.Title)) return;
+
         var newInfo=info.Title + info.Artist;
         if (_currentMusicInfo == newInfo) return;
         _currentMusicInfo = newInfo;
@@ -202,7 +205,7 @@ public class LyricService
     }
 
     /// <summary>
-    /// 完全重置歌词状态
+    /// 重置歌词状态
     /// </summary>
     public void Reset()
     {

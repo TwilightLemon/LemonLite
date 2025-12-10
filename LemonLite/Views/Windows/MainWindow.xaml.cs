@@ -3,6 +3,7 @@ using LemonLite.Configs;
 using LemonLite.Services;
 using LemonLite.Utils;
 using LemonLite.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Security.Policy;
 using System.Windows;
@@ -23,12 +24,13 @@ public partial class MainWindow : Window
 {
     private readonly MainWindowViewModel vm;
     private readonly SmtcService smtcService;
+    private readonly UIResourceService ui;
     private readonly SettingsMgr<Appearance> _mgr;
     private const double MobileLayoutThreshold = 600;
     private bool _isMobileLayout = false;
     private Storyboard? LyricImgRTAni;
 
-    public MainWindow(MainWindowViewModel vm,AppSettingService appSettingService, SmtcService smtcService)
+    public MainWindow(MainWindowViewModel vm,AppSettingService appSettingService, SmtcService smtcService,UIResourceService uiResourceService)
     {
         InitializeComponent();
         this.DataContext = vm;
@@ -37,6 +39,7 @@ public partial class MainWindow : Window
         LyricViewHost.Child = vm.LyricView;
         this.vm = vm;
         this.smtcService = smtcService;
+        this.ui = uiResourceService;
         SizeChanged += MainWindow_SizeChanged;
         Loaded += MainWindow_Loaded;
         Closed += MainWindow_Closed;
@@ -82,12 +85,12 @@ public partial class MainWindow : Window
         if (_mgr.Data.Background == Appearance.BackgroundType.Acrylic)
         {
             material.MaterialMode = MaterialType.Acrylic;
+            material.CompositonColor = ui.GetIsDarkMode() ? Color.FromArgb(0x01, 0, 0, 0) : Color.FromArgb(0x01, 0xff, 0xff, 0xff);
             material.UseWindowComposition = true;
             AnimatedBackgroundBd.Visibility = Visibility.Visible;
             AnimatedBackgroundBd.Opacity = _mgr.Data.AcylicOpacity;
             Background = Brushes.Transparent;
             ImageBackground.Background = null;
-
         }
         else if (_mgr.Data.Background == Appearance.BackgroundType.Image)
         {

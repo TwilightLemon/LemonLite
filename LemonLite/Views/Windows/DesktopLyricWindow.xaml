@@ -134,7 +134,7 @@
                        VerticalAlignment="Top"
                        Click="CloseBtn_Click"
                        Content="&#xE8BB;"
-                       FontFamily="Segoe Fluent Icons"
+                       FontFamily="{StaticResource SegoeFluentIcon}"
                        FontSize="10"
                        Style="{StaticResource SimpleIconButtonStyleForWs}"
                        ToolTip="Close desktop lyric viewer" />
