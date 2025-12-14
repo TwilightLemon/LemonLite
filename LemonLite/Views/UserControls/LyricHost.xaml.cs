@@ -109,6 +109,13 @@ public partial class LyricHost : UserControl
         }
         _ = WaitToScroll();
     }
+    public void Clear()
+    {
+        LrcContainer.Children.Clear();
+        lrcs.Clear();
+        scrollviewer.BeginAnimation(ScrollViewerUtils.VerticalOffsetProperty, null);
+        currentLrc = null;
+    }
 
     private Thickness lyricSpacing= new(0, 0, 0, 30);
     public void Load(LyricsData lyricsData,LyricsData? trans=null,LyricsData? romaji=null,bool isPureLrc=false)

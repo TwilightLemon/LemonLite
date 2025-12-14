@@ -8,7 +8,7 @@ public class SmtcListener(GlobalSystemMediaTransportControlsSessionManager mgr)
     private GlobalSystemMediaTransportControlsSession? _globalSMTCSession;
     private readonly object _sessionLock = new();
     private string? _currentSessionId;
-    public GlobalSystemMediaTransportControlsSessionManager SessionManager { get; private set; } = mgr;
+    public GlobalSystemMediaTransportControlsSessionManager SessionManager { get; } = mgr;
 
     public static async Task<SmtcListener> CreateInstance(Func<string?, bool> sessionIdFlitter)
     {

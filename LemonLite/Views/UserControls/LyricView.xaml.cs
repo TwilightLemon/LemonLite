@@ -174,8 +174,18 @@ namespace LemonLite.Views.UserControls
             });
         }
 
-        private void OnLyricLoaded(LyricLoadedEventArgs args)
+        private void OnLyricLoaded(LyricLoadedEventArgs? args)
         {
+            if(args == null)
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    LrcHost.Clear();
+                    IsTranslationAvailable = false;
+                    IsRomajiAvailable = false;
+                });
+                return;
+            }
             Dispatcher.Invoke(async () =>
             {
                 IsTranslationAvailable = args.Trans != null;

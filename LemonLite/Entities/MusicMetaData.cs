@@ -49,5 +49,5 @@ public class MusicMetaData
     /// <summary>
     /// 获取格式化的歌手名称
     /// </summary>
-    public string ArtistString => Artists != null ? string.Join(", ", Artists) : string.Empty;
+    public string ArtistString => Artists != null ? string.Join("/ ", Artists) : string.Empty;
 }

@@ -45,7 +45,7 @@ public class LyricService
     /// <summary>
     /// 当歌词加载完成时触发
     /// </summary>
-    public event Action<LyricLoadedEventArgs>? LyricLoaded;
+    public event Action<LyricLoadedEventArgs?>? LyricLoaded;
 
     /// <summary>
     /// 当歌词行到达时触发（用于DesktopLyric等）
@@ -177,9 +177,9 @@ public class LyricService
     {
         try
         {
-            if (await LyricHelper.GetLyricById(id,source, cancellationToken) is { } dt)
+            if (await LyricHelper.GetLyricById(id, source, cancellationToken) is { } dt)
             {
-                if (cancellationToken.IsCancellationRequested ) return;
+                if (cancellationToken.IsCancellationRequested) return;
 
                 var model = LyricHelper.LoadLrc(dt);
                 if (model.lrc == null) return;
@@ -198,6 +198,7 @@ public class LyricService
                     model.isPureLrc
                 ));
             }
+            else LyricLoaded?.Invoke(null);
         }
         catch (OperationCanceledException)
         {

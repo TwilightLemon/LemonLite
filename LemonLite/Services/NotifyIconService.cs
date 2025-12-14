@@ -6,15 +6,23 @@ using H.NotifyIcon;
 using System.Windows.Input;
 using Microsoft.Extensions.DependencyInjection;
 using LemonLite.Views.Windows;
+using System.Threading.Tasks;
 
 namespace LemonLite.Services;
 
-public class NotifyIconService(AppSettingService appSettingService, UIResourceService uiResourceService)
+public class NotifyIconService(AppSettingService appSettingService, UIResourceService uiResourceService,SmtcService smtc)
 {
     private TaskbarIcon? _notifyIcon;
     private readonly SettingsMgr<AppOption> opt = appSettingService.GetConfigMgr<AppOption>();
     private readonly UIResourceService _uiResourceService = uiResourceService;
     private Window? _messageWindow;
+
+    private void UpdateMediaInfo()
+    {
+        App.Current.Dispatcher.BeginInvoke(async() => _notifyIcon!.ToolTipText = await smtc.SmtcListener.GetMediaInfoAsync() is { PlaybackType: Windows.Media.MediaPlaybackType.Music } info
+            ? $"Lemon Lite \r\nPlaying: {info.Title} - {info.Artist}"
+            : "Lemon Lite");
+    }
 
     public void InitNotifyIcon()
     {
@@ -30,6 +38,9 @@ public class NotifyIconService(AppSettingService appSettingService, UIResourceSe
             IconSource = new System.Windows.Media.Imaging.BitmapImage(
                 new System.Uri("pack://application:,,,/LemonLite;component/Resources/icon.ico"))
         };
+        UpdateMediaInfo();
+        smtc.SmtcListener.MediaPropertiesChanged += (s, e) => UpdateMediaInfo();
+        smtc.SmtcListener.SessionChanged += (s, e) => UpdateMediaInfo();
 
         // Create context menu
         var contextMenu = new ContextMenu();
@@ -65,12 +76,21 @@ public class NotifyIconService(AppSettingService appSettingService, UIResourceSe
             App.Services.GetRequiredService<SettingsWindow>().Show();
         };
 
+        var refresh = new MenuItem { Header = "Refresh Lyrics" };
+        refresh.Click += async (s, e) =>
+        {
+            var smtc = App.Services.GetRequiredService<SmtcService>();
+            await smtc.StopAsync(default).ContinueWith(_=>smtc.StartAsync(default));
+            App.Current.Dispatcher.Invoke(App.ApplyAppOptions);
+        };
+
         var exit = new MenuItem { Header = "Exit" };
         exit.Click += (s, e) => App.Current.Shutdown();
 
         contextMenu.Items.Add(openLrcWindow);
         contextMenu.Items.Add(desktop);
         contextMenu.Items.Add(settings);
+        contextMenu.Items.Add(refresh);
         contextMenu.Items.Add(exit);
 
         _notifyIcon.ContextMenu = contextMenu;
