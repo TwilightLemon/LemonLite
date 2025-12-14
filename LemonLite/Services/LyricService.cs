@@ -164,7 +164,7 @@ public class LyricService
                 _smtcSource = _smtcSource?.EndsWith(".exe") is true ? mediaId[..^4] : mediaId;
 
                 var source = musicMetaData.Searcher?.Name?.ToLower();
-                await LoadLyricByIdAsync(musicMetaData.Id,source, cancellationToken);
+                await LoadLyricByIdAsync(musicMetaData.Id,source!, cancellationToken);
             }
         }
         catch (OperationCanceledException) { }

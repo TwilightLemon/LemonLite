@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "LemonLite": {
+      "commandName": "Project",
+      "remoteDebugEnabled": false
+    }
+  }
+}
