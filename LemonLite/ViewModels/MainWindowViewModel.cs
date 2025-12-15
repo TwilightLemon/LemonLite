@@ -210,7 +210,7 @@ public partial class MainWindowViewModel : ObservableObject
                 else
                 {
                     await Task.Delay(retryCount * 200);
-                    UpdateCover(retryCount++);
+                    UpdateCover(retryCount+1);
                 }
             }
         }

@@ -25,9 +25,11 @@ public partial class App : Application
 
         Settings.LoadPath();
 
+#if !DEBUG
         AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
         Current.DispatcherUnhandledException += Current_DispatcherUnhandledException;
         TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
+#endif 
         
         Host = new HostBuilder().ConfigureServices(BuildHost).Build();
         Startup += App_Startup;
