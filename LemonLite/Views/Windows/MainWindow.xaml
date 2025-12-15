@@ -44,9 +44,9 @@
                 <ImageBrush ImageSource="{Binding BackgroundImageSource, Mode=OneWay}" Stretch="UniformToFill">
                     <ImageBrush.RelativeTransform>
                         <TransformGroup>
-                            <ScaleTransform CenterX="0.5" CenterY="0.5" ScaleX="1.4" ScaleY="1.4" />
-                            <RotateTransform x:Name="LyricImgRT" Angle="0" CenterX="0.5" CenterY="0.5" />
-                            <TranslateTransform />
+                            <TranslateTransform Y="0.5" />
+                            <ScaleTransform CenterX="0.5" CenterY="1" ScaleX="2.4" ScaleY="2.4" />
+                            <RotateTransform x:Name="LyricImgRT" Angle="0" CenterX="0.5" CenterY="1" />
                         </TransformGroup>
                     </ImageBrush.RelativeTransform>
                 </ImageBrush>

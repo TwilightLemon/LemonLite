@@ -489,13 +489,8 @@ public static class ImageHelper
         bitmap.UnlockBits(data);
     }
 
-    public static void ScaleImage(this Bitmap bitmap, double scale)
+    public static void ScaleImage(this Bitmap bitmap, int newWidth,int newHeight)
     {
-        // 计算新的尺寸
-        int newWidth = (int)(bitmap.Width * scale);
-        int newHeight = (int)(bitmap.Height * scale);
-
-        // 创建目标位图
         Bitmap newBitmap = new Bitmap(newWidth, newHeight, bitmap.PixelFormat);
 
         // 设置高质量绘图参数
@@ -520,8 +515,8 @@ public static class ImageHelper
     {
         bitmap.AdjustContrast(isDarkmode ? -20 : -30);
         bitmap.AddMask(isDarkmode);
-        bitmap.ScaleImage(2);
+        bitmap.ScaleImage(1440,1440);
         var rect = new Rectangle(0, 0, bitmap.Width, bitmap.Height);
-        bitmap.GaussianBlur(ref rect, 80f, false);
+        bitmap.GaussianBlur(ref rect, 40f, false);
     }
 }

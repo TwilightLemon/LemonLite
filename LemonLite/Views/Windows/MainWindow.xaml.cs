@@ -378,7 +378,7 @@ public partial class MainWindow : Window
         if (LyricImgRTAni == null)
         {
             LyricImgRTAni = new();
-            DoubleAnimation da = new(0, 360, TimeSpan.FromSeconds(15))
+            DoubleAnimation da = new(0, 360, TimeSpan.FromSeconds(30))
             {
                 RepeatBehavior = RepeatBehavior.Forever
             };
