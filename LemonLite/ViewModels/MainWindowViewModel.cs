@@ -3,11 +3,13 @@ using CommunityToolkit.Mvvm.Input;
 using LemonLite.Services;
 using LemonLite.Utils;
 using LemonLite.Views.UserControls;
+using LemonLite.Views.Windows;
 using System;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 
 namespace LemonLite.ViewModels;
 
@@ -41,7 +43,7 @@ public partial class MainWindowViewModel : ObservableObject
 
     private void SmtcListener_SessionExited(object? sender, EventArgs e)
     {
-        App.Current.Dispatcher.Invoke(App.DestroyMainWindow);
+        App.Current.Dispatcher.Invoke(App.WindowManager.Destroy<MainWindow>);
     }
 
     private void SmtcListener_SessionChanged(object? sender, EventArgs e)

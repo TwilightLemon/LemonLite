@@ -7,6 +7,7 @@ using System.Windows.Input;
 using Microsoft.Extensions.DependencyInjection;
 using LemonLite.Views.Windows;
 using System.Threading.Tasks;
+using System.Windows.Media;
 
 namespace LemonLite.Services;
 
@@ -55,7 +56,7 @@ public class NotifyIconService(AppSettingService appSettingService, UIResourceSe
         {
             opt.Data.StartWithMainWindow = !opt.Data.StartWithMainWindow;
             openLrcWindow.IsChecked = opt.Data.StartWithMainWindow;
-            App.ApplyAppOptions();
+            App.WindowManager.SetWindowState<MainWindow>(opt.Data.StartWithMainWindow);
         };
 
         var desktop = new MenuItem 
@@ -68,7 +69,20 @@ public class NotifyIconService(AppSettingService appSettingService, UIResourceSe
         {
             opt.Data.StartWithDesktopLyric = !opt.Data.StartWithDesktopLyric;
             desktop.IsChecked = opt.Data.StartWithDesktopLyric;
-            App.ApplyAppOptions();
+            App.WindowManager.SetWindowState<DesktopLyricWindow>(opt.Data.StartWithDesktopLyric);
+        };
+
+        var audioVisualizer = new MenuItem
+        {
+            Header = "Audio Visualizer",
+            IsCheckable = true,
+            IsChecked = opt.Data.EnableAudioVisualizer
+        };
+        audioVisualizer.Click += (s, e) =>
+        {
+            opt.Data.EnableAudioVisualizer = !opt.Data.EnableAudioVisualizer;
+            audioVisualizer.IsChecked = opt.Data.EnableAudioVisualizer;
+            App.WindowManager.SetWindowState<AudioVisualizerWindow>(opt.Data.EnableAudioVisualizer);
         };
 
         var settings =new MenuItem { Header = "Settings" };
@@ -89,6 +103,7 @@ public class NotifyIconService(AppSettingService appSettingService, UIResourceSe
 
         contextMenu.Items.Add(openLrcWindow);
         contextMenu.Items.Add(desktop);
+        contextMenu.Items.Add(audioVisualizer);
         contextMenu.Items.Add(settings);
         contextMenu.Items.Add(refresh);
         contextMenu.Items.Add(exit);

@@ -14,6 +14,7 @@ public partial class SettingsWindowViewModel:ObservableObject
         new SettingsMenuItem("General",(Geometry)App.Current.FindResource("Icon_Settings"),typeof(AppSettingsPage)),
         new SettingsMenuItem("Lyric View",null!,typeof(LyricSettingsPage)),
         new SettingsMenuItem("Desktop Lyric",null!,typeof(DesktopLyricSettingsPage)),
+        new SettingsMenuItem("Audio Visualizer",null!,typeof(AudioVisualizerSettingsPage)),
         new SettingsMenuItem("About",null!,typeof(AboutPage))
         ];
 

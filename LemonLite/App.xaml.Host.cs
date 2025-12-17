@@ -41,7 +41,8 @@ public partial class App
                                                             .AddConfig<LyricOption>()
                                                             .AddConfig<Appearance>()
                                                             .AddConfig<DesktopLyricOption>()
-                                                            .AddConfig<AppOption>());
+                                                            .AddConfig<AppOption>()
+                                                            .AddConfig<AudioVisualizerConfig>());
         services.AddHostedService(p => p.GetRequiredService<SmtcService>());
 
         services.AddSingleton<AppSettingService>();
@@ -49,6 +50,7 @@ public partial class App
         services.AddSingleton<UIResourceService>();
         services.AddSingleton<SmtcService>();
         services.AddSingleton<LyricService>();
+        services.AddSingleton<WindowInstanceManager>();
 
         services.AddTransient<MainWindowViewModel>();
         services.AddTransient<MainWindow>();
@@ -57,11 +59,14 @@ public partial class App
         services.AddTransient<DesktopLyricWindow>();
         services.AddTransient<DesktopLyricWindowViewModel>();
 
+        services.AddTransient<AudioVisualizerWindow>();
+
         services.AddTransient<SettingsWindow>();
         services.AddTransient<SettingsWindowViewModel>();
         services.AddTransient<AppSettingsPage>();
         services.AddTransient<LyricSettingsPage>();
         services.AddTransient<DesktopLyricSettingsPage>();
+        services.AddTransient<AudioVisualizerSettingsPage>();
         services.AddTransient<AboutPage>();
     }
     private IHost Host { get; init; }

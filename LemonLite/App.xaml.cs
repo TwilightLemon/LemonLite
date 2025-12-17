@@ -43,60 +43,7 @@ public partial class App : Application
     }
 
     public static new App Current => (App)Application.Current;
-    public DesktopLyricWindow? DesktopLyricWindowInstance { get; set; }
-    public new MainWindow? MainWindow { get; set; }
-    private static readonly object _applyOptionsLock = new();
-    public static void CreateMainWindow()
-    {
-        if (Current.MainWindow is { IsLoaded: true } window)
-        {
-            window.Activate();
-            return;
-        }
-        Current.MainWindow = Services.GetRequiredService<MainWindow>();
-        Current.MainWindow.Closed += MainWindow_Closed;
-        Current.MainWindow.Show();
-    }
-
-    private static void MainWindow_Closed(object? sender, EventArgs e)
-    {
-        Current.MainWindow = null;
-    }
-
-    public static void DestroyMainWindow()
-    {
-        if (Current.MainWindow is { } window)
-        {
-            window.Close();
-            Current.MainWindow = null;
-        }
-    }
-    public static void CreateDesktopLyricWindow()
-    {
-        if (Current.DesktopLyricWindowInstance is { IsLoaded: true } exist)
-        {
-            exist.Activate();
-            return;
-        }
-        var window = Services.GetRequiredService<DesktopLyricWindow>();
-        window.Closed += DesktopLyricWindow_Closed;
-        window.Show();
-        Current.DesktopLyricWindowInstance = window;
-    }
-
-    private static void DesktopLyricWindow_Closed(object? sender, EventArgs e)
-    {
-        Current.DesktopLyricWindowInstance = null;
-    }
-
-    public static void DestroyDesktopLyricWindow()
-    {
-        if (Current.DesktopLyricWindowInstance is { } window)
-        {
-            window.Close();
-            Current.DesktopLyricWindowInstance = null;
-        }
-    }
+    public static WindowInstanceManager WindowManager => Services.GetRequiredService<WindowInstanceManager>();
 
     public static void ApplyAppOptions()
     {
@@ -106,27 +53,9 @@ public partial class App : Application
 
         if (smtc.IsSessionValid)
         {
-            lock (_applyOptionsLock)
-            {
-                if (opt.Data.StartWithMainWindow && Current.MainWindow == null)
-                {
-                    CreateMainWindow();
-                }
-                else if (!opt.Data.StartWithMainWindow && Current.MainWindow != null)
-                {
-                    DestroyMainWindow();
-                }
-
-                if (opt.Data.StartWithDesktopLyric && Current.DesktopLyricWindowInstance == null)
-                {
-                    CreateDesktopLyricWindow();
-                }
-                else if (!opt.Data.StartWithDesktopLyric && Current.DesktopLyricWindowInstance != null)
-                {
-                    DestroyDesktopLyricWindow();
-                }
-            }
-
+            WindowManager.SetWindowState<MainWindow>(opt.Data.StartWithMainWindow);
+            WindowManager.SetWindowState<DesktopLyricWindow>(opt.Data.StartWithDesktopLyric);
+            WindowManager.SetWindowState<AudioVisualizerWindow>(opt.Data.EnableAudioVisualizer);
         }
     }
     private async void App_Startup(object sender, StartupEventArgs e)

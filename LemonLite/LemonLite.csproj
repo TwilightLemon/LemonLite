@@ -36,6 +36,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\AudioVisualizer\LibAudioVisualizer.WPF\LibAudioVisualizer.WPF.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<Resource Include="Resources\Segoe Fluent Icons.ttf" />
 	</ItemGroup>
 

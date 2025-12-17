@@ -1,15 +1,17 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using LemonLite.Utils;
 using LemonLite.Configs;
 using LemonLite.Services;
+using LemonLite.Utils;
 using LemonLite.Views.UserControls;
+using LemonLite.Views.Windows;
 using Lyricify.Lyrics.Models;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace LemonLite.ViewModels;
 /// <summary>
@@ -40,7 +42,7 @@ public partial class DesktopLyricWindowViewModel:ObservableObject
 
     private void SmtcListener_SessionExited(object? sender, EventArgs e)
     {
-        App.Current.Dispatcher.Invoke(App.DestroyDesktopLyricWindow);
+        App.Current.Dispatcher.Invoke(App.WindowManager.Destroy<DesktopLyricWindow>);
     }
 
     public void Dispose()
@@ -178,7 +180,7 @@ public partial class DesktopLyricWindowViewModel:ObservableObject
     private Task<bool> PlayLast()=>_smtcService.SmtcListener.Previous();
 
     [RelayCommand]
-    private void ShowMainWindow() => App.CreateMainWindow();
+    private void ShowMainWindow() => App.WindowManager.CreateOrActivate<MainWindow>();
 
     [RelayCommand]
     private void FontSizeUp()

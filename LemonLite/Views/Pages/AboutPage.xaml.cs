@@ -59,6 +59,13 @@ namespace LemonLite.Views.Pages
                 Url = "https://github.com/OrgEleCho/EleCho.WpfSuite"
             },
             new OpenSourceComponent
+            { 
+            Name="SlimeNull/AudioVisualizer",
+            Version="commit: 7fbf2ce",
+            License="MIT",
+            Url="https://github.com/SlimeNull/AudioVisualizer"
+            },
+            new OpenSourceComponent
             {
                 Name = "FluentWpfCore",
                 Version = "1.0.0.4",

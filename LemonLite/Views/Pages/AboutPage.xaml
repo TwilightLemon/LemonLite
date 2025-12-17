@@ -89,7 +89,7 @@
                            FontWeight="SemiBold"
                            Text="Open Source Components" />
 
-                <Border Padding="16"
+                <Border Padding="16,8"
                         Background="{DynamicResource MaskColor}"
                         CornerRadius="12">
                     <ItemsControl ItemsSource="{Binding OpenSourceComponents}">

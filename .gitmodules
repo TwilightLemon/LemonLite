@@ -1,0 +1,3 @@
+[submodule "AudioVisualizer"]
+	path = AudioVisualizer
+	url = https://github.com/SlimeNull/AudioVisualizer.git
