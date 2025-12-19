@@ -56,6 +56,7 @@ namespace LemonLite.Views.Windows
         private void AudioVisualizerWindow_Closed(object? sender, EventArgs e)
         {
             visualizerControl.RenderEnabled = false;
+            settings.OnDataChanged -= Settings_OnDataChanged;
             smtcService.SmtcListener.SessionChanged -= UpdatePlayingState;
             smtcService.SmtcListener.SessionExited -= UpdatePlayingState;
             smtcService.SmtcListener.PlaybackInfoChanged -= UpdatePlayingState;

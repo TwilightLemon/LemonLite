@@ -44,6 +44,7 @@ namespace LemonLite.Views.UserControls
         private void LyricView_Loaded(object sender, RoutedEventArgs e)
         {
             Window.GetWindow(this).Closed += delegate {
+                _settings.OnDataChanged -= Settings_OnDataChanged;
                 _lyricService.LyricLoaded -= OnLyricLoaded;
                 _lyricService.TimeUpdated -= OnTimeUpdated;
                 _lyricService.MediaChanged -= OnMediaChanged;
