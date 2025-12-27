@@ -8,10 +8,11 @@ using Microsoft.Extensions.DependencyInjection;
 using LemonLite.Views.Windows;
 using System.Threading.Tasks;
 using System.Windows.Media;
+using System;
 
 namespace LemonLite.Services;
 
-public class NotifyIconService(AppSettingService appSettingService, UIResourceService uiResourceService,SmtcService smtc)
+public class NotifyIconService(AppSettingService appSettingService, UIResourceService uiResourceService,SmtcService smtc):IDisposable
 {
     private TaskbarIcon? _notifyIcon;
     private readonly SettingsMgr<AppOption> opt = appSettingService.GetConfigMgr<AppOption>();
@@ -109,7 +110,8 @@ public class NotifyIconService(AppSettingService appSettingService, UIResourceSe
         contextMenu.Items.Add(exit);
 
         _notifyIcon.ContextMenu = contextMenu;
-        _notifyIcon.ForceCreate(true);
+        //by default, enable efficiency mode as background app
+        _notifyIcon.ForceCreate();
     }
 
     public void Dispose()

@@ -218,9 +218,10 @@ public partial class LyricHost : UserControl
         try
         {
             if (currentLrc == null) return;
-            GeneralTransform gf = lrcs[currentLrc].TransformToVisual(LrcContainer);
+            var lrc = lrcs[currentLrc];
+            GeneralTransform gf = lrc.TransformToVisual(LrcContainer);
             Point p = gf.Transform(new Point(0, 0));
-            double os = p.Y - (scrollviewer.ActualHeight / 2) + 70;
+            double os = p.Y - (scrollviewer.ActualHeight / 2d) + lrc.ActualHeight / 2d;
             var da = new DoubleAnimation(scrollviewer.VerticalOffset, os, TimeSpan.FromMilliseconds(500));
             da.EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut };
             scrollviewer.BeginAnimation(ScrollViewerUtils.VerticalOffsetProperty, da);

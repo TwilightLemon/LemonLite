@@ -234,7 +234,7 @@ public partial class LyricLineControl : UserControl
                             };
 
                             var easing = new CubicEase();
-                            var up = -6;
+                            var up = ActiveLrcLiftupHeight;
                             //高亮分词逐字抬起动画
                             if (textBlock.Inlines.Count > 1)
                             {

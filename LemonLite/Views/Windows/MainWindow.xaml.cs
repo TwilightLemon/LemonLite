@@ -30,7 +30,7 @@ public partial class MainWindow : Window
     private bool _isMobileLayout = false;
     private Storyboard? LyricImgRTAni;
 
-    public MainWindow(MainWindowViewModel vm,AppSettingService appSettingService, SmtcService smtcService,UIResourceService uiResourceService)
+    public MainWindow(MainWindowViewModel vm, AppSettingService appSettingService, SmtcService smtcService, UIResourceService uiResourceService)
     {
         InitializeComponent();
         this.DataContext = vm;
@@ -52,7 +52,7 @@ public partial class MainWindow : Window
 
     private void Appearance_OnDataChanged()
     {
-        Dispatcher.BeginInvoke(()=> ApplySettings());
+        Dispatcher.BeginInvoke(() => ApplySettings());
     }
 
     private void MainWindow_Closed(object? sender, EventArgs e)
@@ -61,9 +61,10 @@ public partial class MainWindow : Window
         _mgr.Data.TopMost = Topmost;
         _mgr.Data.Window = new Rect(Left, Top, Width, Height);
         _mgr.OnDataChanged -= Appearance_OnDataChanged;
+        H.NotifyIcon.EfficiencyMode.EfficiencyModeUtilities.SetEfficiencyMode(true);
     }
 
-    private void ApplySettings(bool isFirstCall=false)
+    private void ApplySettings(bool isFirstCall = false)
     {
         //窗口rect只允许在启动时更新（读取上次的位置）
         if (isFirstCall && !_mgr.Data.Window.IsEmpty)
@@ -98,9 +99,9 @@ public partial class MainWindow : Window
             {
                 material.MaterialMode = MaterialType.None;
                 material.UseWindowComposition = false;
-                AnimatedBackgroundBd.Visibility= Visibility.Collapsed;
+                AnimatedBackgroundBd.Visibility = Visibility.Collapsed;
                 SetResourceReference(BackgroundProperty, "BackgroundColor");
-                ImageBackground.Opacity= _mgr.Data.BackgroundOpacity;
+                ImageBackground.Opacity = _mgr.Data.BackgroundOpacity;
                 ImageBackground.Background = new ImageBrush(new BitmapImage(new Uri(_mgr.Data.BackgroundImagePath))) { Stretch = Stretch.UniformToFill };
             }
         }
@@ -117,8 +118,11 @@ public partial class MainWindow : Window
 
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
+        //Main Lyric Window runs on high performance mode
+        H.NotifyIcon.EfficiencyMode.EfficiencyModeUtilities.SetEfficiencyMode(false);
+
         UpdateLayout(ActualWidth);
-        
+
         vm.PropertyChanged += (s, args) =>
         {
             if (args.PropertyName == nameof(vm.IsPlaying))
@@ -126,7 +130,7 @@ public partial class MainWindow : Window
                 ControlRotationAnimation(vm.IsPlaying);
             }
         };
-        
+
         ControlRotationAnimation(vm.IsPlaying);
     }
 
@@ -171,9 +175,9 @@ public partial class MainWindow : Window
     private void UpdateLayout(double width)
     {
         bool shouldBeMobile = width < MobileLayoutThreshold;
-        
+
         if (shouldBeMobile == _isMobileLayout) return;
-        
+
         _isMobileLayout = shouldBeMobile;
 
         if (_isMobileLayout)
@@ -205,7 +209,7 @@ public partial class MainWindow : Window
         // SongInfoPanel内部使用2行1列布局：第一行放封面和信息文本（左右），第二行放控制按钮
         CoverRow.Height = new GridLength(1, GridUnitType.Auto);
         InfoRow.Height = new GridLength(1, GridUnitType.Auto);
-        
+
         // SongInfoPanel内部列布局：左边封面，右边歌曲信息
         var coverCol = SongInfoPanel.ColumnDefinitions[0];
         var infoCol = SongInfoPanel.ColumnDefinitions[1];
@@ -217,7 +221,7 @@ public partial class MainWindow : Window
         Grid.SetColumn(CoverArea, 0);
         Grid.SetRowSpan(CoverArea, 1);
         LyricPage_ImgEdge.MinWidth = 0;
-      //  LyricPage_ImgEdge.MaxWidth = 120;
+        //  LyricPage_ImgEdge.MaxWidth = 120;
         LyricPage_ImgEdge.MinHeight = 80;
         LyricPage_ImgEdge.Margin = new Thickness(10);
         LyricPage_Img.HorizontalAlignment = HorizontalAlignment.Center;
@@ -269,7 +273,7 @@ public partial class MainWindow : Window
         LyricToolBar.Visibility = Visibility.Collapsed;
     }
 
-    private void MainWindow_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
+    private void MainWindow_MouseLeave(object sender, MouseEventArgs e)
     {
         if (_isMobileLayout)
         {
@@ -281,7 +285,7 @@ public partial class MainWindow : Window
         }
     }
 
-    private void MainWindow_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+    private void MainWindow_MouseEnter(object sender, MouseEventArgs e)
     {
         if (_isMobileLayout)
         {
@@ -292,7 +296,7 @@ public partial class MainWindow : Window
             LyricToolBar.Visibility = Visibility.Visible;
         }
     }
-    
+
     private void SwitchToDesktopLayout()
     {
         // 清除行定义，恢复为单行布局
@@ -310,7 +314,7 @@ public partial class MainWindow : Window
         // 恢复SongInfoPanel内部布局：2行1列，列宽度重置
         CoverRow.Height = new GridLength(2, GridUnitType.Star);
         InfoRow.Height = new GridLength(1, GridUnitType.Star);
-        
+
         var coverCol = SongInfoPanel.ColumnDefinitions[0];
         var infoCol = SongInfoPanel.ColumnDefinitions[1];
         coverCol.Width = new GridLength(1, GridUnitType.Star);
@@ -370,7 +374,7 @@ public partial class MainWindow : Window
         LyricToolBarPanel.Orientation = Orientation.Vertical;
         LyricToolBar.Height = double.NaN;
         LyricToolBar.Width = 36;
-        LyricToolBar.Visibility= Visibility.Visible;
+        LyricToolBar.Visibility = Visibility.Visible;
     }
 
     private void ControlRotationAnimation(bool play)
