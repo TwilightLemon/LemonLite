@@ -27,8 +27,8 @@ public partial class MainWindow : Window
     private readonly UIResourceService ui;
     private readonly SettingsMgr<Appearance> _mgr;
     private const double MobileLayoutThreshold = 600;
-    private bool _isMobileLayout = false;
     private Storyboard? LyricImgRTAni;
+    public bool IsMiniMode { get; private set; }
 
     public MainWindow(MainWindowViewModel vm, AppSettingService appSettingService, SmtcService smtcService, UIResourceService uiResourceService)
     {
@@ -58,7 +58,6 @@ public partial class MainWindow : Window
     private void MainWindow_Closed(object? sender, EventArgs e)
     {
         vm.Dispose();
-        _mgr.Data.TopMost = Topmost;
         _mgr.Data.Window = new Rect(Left, Top, Width, Height);
         _mgr.OnDataChanged -= Appearance_OnDataChanged;
         H.NotifyIcon.EfficiencyMode.EfficiencyModeUtilities.SetEfficiencyMode(true);
@@ -176,11 +175,11 @@ public partial class MainWindow : Window
     {
         bool shouldBeMobile = width < MobileLayoutThreshold;
 
-        if (shouldBeMobile == _isMobileLayout) return;
+        if (shouldBeMobile == IsMiniMode) return;
 
-        _isMobileLayout = shouldBeMobile;
+        IsMiniMode = shouldBeMobile;
 
-        if (_isMobileLayout)
+        if (IsMiniMode)
         {
             SwitchToMobileLayout();
         }
@@ -275,7 +274,7 @@ public partial class MainWindow : Window
 
     private void MainWindow_MouseLeave(object sender, MouseEventArgs e)
     {
-        if (_isMobileLayout)
+        if (IsMiniMode)
         {
             PlayControlPanel.Height = double.NaN;
             CoverArea.Visibility = SongTextInfo.Visibility = Visibility.Visible;
@@ -287,7 +286,7 @@ public partial class MainWindow : Window
 
     private void MainWindow_MouseEnter(object sender, MouseEventArgs e)
     {
-        if (_isMobileLayout)
+        if (IsMiniMode)
         {
             PlayControlPanel.Height = CoverArea.ActualHeight;
             CoverArea.Visibility = SongTextInfo.Visibility = Visibility.Collapsed;
@@ -411,4 +410,8 @@ public partial class MainWindow : Window
         }
     }
 
+    private void SwitchTopMostBtn_Click(object sender, RoutedEventArgs e)
+    {
+        _mgr.Data.TopMost = Topmost;
+    }
 }

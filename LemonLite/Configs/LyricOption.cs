@@ -4,7 +4,7 @@ public class LyricOption
 {
     public bool ShowTranslation { get; set; } = true;
     public bool ShowRomaji { get; set; } = true;
-    public int FontSize { get; set; } = 24;
+    public int FontSize { get; set; } = 32;
     /// <summary>
     /// LyricView的字体选项
     /// </summary>

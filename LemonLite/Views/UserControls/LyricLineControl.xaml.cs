@@ -94,7 +94,7 @@ public partial class LyricLineControl : UserControl
         mainSyllableLrcs.Clear();
         ClearHighlighter();
         //计算EmphasisThreshold
-        var aver = AverageWordDuration = words.Select(w => w.Duration).Average();
+        var aver = AverageWordDuration = words.Average(w => w.Duration);
         if (aver > 0)
         {
             EmphasisThreshold = (int)(aver * 2);
@@ -222,7 +222,7 @@ public partial class LyricLineControl : UserControl
                         if (syllable.Duration >= EmphasisThreshold)
                         {
                             //highlight
-                            var fontColor = CustomHighlighterColor?.Color ?? ((SolidColorBrush)FindResource("ForeColor")).Color;
+                            var fontColor = CustomHighlighterColor?.Color ?? ((SolidColorBrush)FindResource("ActiveLrcForeground")).Color;
                             var lighter = new DropShadowEffect() { BlurRadius = 20, Color = fontColor, Direction = 0, ShadowDepth = 0 };
                             textBlock.Effect = lighter;
                             lighter.BeginAnimation(DropShadowEffect.OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(syllable.Duration * 0.8)));
@@ -400,7 +400,7 @@ public partial class LyricLineControl : UserControl
 
     private LinearGradientBrush CreateBrush(double progress)
     {
-        var fontColor = ((SolidColorBrush)FindResource("ForeColor")).Color;
+        var fontColor = ((SolidColorBrush)FindResource("ActiveLrcForeground")).Color;
         var highlightColor = CustomHighlighterColor?.Color ?? fontColor;
         var normalColor = CustomNormalColor?.Color ?? ((SolidColorBrush)FindResource("InActiveLrcForeground")).Color;
         return new LinearGradientBrush
@@ -422,7 +422,7 @@ public partial class LyricLineControl : UserControl
         mainSyllableBrushes.Clear();
         mainSyllableAnimated.Clear();
         var inactiveColor = CustomNormalColor?.Color ?? ((SolidColorBrush)FindResource("InActiveLrcForeground")).Color;
-        var foreColor = ((SolidColorBrush)FindResource("ForeColor")).Color;
+        var foreColor = ((SolidColorBrush)FindResource("ActiveLrcForeground")).Color;
         foreach (var lrc in mainSyllableLrcs)
         {
             if (animated)
@@ -491,7 +491,7 @@ public partial class LyricLineControl : UserControl
 
             if (control._isPlainLrc)
             {
-                var fontColor = (SolidColorBrush)control.FindResource("ForeColor");
+                var fontColor = (SolidColorBrush)control.FindResource("ActiveLrcForeground");
                 var highlightColor = control.CustomHighlighterColor ?? fontColor;
                 if (control.MainLrcContainer.Children[0] is TextBlock tb)
                 {

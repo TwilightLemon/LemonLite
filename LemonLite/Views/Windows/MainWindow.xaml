@@ -240,6 +240,7 @@
                                      Height="36"
                                      Padding="10"
                                      IsChecked="{Binding Topmost, ElementName=window}"
+                                     Click="SwitchTopMostBtn_Click"
                                      Style="{StaticResource IconToggleButton}"
                                      Tag="{DynamicResource Icon_Topmost}" />
                     <ws:Button Width="36"

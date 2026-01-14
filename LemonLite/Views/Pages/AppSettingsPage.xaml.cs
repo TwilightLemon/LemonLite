@@ -3,7 +3,9 @@ using CommunityToolkit.Mvvm.Input;
 using LemonLite.Configs;
 using LemonLite.Services;
 using LemonLite.Utils;
+using LemonLite.Views.Windows;
 using Microsoft.Extensions.DependencyInjection;
+using NAudio.Gui;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
@@ -19,25 +21,17 @@ namespace LemonLite.Views.Pages
     {
         private readonly SettingsMgr<AppOption> settings;
         private readonly SettingsMgr<Appearance> appearanceSettings;
+        private readonly SmtcService smtc;
 
-        public AppSettingsPage(AppSettingService appSettingService)
+        public AppSettingsPage(AppSettingService appSettingService, SmtcService smtcService)
         {
             InitializeComponent();
             DataContext = this;
             Loaded += AppSettingsPage_Loaded;
-            this.Unloaded += AppSettingsPage_Unloaded;
             settings=appSettingService.GetConfigMgr<AppOption>();
             appearanceSettings=appSettingService.GetConfigMgr<Appearance>();
             ColorMode = appearanceSettings.Data.ColorMode;
-        }
-
-        private void AppSettingsPage_Unloaded(object sender, RoutedEventArgs e)
-        {
-            if (_isSmtcWhiteListChanged)
-            {
-                App.Services.GetRequiredService<SmtcService>().SmtcListener.RefreshCurrentSession();
-            }
-            App.ApplyAppOptions();
+            smtc = smtcService;
         }
 
         private void AppSettingsPage_Loaded(object sender, RoutedEventArgs e)
@@ -68,17 +62,28 @@ namespace LemonLite.Views.Pages
         partial void OnEnableMainWindowChanged(bool value)
         {
             settings.Data.StartWithMainWindow = value;
+            if (smtc.IsSessionValid)
+                App.WindowManager.SetWindowState<MainWindow>(value);
         }
         partial void OnEnableDesktopLyricWindowChanged(bool value)
         {
             settings.Data.StartWithDesktopLyric = value;
+            if (smtc.IsSessionValid)
+                App.WindowManager.SetWindowState<DesktopLyricWindow>(value);
         }
         partial void OnEnableAudioVisualizerChanged(bool value)
         {
             settings.Data.EnableAudioVisualizer = value;
+            if (smtc.IsSessionValid)
+                App.WindowManager.SetWindowState<AudioVisualizerWindow>(value);
         }
         [ObservableProperty]
         private string _liteServerHost = "";
+
+        partial void OnLiteServerHostChanging(string value)
+        {
+            LyricHelper.EndPoint = settings.Data.LiteLyricServerHost = value;
+        }
         
         [ObservableProperty]
         private ColorModeType _colorMode;
@@ -128,14 +133,15 @@ namespace LemonLite.Views.Pages
                 AddSmtcMediaId(fileName);
             }
         }
-        private bool _isSmtcWhiteListChanged = false;
+
         private void AddSmtcMediaId(string mediaId)
         {
             if (!string.IsNullOrWhiteSpace(mediaId) && !SmtcMediaIds.Contains(mediaId))
             {
                 SmtcMediaIds.Add(mediaId);
                 settings.Data.SmtcMediaIds.Add(mediaId);
-                _isSmtcWhiteListChanged = true;
+                //refresh smtc session immediately once the whitelist changed.
+                App.Services.GetRequiredService<SmtcService>().SmtcListener.RefreshCurrentSession();
             }
         }
 
@@ -154,7 +160,7 @@ namespace LemonLite.Views.Pages
             if (SmtcMediaIds.Remove(mediaId))
             {
                 settings.Data.SmtcMediaIds.Remove(mediaId);
-                _isSmtcWhiteListChanged = true;
+                App.Services.GetRequiredService<SmtcService>().SmtcListener.RefreshCurrentSession();
             }
         }
 
@@ -168,11 +174,6 @@ namespace LemonLite.Views.Pages
         partial void OnAppFontFamilyChanged(string value)
         {
             ApplyAppFontFamily();
-        }
-
-        partial void OnLiteServerHostChanged(string value)
-        {
-            settings.Data.LiteLyricServerHost = value;
         }
  
         [ObservableProperty]
