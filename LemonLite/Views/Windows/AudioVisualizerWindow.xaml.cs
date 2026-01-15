@@ -64,8 +64,9 @@ namespace LemonLite.Views.Windows
 
         private void UpdatePlayingState(object? sender, EventArgs e)
         {
-            Dispatcher.BeginInvoke(() =>
+            Dispatcher.BeginInvoke(async() =>
             {
+                await Task.Delay(500);//wait for smtc to update status
                 visualizerControl.RenderEnabled = smtcService.IsSessionValid && smtcService.IsPlaying;
             });
         }
