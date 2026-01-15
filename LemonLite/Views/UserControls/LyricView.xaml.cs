@@ -92,7 +92,6 @@ namespace LemonLite.Views.UserControls
             LyricFontSize = size;
             _settings.Data.FontSize = size;
             LrcHost.ApplyFontSize(size,LyricFontSizeScale);
-            LrcHost.ScrollToCurrent();
         }
 
 

@@ -207,11 +207,11 @@ public partial class LyricHost : UserControl
             currentLrc = line;
             var currentControl = control;
             currentControl.LyricLine.IsCurrent = true;
-            ScrollToCurrent();
+            ScrollToCurrentAnimated();
         }
     }
 
-    public void ScrollToCurrent()
+    private void ScrollToCurrent()
     {
         //被打断的xs内不再滚动
         if ((DateTime.Now - _interruptedTime).TotalSeconds < 5) return;
@@ -225,6 +225,89 @@ public partial class LyricHost : UserControl
             var da = new DoubleAnimation(scrollviewer.VerticalOffset, os, TimeSpan.FromMilliseconds(500));
             da.EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut };
             scrollviewer.BeginAnimation(ScrollViewerUtils.VerticalOffsetProperty, da);
+        }
+        catch { }
+    }
+
+    public void ScrollToCurrentAnimated()
+    {
+        //被打断的xs内不再滚动
+        if ((DateTime.Now - _interruptedTime).TotalSeconds < 5) return;
+        try
+        {
+            if (currentLrc == null) return;
+            var currentControl = lrcs[currentLrc];
+
+            // 计算目标滚动位置
+            GeneralTransform gf = currentControl.TransformToVisual(LrcContainer);
+            Point p = gf.Transform(new Point(0, 0));
+            double targetOffset = p.Y - (scrollviewer.ActualHeight / 2d) + currentControl.ActualHeight / 2d;
+            double scrollDelta = targetOffset - scrollviewer.VerticalOffset;
+
+            // 获取当前可见范围内的歌词行（向下扩展scrollDelta以包含动画后会出现的行）
+            double viewportTop = scrollviewer.VerticalOffset;
+            double viewportBottom = viewportTop + scrollviewer.ActualHeight + Math.Max(0, scrollDelta);
+
+            var visibleLines = new List<SelectiveLyricLine>();
+            foreach (var child in LrcContainer.Children)
+            {
+                if (child is SelectiveLyricLine line)
+                {
+                    GeneralTransform transform = line.TransformToVisual(LrcContainer);
+                    Point linePos = transform.Transform(new Point(0, 0));
+                    double lineTop = linePos.Y;
+                    double lineBottom = lineTop + line.ActualHeight;
+
+                    // 判断是否在可见范围内
+                    if (lineBottom >= viewportTop && lineTop <= viewportBottom)
+                    {
+                        visibleLines.Add(line);
+                    }
+                }
+            }
+
+            // 为每一行可见歌词依次应用跳动动画
+            int delayStep = 50; // 每行延迟的毫秒数
+            for (int i = 0; i < visibleLines.Count; i++)
+            {
+                var line = visibleLines[i];
+                var translateTransform = line.RenderTransform as TranslateTransform;
+                if (translateTransform == null)
+                {
+                    translateTransform = new TranslateTransform();
+                    line.RenderTransform = translateTransform;
+                }
+
+                // 从当前位置跳动到目标位置（向上移动scrollDelta）
+                var animation = new DoubleAnimation
+                {
+                    From = 0,
+                    To = -scrollDelta,
+                    Duration = TimeSpan.FromMilliseconds(400),
+                    BeginTime = TimeSpan.FromMilliseconds(i * delayStep),
+                    EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+                };
+
+                // 动画完成后重置Transform并更新实际滚动位置
+                if (i == visibleLines.Count - 1)
+                {
+                    animation.Completed += (s, e) =>
+                    {
+                        // 重置所有Transform并设置实际滚动位置
+                        foreach (var l in visibleLines)
+                        {
+                            if (l.RenderTransform is TranslateTransform t)
+                            {
+                                t.BeginAnimation(TranslateTransform.YProperty, null);
+                                t.Y = 0;
+                            }
+                        }
+                        scrollviewer.ScrollToVerticalOffset(targetOffset);
+                    };
+                }
+
+                translateTransform.BeginAnimation(TranslateTransform.YProperty, animation);
+            }
         }
         catch { }
     }
