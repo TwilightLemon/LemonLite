@@ -89,7 +89,7 @@ public partial class LyricHost : UserControl
         foreach(var control in lrcs.Values)
         {
             control.LyricLine.FontSize = size * scale;
-            foreach( TextBlock tb in control.LyricLine.MainLrcContainer.Children)
+            foreach( HighlightTextBlock tb in control.LyricLine.MainLrcContainer.Children)
             {
                 tb.FontSize = size;
             }
@@ -129,7 +129,7 @@ public partial class LyricHost : UserControl
         currentLrc = null;
     }
 
-    private Thickness lyricSpacing= new(0, 0, 0, 30);
+    private Thickness lyricSpacing= new(0, 0, 0, 36);
     public void Load(LyricsData lyricsData,LyricsData? trans=null,LyricsData? romaji=null,bool isPureLrc=false)
     {
         _isLoading = true;
@@ -359,6 +359,11 @@ public partial class LyricHost : UserControl
     private void SimpleLyricView_SizeChanged(object sender, SizeChangedEventArgs e)
     {
         ScrollToCurrent();
+    }
+
+    private void scrollviewer_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+    {
+        _interruptedTime = DateTime.MinValue;
     }
 }
 

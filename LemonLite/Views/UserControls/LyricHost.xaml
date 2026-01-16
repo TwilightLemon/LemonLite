@@ -12,6 +12,7 @@
     <base:ScrollViewer x:Name="scrollviewer"
                        FocusVisualStyle="{x:Null}"
                        HorizontalScrollBarVisibility="Hidden"
+                       PreviewMouseDown="scrollviewer_PreviewMouseDown"
                        PreviewMouseWheel="scrollviewer_PreviewMouseWheel"
                        VerticalScrollBarVisibility="Hidden">
         <VirtualizingStackPanel x:Name="LrcContainer"

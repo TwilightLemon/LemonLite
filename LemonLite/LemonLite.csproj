@@ -18,6 +18,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <None Remove="Shaders\TextGlow.ps" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<Resource Include="Resources\icon.ico" />
 	</ItemGroup>
 
@@ -41,6 +45,7 @@
 
 	<ItemGroup>
 		<Resource Include="Resources\Segoe Fluent Icons.ttf" />
+		<Resource Include="Shaders\TextGlow.ps" />
 	</ItemGroup>
 
 </Project>
