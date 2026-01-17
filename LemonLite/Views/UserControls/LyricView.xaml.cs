@@ -9,6 +9,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Effects;
+using System.Windows.Threading;
 
 //TODO: 提供效果选择
 namespace LemonLite.Views.UserControls
@@ -21,12 +22,14 @@ namespace LemonLite.Views.UserControls
     {
         private readonly SettingsMgr<LyricOption> _settings;
         private readonly LyricService _lyricService;
+        private readonly UIResourceService uiResourceService;
 
-        public LyricView(AppSettingService appSettingService, LyricService lyricService)
+        public LyricView(AppSettingService appSettingService, LyricService lyricService, UIResourceService uiResourceService)
         {
             InitializeComponent();
             _settings = appSettingService.GetConfigMgr<LyricOption>();
             _lyricService = lyricService;
+            this.uiResourceService = uiResourceService;
             _settings.OnDataChanged += Settings_OnDataChanged;
             Loaded += LyricView_Loaded;
 
@@ -34,6 +37,14 @@ namespace LemonLite.Views.UserControls
             _lyricService.LyricLoaded += OnLyricLoaded;
             _lyricService.TimeUpdated += OnTimeUpdated;
             _lyricService.MediaChanged += OnMediaChanged;
+
+            uiResourceService.OnColorModeChanged += UiResourceService_OnColorModeChanged;
+        }
+
+        private void UiResourceService_OnColorModeChanged()
+        {
+            bool isdark = uiResourceService.GetIsDarkMode();
+            Dispatcher.Invoke(() =>LrcHost.SetValue(HighlightTextBlock.UseAdditiveProperty, isdark));
         }
 
 
@@ -48,6 +59,7 @@ namespace LemonLite.Views.UserControls
                 _lyricService.LyricLoaded -= OnLyricLoaded;
                 _lyricService.TimeUpdated -= OnTimeUpdated;
                 _lyricService.MediaChanged -= OnMediaChanged;
+                uiResourceService.OnColorModeChanged -= UiResourceService_OnColorModeChanged;
             };
             ApplySettings();
             if (_lyricService.CurrentLyric != null)
@@ -66,6 +78,7 @@ namespace LemonLite.Views.UserControls
                 IsShowRomaji = _settings?.Data?.ShowRomaji is true;
                 SetFontSize(_settings?.Data?.FontSize ?? (int)LyricFontSize);
                 this.FontFamily = new FontFamily(_settings?.Data?.FontFamily ?? "Segou UI");
+                LrcHost.SetValue(HighlightTextBlock.UseAdditiveProperty, uiResourceService.GetIsDarkMode());
             });
         }
 

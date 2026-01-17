@@ -23,6 +23,8 @@ public partial class HighlightTextBlock : UserControl
             new FrameworkPropertyMetadata(FontStyles.Normal, OnTextPropertyChanged));
         FontStretchProperty.OverrideMetadata(typeof(HighlightTextBlock),
             new FrameworkPropertyMetadata(FontStretches.Normal, OnTextPropertyChanged));
+        ForegroundProperty.OverrideMetadata(typeof(HighlightTextBlock),
+            new FrameworkPropertyMetadata(Brushes.Black, OnForegroundChanged));
     }
 
     public HighlightTextBlock()
@@ -51,31 +53,6 @@ public partial class HighlightTextBlock : UserControl
     {
         get => (string)GetValue(TextProperty);
         set => SetValue(TextProperty, value);
-    }
-
-    #endregion
-
-    #region Fill
-
-    public static readonly DependencyProperty FillProperty =
-        DependencyProperty.Register(
-            nameof(Fill),
-            typeof(Brush),
-            typeof(HighlightTextBlock),
-            new PropertyMetadata(null, OnFillChanged));
-
-    public Brush Fill
-    {
-        get => (Brush)GetValue(FillProperty);
-        set => SetValue(FillProperty, value);
-    }
-
-    private static void OnFillChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-    {
-        if (d is HighlightTextBlock control)
-        {
-            control.PART_Rectangle.Fill = e.NewValue as Brush;
-        }
     }
 
     #endregion
@@ -163,6 +140,37 @@ public partial class HighlightTextBlock : UserControl
     }
 
     #endregion
+
+
+
+    public bool UseAdditive
+    {
+        get { return (bool)GetValue(UseAdditiveProperty); }
+        set { SetValue(UseAdditiveProperty, value); }
+    }
+
+    public static readonly DependencyProperty UseAdditiveProperty =
+        DependencyProperty.RegisterAttached(nameof(UseAdditive), typeof(bool), typeof(HighlightTextBlock), 
+            new FrameworkPropertyMetadata(true, FrameworkPropertyMetadataOptions.Inherits, OnUseAdditiveChanged));
+
+    public static bool GetUseAdditive(DependencyObject obj) => (bool)obj.GetValue(UseAdditiveProperty);
+    public static void SetUseAdditive(DependencyObject obj, bool value) => obj.SetValue(UseAdditiveProperty, value);
+
+    private static void OnUseAdditiveChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is HighlightTextBlock c)
+        {
+            c._effect.UseAdditive = (bool)e.NewValue;
+        }
+    }
+
+    private static void OnForegroundChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is HighlightTextBlock control)
+        {
+            control.PART_Rectangle.Fill = e.NewValue as Brush;
+        }
+    }
 
     private static void OnTextPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {

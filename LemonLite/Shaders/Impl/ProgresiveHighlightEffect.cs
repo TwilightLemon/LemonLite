@@ -12,7 +12,7 @@ public sealed class ProgresiveHighlightEffect : ShaderEffect
     private static readonly PixelShader _pixelShader = new PixelShader
     {
         UriSource = new Uri(
-            "pack://application:,,,/LemonLite;component/Shaders/TextGlow.ps", 
+            "pack://application:,,,/LemonLite;component/Shaders/TextGlow.ps",
             UriKind.Absolute)
     };
 
@@ -29,6 +29,7 @@ public sealed class ProgresiveHighlightEffect : ShaderEffect
         UpdateShaderValue(HighlightPosProperty);
         UpdateShaderValue(HighlightWidthProperty);
         UpdateShaderValue(HighlightColorProperty);
+        UpdateShaderValue(UseAdditiveProperty);
     }
 
     #endregion
@@ -86,7 +87,7 @@ public sealed class ProgresiveHighlightEffect : ShaderEffect
             typeof(double),
             typeof(ProgresiveHighlightEffect),
             new UIPropertyMetadata(
-                0.4,
+                0.12,
                 PixelShaderConstantCallback(1)));
 
     public double HighlightWidth
@@ -115,6 +116,28 @@ public sealed class ProgresiveHighlightEffect : ShaderEffect
     {
         get => (Color)GetValue(HighlightColorProperty);
         set => SetValue(HighlightColorProperty, value);
+    }
+
+    #endregion
+
+    #region UseAdditive (c3)
+
+    /// <summary>
+    /// 是否使用加法混合模式（true = additive，false = lerp）
+    /// </summary>
+    public static readonly DependencyProperty UseAdditiveProperty =
+        DependencyProperty.Register(
+            nameof(UseAdditive),
+            typeof(double),
+            typeof(ProgresiveHighlightEffect),
+            new UIPropertyMetadata(
+                1.0,
+                PixelShaderConstantCallback(3)));
+
+    public bool UseAdditive
+    {
+        get => (double)GetValue(UseAdditiveProperty) > 0.5;
+        set => SetValue(UseAdditiveProperty, value ? 1.0 : 0.0);
     }
 
     #endregion

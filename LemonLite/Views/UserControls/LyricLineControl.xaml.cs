@@ -15,7 +15,6 @@ namespace LemonLite.Views.UserControls;
 /// </summary>
 public partial class LyricLineControl : UserControl
 {
-    //private int EmphasisThreshold { get; set; } = 1800; // 高亮抬起分词的阈值ms,在LoadMainLrc时会重新计算
     private readonly Dictionary<ISyllableInfo, HighlightTextBlock> mainSyllableLrcs = [];
     private readonly Dictionary<ISyllableInfo, TextBlock> romajiSyllableLrcs = [];
     private const int InActiveLrcBlurRadius = 6;
@@ -63,14 +62,14 @@ public partial class LyricLineControl : UserControl
     public void LoadPlainLrc(string lrc, double fontSize = 22)
     {
         MainLrcContainer.Children.Clear();
-        var tb = new TextBlock()
+        var tb = new HighlightTextBlock()
         {
             Text = lrc,
-            TextWrapping = TextWrapping.Wrap,
-            FontSize = fontSize
+           // TextWrapping = TextWrapping.Wrap,
+            FontSize = fontSize,
+            HighlightPos=-0.5
         };
-        if (CustomNormalColor != null)
-            tb.Foreground = CustomNormalColor;
+        //tb.SetResourceReference(ForegroundProperty, "InActiveLrcForeground");
         MainLrcContainer.Children.Add(tb);
     }
 
@@ -90,20 +89,8 @@ public partial class LyricLineControl : UserControl
         MainLrcContainer.Children.Clear();
         mainSyllableLrcs.Clear();
         ClearHighlighter();
-        //计算EmphasisThreshold
-        //var aver = AverageWordDuration = words.Average(w => w.Duration);
-        //if (aver > 0)
-        //{
-        //    EmphasisThreshold = (int)(aver * 2);
-        //    if (EmphasisThreshold < 1800) EmphasisThreshold = 1800;
-        //}
-        //else
-        //{
-        //    EmphasisThreshold = 1800; //默认值
-        //}
 
-        var normalColor = CustomNormalColor ?? (SolidColorBrush)FindResource("InActiveLrcForeground");
-        var highlightColor = CustomHighlighterColor?.Color ?? ((SolidColorBrush)FindResource("ActiveLrcForeground")).Color;
+        AverageWordDuration = words.Average(w => w.Duration);
 
         foreach (var word in words)
         {
@@ -111,12 +98,11 @@ public partial class LyricLineControl : UserControl
             {
                 Text = word.Text,
                 FontSize = fontSize,
-                Fill = normalColor,
-                HighlightColor = highlightColor,
                 HighlightPos = -0.5,
                 HighlightWidth=0.32,
                 RenderTransform = new TranslateTransform()
             };
+            textBlock.SetResourceReference(HighlightTextBlock.HighlightColorProperty, "ActiveLrcForegroundColor");
 
             MainLrcContainer.Children.Add(textBlock);
             mainSyllableLrcs[word] = textBlock;
@@ -146,7 +132,7 @@ public partial class LyricLineControl : UserControl
     {
         if (_isPlainLrc)
         {
-            //do noting in inner lrc
+            //do nothing 
         }
         else
         {
@@ -191,24 +177,6 @@ public partial class LyricLineControl : UserControl
                         {
                             EasingFunction = new ExponentialEase()
                         };
-                        //bool liftup = true;
-                        //if (syllable.Duration >= EmphasisThreshold)
-                        //{
-                        //    //highlight emphasis
-                        //    var fontColor = CustomHighlighterColor?.Color ?? ((SolidColorBrush)FindResource("ActiveLrcForeground")).Color;
-                        //    var lighter = new DropShadowEffect() { BlurRadius = 20, Color = fontColor, Direction = 0, ShadowDepth = 0 };
-                        //    textBlock.Effect = lighter;
-                        //    lighter.BeginAnimation(DropShadowEffect.OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(syllable.Duration * 0.8)));
-                        //    Action hideLighter = delegate
-                        //    {
-                        //        var da = new DoubleAnimation(0, TimeSpan.FromMilliseconds(300));
-                        //        da.Completed += delegate { textBlock.Effect = null; };
-                        //        lighter.BeginAnimation(DropShadowEffect.OpacityProperty, da);
-                        //    };
-
-                        //    liftupAni.Duration = TimeSpan.FromMilliseconds(syllable.Duration);
-                        //    liftupAni.Completed += (_, _) => hideLighter();
-                        //}
 
                         // HighlightPos animation: from -0.5 to 1
                         var duration = TimeSpan.FromMilliseconds(syllable.Duration);
@@ -259,31 +227,6 @@ public partial class LyricLineControl : UserControl
         }
     }
 
-
-    public SolidColorBrush CustomHighlighterColor
-    {
-        get { return (SolidColorBrush)GetValue(CustomHighlighterColorProperty); }
-        set { SetValue(CustomHighlighterColorProperty, value); }
-    }
-
-    public static readonly DependencyProperty CustomHighlighterColorProperty =
-        DependencyProperty.Register("CustomHighlighterColor",
-            typeof(SolidColorBrush), typeof(LyricLineControl),
-            new PropertyMetadata(null));
-
-
-
-    public SolidColorBrush CustomNormalColor
-    {
-        get { return (SolidColorBrush)GetValue(CustomNormalColorProperty); }
-        set { SetValue(CustomNormalColorProperty, value); }
-    }
-
-    public static readonly DependencyProperty CustomNormalColorProperty =
-        DependencyProperty.Register("CustomNormalColor",
-            typeof(SolidColorBrush), typeof(LyricLineControl),
-            new PropertyMetadata(null));
-
     public void ClearHighlighter(bool animated = false)
     {
         mainSyllableAnimated.Clear();
@@ -314,11 +257,9 @@ public partial class LyricLineControl : UserControl
 
             if (control._isPlainLrc)
             {
-                var fontColor = (SolidColorBrush)control.FindResource("ActiveLrcForeground");
-                var highlightColor = control.CustomHighlighterColor ?? fontColor;
-                if (control.MainLrcContainer.Children[0] is TextBlock tb)
+                if (control.MainLrcContainer.Children[0] is HighlightTextBlock tb)
                 {
-                    tb.Foreground = highlightColor;
+                    tb.HighlightPos = 1;
                 }
             }
             else
@@ -337,12 +278,31 @@ public partial class LyricLineControl : UserControl
             blur.BeginAnimation(BlurEffect.RadiusProperty, new DoubleAnimation(0, InActiveLrcBlurRadius, TimeSpan.FromMilliseconds(300)));
             if (control._isPlainLrc)
             {
-                if (control.MainLrcContainer.Children[0] is TextBlock tb)
+                if (control.MainLrcContainer.Children[0] is HighlightTextBlock tb)
                 {
-                    tb.SetResourceReference(ForegroundProperty, "InActiveLrcForeground");
+                    tb.HighlightPos = -0.5;
                 }
             }
             else control.ClearHighlighter(inactiveAnimated);
+        }
+    }
+
+
+
+    public Brush CustomHighlightColorBrush
+    {
+        get { return (Brush)GetValue(CustomHighlightColorBrushProperty); }
+        set { SetValue(CustomHighlightColorBrushProperty, value); }
+    }
+
+    public static readonly DependencyProperty CustomHighlightColorBrushProperty =
+        DependencyProperty.Register(nameof(CustomHighlightColorBrush), typeof(Brush), typeof(LyricLineControl), new PropertyMetadata(null, OnCustomHighlightColorBrushChanged));
+
+    private static void OnCustomHighlightColorBrushChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is LyricLineControl control && e.NewValue is SolidColorBrush brush)
+        {
+            control.MainLrcContainer.Resources["ActiveLrcForegroundColor"] = brush.Color;
         }
     }
 
