@@ -12,8 +12,7 @@ float4 main(float2 uv : TEXCOORD) : COLOR
     float d = max(0, uv.x - HighlightPos);
     float glow = saturate(1 - d / HighlightWidth);
     glow = glow * glow;
-    float mask = step(0.0, color.a);
-    float intensity = glow * mask * HighlightColor.a * HighlightIntensity;
+    float intensity = glow * HighlightColor.a * HighlightIntensity;
 
     float3 lerpResult = lerp(color.rgb, HighlightColor.rgb, intensity);
     float lerpAlpha = lerp(color.a, 1.0, intensity);

@@ -155,6 +155,7 @@ public partial class LyricLineControl : UserControl
                 else if (syllable.StartTime > ms)
                 {
                     // 还没到，保持未填充
+                    textBlock.BeginAnimation(HighlightTextBlock.HighlightPosProperty, null);
                     textBlock.HighlightPos = -0.5;
                     mainSyllableAnimated[syllable] = false;
 
@@ -274,6 +275,7 @@ public partial class LyricLineControl : UserControl
                 foreach (var lrc in control.mainSyllableLrcs)
                 {
                     lrc.Value.HighlightPos = -0.5;
+                    lrc.Value.BeginAnimation(HighlightTextBlock.HighlightIntensityProperty, null);
                 }
             }
         }
