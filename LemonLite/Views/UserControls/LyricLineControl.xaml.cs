@@ -65,7 +65,7 @@ public partial class LyricLineControl : UserControl
         var tb = new HighlightTextBlock()
         {
             Text = lrc,
-           // TextWrapping = TextWrapping.Wrap,
+            TextWrapping = TextWrapping.Wrap,
             FontSize = fontSize,
             HighlightPos=-0.5
         };
@@ -234,13 +234,19 @@ public partial class LyricLineControl : UserControl
         {
             // Reset HighlightPos to initial state
             lrc.Value.BeginAnimation(HighlightTextBlock.HighlightPosProperty, null);
-            lrc.Value.HighlightPos = -0.5;
+
+            //fade animation
+            if (animated)
+            {
+                lrc.Value.HighlightPos = 1;
+                lrc.Value.BeginAnimation(HighlightTextBlock.HighlightIntensityProperty, new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(300)));
+            }
+            else lrc.Value.HighlightPos = -0.5;
 
             //clear lift-up
             if (lrc.Value.RenderTransform is TranslateTransform trans)
             {
-                trans.BeginAnimation(TranslateTransform.YProperty, null);
-                trans.Y = 0;
+                trans.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(0,TimeSpan.FromMilliseconds(200)));
             }
         }
     }
@@ -259,7 +265,7 @@ public partial class LyricLineControl : UserControl
             {
                 if (control.MainLrcContainer.Children[0] is HighlightTextBlock tb)
                 {
-                    tb.HighlightPos = 1;
+                    tb.HighlightPos = inactiveAnimated ? 1 : -0.5;
                 }
             }
             else

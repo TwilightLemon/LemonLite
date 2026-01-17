@@ -30,6 +30,7 @@ public sealed class ProgresiveHighlightEffect : ShaderEffect
         UpdateShaderValue(HighlightWidthProperty);
         UpdateShaderValue(HighlightColorProperty);
         UpdateShaderValue(UseAdditiveProperty);
+        UpdateShaderValue(HighlightIntensityProperty);
     }
 
     #endregion
@@ -140,5 +141,25 @@ public sealed class ProgresiveHighlightEffect : ShaderEffect
         set => SetValue(UseAdditiveProperty, value ? 1.0 : 0.0);
     }
 
+    #endregion
+
+    #region HighlightIntensity (c4)
+
+
+
+    public double HighlightIntensity
+    {
+        get { return (double)GetValue(HighlightIntensityProperty); }
+        set { SetValue(HighlightIntensityProperty, value); }
+    }
+
+    public static readonly DependencyProperty HighlightIntensityProperty =
+        DependencyProperty.Register(
+            nameof(HighlightIntensity),
+            typeof(double),
+            typeof(ProgresiveHighlightEffect),
+            new UIPropertyMetadata(
+                1.0,
+                PixelShaderConstantCallback(4)));
     #endregion
 }

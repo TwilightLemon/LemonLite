@@ -1,4 +1,5 @@
 using LemonLite.Shaders.Impl;
+using System;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
@@ -38,6 +39,7 @@ public partial class HighlightTextBlock : UserControl
         };
         PART_Rectangle.Effect = _effect;
         Loaded += (_, _) => UpdateTextClip();
+        SizeChanged += (_, _) => UpdateTextClip();
     }
 
     #region Text
@@ -53,6 +55,74 @@ public partial class HighlightTextBlock : UserControl
     {
         get => (string)GetValue(TextProperty);
         set => SetValue(TextProperty, value);
+    }
+
+    #endregion
+
+    #region TextWrapping
+
+    public static readonly DependencyProperty TextWrappingProperty =
+        DependencyProperty.Register(
+            nameof(TextWrapping),
+            typeof(TextWrapping),
+            typeof(HighlightTextBlock),
+            new PropertyMetadata(TextWrapping.NoWrap, OnTextPropertyChanged));
+
+    public TextWrapping TextWrapping
+    {
+        get => (TextWrapping)GetValue(TextWrappingProperty);
+        set => SetValue(TextWrappingProperty, value);
+    }
+
+    #endregion
+
+    #region TextAlignment
+
+    public static readonly DependencyProperty TextAlignmentProperty =
+        DependencyProperty.Register(
+            nameof(TextAlignment),
+            typeof(TextAlignment),
+            typeof(HighlightTextBlock),
+            new PropertyMetadata(TextAlignment.Left, OnTextPropertyChanged));
+
+    public TextAlignment TextAlignment
+    {
+        get => (TextAlignment)GetValue(TextAlignmentProperty);
+        set => SetValue(TextAlignmentProperty, value);
+    }
+
+    #endregion
+
+    #region TextTrimming
+
+    public static readonly DependencyProperty TextTrimmingProperty =
+        DependencyProperty.Register(
+            nameof(TextTrimming),
+            typeof(TextTrimming),
+            typeof(HighlightTextBlock),
+            new PropertyMetadata(TextTrimming.None, OnTextPropertyChanged));
+
+    public TextTrimming TextTrimming
+    {
+        get => (TextTrimming)GetValue(TextTrimmingProperty);
+        set => SetValue(TextTrimmingProperty, value);
+    }
+
+    #endregion
+
+    #region LineHeight
+
+    public static readonly DependencyProperty LineHeightProperty =
+        DependencyProperty.Register(
+            nameof(LineHeight),
+            typeof(double),
+            typeof(HighlightTextBlock),
+            new PropertyMetadata(double.NaN, OnTextPropertyChanged));
+
+    public double LineHeight
+    {
+        get => (double)GetValue(LineHeightProperty);
+        set => SetValue(LineHeightProperty, value);
     }
 
     #endregion
@@ -141,8 +211,7 @@ public partial class HighlightTextBlock : UserControl
 
     #endregion
 
-
-
+    #region Attach Properties
     public bool UseAdditive
     {
         get { return (bool)GetValue(UseAdditiveProperty); }
@@ -150,7 +219,7 @@ public partial class HighlightTextBlock : UserControl
     }
 
     public static readonly DependencyProperty UseAdditiveProperty =
-        DependencyProperty.RegisterAttached(nameof(UseAdditive), typeof(bool), typeof(HighlightTextBlock), 
+        DependencyProperty.RegisterAttached(nameof(UseAdditive), typeof(bool), typeof(HighlightTextBlock),
             new FrameworkPropertyMetadata(true, FrameworkPropertyMetadataOptions.Inherits, OnUseAdditiveChanged));
 
     public static bool GetUseAdditive(DependencyObject obj) => (bool)obj.GetValue(UseAdditiveProperty);
@@ -164,6 +233,28 @@ public partial class HighlightTextBlock : UserControl
         }
     }
 
+    public static double GetHighlightIntensity(DependencyObject obj)
+    {
+        return (double)obj.GetValue(HighlightIntensityProperty);
+    }
+
+    public static void SetHighlightIntensity(DependencyObject obj, double value)
+    {
+        obj.SetValue(HighlightIntensityProperty, value);
+    }
+
+    public static readonly DependencyProperty HighlightIntensityProperty =
+        DependencyProperty.RegisterAttached("HighlightIntensity", typeof(double), typeof(HighlightTextBlock), new PropertyMetadata(1.0, OnHighlightIntensityChanged));
+
+    private static void OnHighlightIntensityChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is HighlightTextBlock c)
+        {
+            c._effect.HighlightIntensity = (double)e.NewValue;
+        }
+    }
+    #endregion
+
     private static void OnForegroundChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         if (d is HighlightTextBlock control)
@@ -172,42 +263,84 @@ public partial class HighlightTextBlock : UserControl
         }
     }
 
-    private static void OnTextPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-    {
-        if (d is HighlightTextBlock control)
+        private static void OnTextPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            control.UpdateTextClip();
-        }
-    }
-
-    private void UpdateTextClip()
-    {
-        if (Text == null)
-        {
-            PART_Rectangle.Clip = null;
-            Width = 0;
-            Height = 0;
-            return;
+            if (d is HighlightTextBlock control)
+            {
+                control.UpdateTextClip();
+            }
         }
 
-        var formattedText = new FormattedText(
-            Text,
-            CultureInfo.CurrentCulture,
-            FlowDirection.LeftToRight,
-            new Typeface(FontFamily, FontStyle, FontWeight, FontStretch),
-            FontSize,
-            Brushes.Black,
-            VisualTreeHelper.GetDpi(this).PixelsPerDip);
+        private void UpdateTextClip()
+        {
+            if (string.IsNullOrEmpty(Text))
+            {
+                PART_Rectangle.Clip = null;
+                PART_Rectangle.Width = 0;
+                PART_Rectangle.Height = 0;
+                return;
+            }
 
-        var geometry = formattedText.BuildGeometry(new Point(0, 0));
-        var width = formattedText.WidthIncludingTrailingWhitespace;
-        var height = formattedText.Height;
+            var formattedText = new FormattedText(
+                Text,
+                CultureInfo.CurrentCulture,
+                FlowDirection,
+                new Typeface(FontFamily, FontStyle, FontWeight, FontStretch),
+                FontSize,
+                Brushes.Black,
+                VisualTreeHelper.GetDpi(this).PixelsPerDip);
 
-        PART_Rectangle.Clip = geometry;
-        PART_Rectangle.Width = width;
-        PART_Rectangle.Height = height;
+            formattedText.TextAlignment = TextAlignment;
+            formattedText.Trimming = TextTrimming;
+            if (!double.IsNaN(LineHeight) && LineHeight > 0)
+            {
+                formattedText.LineHeight = LineHeight;
+            }
 
-        Width = width;
-        Height = height;
+            // 计算约束宽度（用于换行）
+            var constraintWidth = !double.IsNaN(Width) && Width > 0
+                ? Width
+                : (!double.IsInfinity(MaxWidth) && MaxWidth > 0 ? MaxWidth : ActualWidth);
+
+            // 仅在需要换行且有约束宽度时设置 MaxTextWidth
+            if (TextWrapping != TextWrapping.NoWrap && constraintWidth > 0)
+            {
+                formattedText.MaxTextWidth = constraintWidth;
+            }
+
+            // 计算文本实际尺寸
+            var textWidth = formattedText.WidthIncludingTrailingWhitespace;
+            var textHeight = formattedText.Height;
+
+            // 计算容器宽度：NoWrap 时使用文本宽度，换行时使用约束宽度
+            var containerWidth = TextWrapping == TextWrapping.NoWrap
+                ? textWidth
+                : (constraintWidth > 0 ? constraintWidth : textWidth);
+
+            // 计算起始位置（用于对齐）
+            double offsetX = 0;
+            if (containerWidth > textWidth)
+            {
+                offsetX = TextAlignment switch
+                {
+                    TextAlignment.Center => (containerWidth - textWidth) / 2,
+                    TextAlignment.Right => containerWidth - textWidth,
+                    _ => 0
+                };
+            }
+
+            var geometry = formattedText.BuildGeometry(new Point(offsetX, 0));
+
+            PART_Rectangle.Clip = geometry;
+            PART_Rectangle.Width = containerWidth;
+            PART_Rectangle.Height = textHeight;
+
+            // 根据对齐方式设置 Rectangle 的水平对齐
+            PART_Rectangle.HorizontalAlignment = TextAlignment switch
+            {
+                TextAlignment.Center => HorizontalAlignment.Center,
+                TextAlignment.Right => HorizontalAlignment.Right,
+                _ => HorizontalAlignment.Left
+            };
+        }
     }
-}
