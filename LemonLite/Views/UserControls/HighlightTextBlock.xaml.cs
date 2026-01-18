@@ -1,11 +1,13 @@
 using LemonLite.Shaders.Impl;
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
 namespace LemonLite.Views.UserControls;
+
 
 public partial class HighlightTextBlock : UserControl
 {
@@ -27,8 +29,9 @@ public partial class HighlightTextBlock : UserControl
         ForegroundProperty.OverrideMetadata(typeof(HighlightTextBlock),
             new FrameworkPropertyMetadata(Brushes.Black, OnForegroundChanged));
     }
-
-    public HighlightTextBlock()
+    public bool IsSpiltEnabled { get; init; }
+    public HighlightTextBlock() : this(false) { }
+    public HighlightTextBlock(bool isSpiltEnabled)
     {
         InitializeComponent();
         _effect = new()
@@ -40,6 +43,7 @@ public partial class HighlightTextBlock : UserControl
         PART_Rectangle.Effect = _effect;
         Loaded += (_, _) => UpdateTextClip();
         SizeChanged += (_, _) => UpdateTextClip();
+        IsSpiltEnabled = isSpiltEnabled;
     }
 
     #region Text
@@ -263,84 +267,118 @@ public partial class HighlightTextBlock : UserControl
         }
     }
 
-        private static void OnTextPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    private static void OnTextPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is HighlightTextBlock control)
         {
-            if (d is HighlightTextBlock control)
-            {
-                control.UpdateTextClip();
-            }
+            control.UpdateTextClip();
+        }
+    }
+
+    private void UpdateTextClip()
+    {
+        if (string.IsNullOrEmpty(Text))
+        {
+            PART_Rectangle.Clip = null;
+            PART_Rectangle.Width = 0;
+            PART_Rectangle.Height = 0;
+            return;
         }
 
-        private void UpdateTextClip()
+        if (IsSpiltEnabled)
+            UpdateSpiltTextClip();
+        else UpdateCompleteTextClip();
+    }
+
+    public Geometry[]? Geometries { get; private set; }
+    private void UpdateSpiltTextClip()
+    {
+        var display = new GeometryGroup();
+        double offsetX = 0;
+        double height = 0;
+        foreach (char c in Text)
         {
-            if (string.IsNullOrEmpty(Text))
-            {
-                PART_Rectangle.Clip = null;
-                PART_Rectangle.Width = 0;
-                PART_Rectangle.Height = 0;
-                return;
-            }
-
-            var formattedText = new FormattedText(
-                Text,
-                CultureInfo.CurrentCulture,
-                FlowDirection,
-                new Typeface(FontFamily, FontStyle, FontWeight, FontStretch),
-                FontSize,
-                Brushes.Black,
-                VisualTreeHelper.GetDpi(this).PixelsPerDip);
-
-            formattedText.TextAlignment = TextAlignment;
-            formattedText.Trimming = TextTrimming;
+            var formattedText = new FormattedText(c.ToString(),
+                                                  CultureInfo.CurrentCulture,
+                                                  FlowDirection,
+                                                  new Typeface(FontFamily, FontStyle, FontWeight, FontStretch),
+                                                  FontSize,
+                                                  Brushes.Black,
+                                                  VisualTreeHelper.GetDpi(this).PixelsPerDip);
             if (!double.IsNaN(LineHeight) && LineHeight > 0)
             {
                 formattedText.LineHeight = LineHeight;
             }
-
-            // 计算约束宽度（用于换行）
-            var constraintWidth = !double.IsNaN(Width) && Width > 0
-                ? Width
-                : (!double.IsInfinity(MaxWidth) && MaxWidth > 0 ? MaxWidth : ActualWidth);
-
-            // 仅在需要换行且有约束宽度时设置 MaxTextWidth
-            if (TextWrapping != TextWrapping.NoWrap && constraintWidth > 0)
-            {
-                formattedText.MaxTextWidth = constraintWidth;
-            }
-
-            // 计算文本实际尺寸
+            formattedText.TextAlignment = TextAlignment;
             var textWidth = formattedText.WidthIncludingTrailingWhitespace;
-            var textHeight = formattedText.Height;
 
-            // 计算容器宽度：NoWrap 时使用文本宽度，换行时使用约束宽度
-            var containerWidth = TextWrapping == TextWrapping.NoWrap
-                ? textWidth
-                : (constraintWidth > 0 ? constraintWidth : textWidth);
-
-            // 计算起始位置（用于对齐）
-            double offsetX = 0;
-            if (containerWidth > textWidth)
-            {
-                offsetX = TextAlignment switch
-                {
-                    TextAlignment.Center => (containerWidth - textWidth) / 2,
-                    TextAlignment.Right => containerWidth - textWidth,
-                    _ => 0
-                };
-            }
-
-            var geometry = formattedText.BuildGeometry(new Point(offsetX, 0));
-
-            PART_Rectangle.Clip = geometry;
-            PART_Rectangle.Width = containerWidth;
-            PART_Rectangle.Height = textHeight;
-
-            // 根据对齐方式设置 Rectangle 的水平对齐
-            PART_Rectangle.HorizontalAlignment = TextAlignment switch
-            {
-                TextAlignment.Center => HorizontalAlignment.Center,
-                TextAlignment.Right => HorizontalAlignment.Right,
-                _ => HorizontalAlignment.Left
-            };
+            var geometry = formattedText.BuildGeometry(new Point(offsetX, 0)).Clone();
+            display.Children.Add(geometry);
+            offsetX += textWidth;
+            height = Math.Max(height, formattedText.Height);
         }
+        PART_Rectangle.HorizontalAlignment = TextAlignment switch
+        {
+            TextAlignment.Center => HorizontalAlignment.Center,
+            TextAlignment.Right => HorizontalAlignment.Right,
+            _ => HorizontalAlignment.Left
+        };
+        PART_Rectangle.Clip = display;
+        Geometries = display.Children.ToArray();
+
+        PART_Rectangle.Width = offsetX;
+        PART_Rectangle.Height = height;
     }
+
+    private void UpdateCompleteTextClip()
+    {
+        var formattedText = new FormattedText(
+            Text,
+            CultureInfo.CurrentCulture,
+            FlowDirection,
+            new Typeface(FontFamily, FontStyle, FontWeight, FontStretch),
+            FontSize,
+            Brushes.Black,
+            VisualTreeHelper.GetDpi(this).PixelsPerDip);
+
+        formattedText.TextAlignment = TextAlignment;
+        formattedText.Trimming = TextTrimming;
+        if (!double.IsNaN(LineHeight) && LineHeight > 0)
+        {
+            formattedText.LineHeight = LineHeight;
+        }
+
+        // 计算约束宽度（用于换行）
+        var constraintWidth = !double.IsNaN(Width) && Width > 0
+            ? Width
+            : (!double.IsInfinity(MaxWidth) && MaxWidth > 0 ? MaxWidth : ActualWidth);
+
+        // 仅在需要换行且有约束宽度时设置 MaxTextWidth
+        if (TextWrapping != TextWrapping.NoWrap && constraintWidth > 0)
+        {
+            formattedText.MaxTextWidth = constraintWidth;
+        }
+
+        // 计算文本实际尺寸
+        var textWidth = formattedText.WidthIncludingTrailingWhitespace;
+        var textHeight = formattedText.Height;
+
+        // 计算容器宽度：NoWrap 时使用文本宽度，换行时使用约束宽度
+        var containerWidth = TextWrapping == TextWrapping.NoWrap
+            ? textWidth
+            : (constraintWidth > 0 ? constraintWidth : textWidth);
+
+        var geometry = formattedText.BuildGeometry(new Point(0, 0));
+        PART_Rectangle.Clip = geometry;
+        PART_Rectangle.Width = containerWidth;
+        PART_Rectangle.Height = textHeight;
+
+        // 根据对齐方式设置 Rectangle 的水平对齐
+        PART_Rectangle.HorizontalAlignment = TextAlignment switch
+        {
+            TextAlignment.Center => HorizontalAlignment.Center,
+            TextAlignment.Right => HorizontalAlignment.Right,
+            _ => HorizontalAlignment.Left
+        };
+    }
+}

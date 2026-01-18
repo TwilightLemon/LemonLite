@@ -18,6 +18,7 @@ public partial class LyricLineControl : UserControl
     private readonly Dictionary<ISyllableInfo, HighlightTextBlock> mainSyllableLrcs = [];
     private readonly Dictionary<ISyllableInfo, TextBlock> romajiSyllableLrcs = [];
     private const int InActiveLrcBlurRadius = 6;
+    private int EmphasisThreshold = 1800; // 高亮抬起分词的阈值ms,在LoadMainLrc时会重新计算
     private int ActiveLrcLiftupHeight => (int)(-FontSize / 4);
     private double AverageWordDuration = 0.0;
     public SyllableLineInfo? RomajiSyllables { get; private set; }
@@ -67,7 +68,7 @@ public partial class LyricLineControl : UserControl
             Text = lrc,
             TextWrapping = TextWrapping.Wrap,
             FontSize = fontSize,
-            HighlightPos=-0.5
+            HighlightPos = -0.5
         };
         //tb.SetResourceReference(ForegroundProperty, "InActiveLrcForeground");
         MainLrcContainer.Children.Add(tb);
@@ -90,17 +91,28 @@ public partial class LyricLineControl : UserControl
         mainSyllableLrcs.Clear();
         ClearHighlighter();
 
-        AverageWordDuration = words.Average(w => w.Duration);
+        //计算EmphasisThreshold
+        var aver = AverageWordDuration = words.Average(w => w.Duration);
+        if (aver > 0)
+        {
+            EmphasisThreshold = (int)(aver * 2);
+            if (EmphasisThreshold < 1800) EmphasisThreshold = 1800;
+        }
+        else
+        {
+            EmphasisThreshold = 1800; //默认值
+        }
 
         foreach (var word in words)
         {
-            var textBlock = new HighlightTextBlock
+            bool isSpiltEnabled = word.Duration >= EmphasisThreshold && word.Text.Length > 1;
+            var textBlock = new HighlightTextBlock(isSpiltEnabled)
             {
                 Text = word.Text,
                 FontSize = fontSize,
                 HighlightPos = -0.5,
-                HighlightWidth=0.32,
-                RenderTransform = new TranslateTransform()
+                HighlightWidth = 0.5,
+                RenderTransform = isSpiltEnabled ? null : new TranslateTransform()
             };
             textBlock.SetResourceReference(HighlightTextBlock.HighlightColorProperty, "ActiveLrcForegroundColor");
 
@@ -149,7 +161,11 @@ public partial class LyricLineControl : UserControl
                     //lift-up: 如果动画正在执行则不强制设置，确保歌词流畅性
                     if (textBlock.RenderTransform is TranslateTransform trans && !trans.HasAnimatedProperties)
                     {
-                        trans.Y = ActiveLrcLiftupHeight;
+                        trans.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(0, ActiveLrcLiftupHeight,
+                                    TimeSpan.FromMilliseconds(AverageWordDuration * 1.5))
+                        {
+                            EasingFunction = new ExponentialEase()
+                        });
                     }
                 }
                 else if (syllable.StartTime > ms)
@@ -164,6 +180,13 @@ public partial class LyricLineControl : UserControl
                     {
                         trans.BeginAnimation(TranslateTransform.YProperty, null);
                         trans.Y = 0;
+                    }
+                    if (syllable.Duration >= EmphasisThreshold && textBlock.Geometries is { } geo)
+                    {
+                        foreach (var g in geo)
+                        {
+                            g.Transform = null;
+                        }
                     }
                 }
                 else
@@ -184,8 +207,27 @@ public partial class LyricLineControl : UserControl
                         var highlightAnim = new DoubleAnimation(-0.5, 1, new Duration(duration));
                         textBlock.BeginAnimation(HighlightTextBlock.HighlightPosProperty, highlightAnim);
 
+                        bool liftup = true;
+                        if (syllable.Duration >= EmphasisThreshold && textBlock.Geometries is { } geo)
+                        {
+                            double delay = 0, unit = syllable.Duration*1.2 / geo.Length;
+                            double p = geo.Length * 0.6, addi = unit - (p - 1) * unit / (geo.Length - 1);
+                            foreach (var g in geo)
+                            {
+                                var transfrom = new TranslateTransform();
+                                g.Transform = transfrom;
+                                transfrom.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(0, ActiveLrcLiftupHeight, TimeSpan.FromMilliseconds(unit * p))
+                                {
+                                    BeginTime = TimeSpan.FromMilliseconds(delay),
+                                    EasingFunction = new CubicEase()
+                                });
+                                delay += addi;
+                            }
+                            liftup = false;
+                        }
+
                         //lift-up animation
-                        if (textBlock.RenderTransform is TranslateTransform trans)
+                        if (liftup && textBlock.RenderTransform is TranslateTransform trans)
                         {
                             trans.BeginAnimation(TranslateTransform.YProperty, liftupAni);
                         }
@@ -198,7 +240,7 @@ public partial class LyricLineControl : UserControl
             {
                 var syllable = kvp.Key;
                 var textBlock = kvp.Value;
-                if ((syllable.StartTime) <= ms && (syllable.EndTime +200) >= ms)
+                if ((syllable.StartTime) <= ms && (syllable.EndTime + 200) >= ms)
                 {
                     //textBlock.SetResourceReference(ForegroundProperty, "HighlightThemeColor");
                     if (textBlock.Tag is not true)
@@ -245,14 +287,26 @@ public partial class LyricLineControl : UserControl
             else lrc.Value.HighlightPos = -0.5;
 
             //clear lift-up
+            var clearAnimation = new DoubleAnimation(0, TimeSpan.FromMilliseconds(200));
             if (lrc.Value.RenderTransform is TranslateTransform trans)
             {
-                trans.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(0,TimeSpan.FromMilliseconds(200)));
+                trans.BeginAnimation(TranslateTransform.YProperty, clearAnimation);
+            }
+
+            if (lrc.Value.Geometries is { } geo)
+            {
+                foreach (var g in geo)
+                {
+                    if (g.Transform is TranslateTransform tg)
+                    {
+                        tg.BeginAnimation(TranslateTransform.YProperty, clearAnimation);
+                    }
+                }
             }
         }
     }
 
-    public void SetActiveState(bool isActive,bool inactiveAnimated=true)
+    public void SetActiveState(bool isActive, bool inactiveAnimated = true)
     {
         var control = this;
         if (isActive)
@@ -297,14 +351,14 @@ public partial class LyricLineControl : UserControl
 
 
 
-    public Brush CustomHighlightColorBrush
+    public SolidColorBrush CustomHighlightColorBrush
     {
-        get { return (Brush)GetValue(CustomHighlightColorBrushProperty); }
+        get { return (SolidColorBrush)GetValue(CustomHighlightColorBrushProperty); }
         set { SetValue(CustomHighlightColorBrushProperty, value); }
     }
 
     public static readonly DependencyProperty CustomHighlightColorBrushProperty =
-        DependencyProperty.Register(nameof(CustomHighlightColorBrush), typeof(Brush), typeof(LyricLineControl), new PropertyMetadata(null, OnCustomHighlightColorBrushChanged));
+        DependencyProperty.Register(nameof(CustomHighlightColorBrush), typeof(SolidColorBrush), typeof(LyricLineControl), new PropertyMetadata(null, OnCustomHighlightColorBrushChanged));
 
     private static void OnCustomHighlightColorBrushChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
