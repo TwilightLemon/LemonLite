@@ -15,4 +15,5 @@
     <Deploy />
   </Project>
   <Project Path="LemonLite/LemonLite.csproj" />
+  <Project Path="Lyricify-Lyrics-Helper/Lyricify.Lyrics.Helper/Lyricify.Lyrics.Helper.csproj" />
 </Solution>

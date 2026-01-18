@@ -1,18 +1,7 @@
+using Lyricify.Lyrics.Searchers;
 using System.Text.Json.Serialization;
 
 namespace LemonLite.Entities;
-
-/// <summary>
-/// 搜索结果中的搜索器信息
-/// </summary>
-public class SearcherInfo
-{
-    [JsonPropertyName("name")]
-    public string? Name { get; set; }
-
-    [JsonPropertyName("displayName")]
-    public string? DisplayName { get; set; }
-}
 
 /// <summary>
 /// 音乐元数据
@@ -20,7 +9,7 @@ public class SearcherInfo
 public class MusicMetaData
 {
     [JsonPropertyName("searcher")]
-    public SearcherInfo? Searcher { get; set; }
+    public ISearcher? Searcher { get; set; }
 
     [JsonPropertyName("title")]
     public string? Title { get; set; }

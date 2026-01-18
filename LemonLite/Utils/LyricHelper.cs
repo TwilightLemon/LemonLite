@@ -1,94 +1,104 @@
 ﻿using LemonLite.Entities;
 using Lyricify.Lyrics.Helpers;
 using Lyricify.Lyrics.Models;
+using Lyricify.Lyrics.Searchers;
+using Lyricify.Lyrics.Searchers.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Net.Http;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
 
 namespace LemonLite.Utils;
-
+//先丑陋地把服务器去掉了... 日后再优化
 public static class LyricHelper
 {
-    public static string EndPoint { get; set; } = "http://localhost:5000";
     private static async Task<LyricData?> GetLyricOnline(string id,string source, CancellationToken cancellationToken = default)
     {
         try
         {
-            var hc = App.Services.GetRequiredService<IHttpClientFactory>().CreateClient(App.AzureLiteHttpClientFlag);
-            hc.BaseAddress = new Uri(EndPoint);
-            var data = await hc.GetStringAsync($"/lrc?id={id}&source={source}", cancellationToken);
-            if (JsonNode.Parse(data) is { } json)
+            if (source == "qq music" || string.IsNullOrEmpty(source))
             {
-                var result = new LyricData
+                var hc = App.Services.GetRequiredService<IHttpClientFactory>().CreateClient(App.DefaultHttpClientFlag);
+                return await TencGetLyric.GetLyricsAsync(hc, id);
+            }
+            else if (source is "cloudmusic" or "netease")
+            {
+                var api = new Lyricify.Lyrics.Providers.Web.Netease.Api();
+                var data = await api.GetLyricNew(id);
+                if (data == null) return null;
+                var result = new LyricData()
                 {
-                    Id = id,
-                    Lyric = json["lyrics"]?.ToString(),
-                    Romaji = json["romaji"]?.ToString(),
-                    Trans = json["trans"]?.ToString(),
-                    Type = source.ToLower() switch
-                    {
-                        "qqmusic" => LyricType.QQ,
-                        "netease" or "cloudmusic" => LyricType.Netease,
-                        _ => throw new InvalidOperationException()
-                    }
+                    Lyric = data.Yrc?.Lyric ?? data.Lrc.Lyric,
+                    Trans = data.Tlyric?.Lyric,
+                    Romaji = data.Romalrc?.Lyric
                 };
-                if (json["isPureTimeline"]?.GetValue<bool>() is true) result.Type = LyricType.PureLrc;
+                if (data.Yrc?.Lyric == null && data.Lrc.Lyric != null)
+                {
+                    //没有单句分词
+                    result.Type = LyricType.PureLrc;
+                }
                 return result;
             }
         }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch { }
+        catch { throw; }
         return null;
-    }
-
-    private static string GetSearchCacheKey(string title, string artist, string album, int durationMs)
-    {
-        var input = $"{title}|{artist}|{album}|{durationMs}";
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(input));
-        return Convert.ToHexString(hash)[..16];
     }
 
     public static async Task<MusicMetaData?> SearchMusicAsync(string title, string artist, string album, int durationMs, CancellationToken cancellationToken = default)
     {
         try
         {
-            // Try to load from cache first
-            var cacheKey = GetSearchCacheKey(title, artist, album, durationMs);
-            var cachePath = System.IO.Path.Combine(Settings.CachePath, $"{cacheKey}.meta");
-            if (await Settings.LoadFromJsonAsync<MusicMetaData>(cachePath, false) is { Id: not null } cached)
-            {
-                return cached;
-            }
+            if (string.IsNullOrWhiteSpace(album)) album = null;
+            var defaultSources = new[] { "qq music", "netease" };
+            var artists = artist.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-            var hc = App.Services.GetRequiredService<IHttpClientFactory>().CreateClient(App.AzureLiteHttpClientFlag);
-            hc.BaseAddress = new Uri(EndPoint);
-            var data = await hc.GetStringAsync($"/search?title={HttpUtility.UrlEncode(title)}&artist={HttpUtility.UrlEncode(artist)}&album={HttpUtility.UrlEncode(album)}&ms={durationMs}", cancellationToken);
-            if (!string.IsNullOrEmpty(data))
+            var metadata = new TrackMetadata() { Title = title, Artist = artist, Album = album, DurationMs = durationMs };
+
+            foreach (var src in defaultSources)
             {
-                var result = JsonSerializer.Deserialize<MusicMetaData>(data);
-                // Cache the result if valid
-                if (result?.Id != null)
+                ISearcher? searcher = src switch
                 {
-                    await Settings.SaveAsJsonAsync(result, cachePath, false);
+                    "netease" or "cloudmusic" => new NeteaseSearcher(),
+                    // "kugou" => new Lyricify.Lyrics.Searchers.KugouSearcher(),
+                    "qq music" => new QQMusicSearcher(),
+                    _ => null
+                };
+
+                if (searcher is null)
+                {
+                    continue;
                 }
-                return result;
+
+                var result = await searcher.SearchForResult(metadata);
+                if (result is not null && (result.MatchType >= CompareHelper.MatchType.Medium ))
+                {
+                    return result switch
+                    {
+                        NeteaseSearchResult nrs => new MusicMetaData()
+                        {
+                            Id = nrs.Id,
+                            Searcher = nrs.Searcher,
+                            Title = nrs.Title,
+                            Artists = nrs.Artists,
+                            Album = nrs.Album,
+                            DurationMs = nrs.DurationMs ?? 0
+                        },
+                        QQMusicSearchResult qqrs => new MusicMetaData()
+                        {
+                            Id = qqrs.Id,
+                            Searcher = qqrs.Searcher,
+                            Title = qqrs.Title,
+                            Artists = qqrs.Artists,
+                            Album = qqrs.Album,
+                            DurationMs = qqrs.DurationMs ?? 0
+                        },
+                        _ => null
+                    };
+                }
             }
         }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch { }
+        catch { throw; }
         return null;
     }
 

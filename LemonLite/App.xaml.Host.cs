@@ -15,14 +15,14 @@ namespace LemonLite;
 
 public partial class App
 {
-    public const string AzureLiteHttpClientFlag = "lemonlite.azurewebsites.net";
+    public const string DefaultHttpClientFlag = "DefaultHttpClientFlag";
     internal static AsyncRetryPolicy<HttpResponseMessage> HttpRetryPolicy = Policy<HttpResponseMessage>
         .Handle<HttpRequestException>()
         .OrResult(msg => !msg.IsSuccessStatusCode)
         .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
     private static void BuildHost(IServiceCollection services)
     {
-        services.AddHttpClient(AzureLiteHttpClientFlag, client =>
+        services.AddHttpClient(DefaultHttpClientFlag, client =>
         {
             client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36");
             client.DefaultRequestHeaders.Accept.ParseAdd("text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7");

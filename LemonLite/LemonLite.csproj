@@ -30,7 +30,6 @@
 		<PackageReference Include="EleCho.WpfSuite" Version="0.8.1" />
 		<PackageReference Include="FluentWpfCore" Version="1.0.3" />
 		<PackageReference Include="H.NotifyIcon.Wpf" Version="2.1.4" />
-		<PackageReference Include="Lyricify.Lyrics.Helper" Version="0.1.4" />
 		<PackageReference Include="Microsoft.Extensions.Http.Polly" Version="10.0.0" />
 		<PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.0" />
@@ -41,6 +40,7 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\AudioVisualizer\LibAudioVisualizer.WPF\LibAudioVisualizer.WPF.csproj" />
+	  <ProjectReference Include="..\Lyricify-Lyrics-Helper\Lyricify.Lyrics.Helper\Lyricify.Lyrics.Helper.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

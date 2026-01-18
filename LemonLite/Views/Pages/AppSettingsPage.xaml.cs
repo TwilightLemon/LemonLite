@@ -39,7 +39,6 @@ namespace LemonLite.Views.Pages
             EnableMainWindow = settings.Data.StartWithMainWindow;
             EnableDesktopLyricWindow = settings.Data.StartWithDesktopLyric;
             EnableAudioVisualizer = settings.Data.EnableAudioVisualizer;
-            LiteServerHost = settings.Data.LiteLyricServerHost;
             AppFontFamily = appearanceSettings.Data.DefaultFontFamily;
             BackgroundType = appearanceSettings.Data.Background;
             AcrylicOpacity = appearanceSettings.Data.AcylicOpacity;
@@ -76,13 +75,6 @@ namespace LemonLite.Views.Pages
             settings.Data.EnableAudioVisualizer = value;
             if (smtc.IsSessionValid)
                 App.WindowManager.SetWindowState<AudioVisualizerWindow>(value);
-        }
-        [ObservableProperty]
-        private string _liteServerHost = "";
-
-        partial void OnLiteServerHostChanging(string value)
-        {
-            LyricHelper.EndPoint = settings.Data.LiteLyricServerHost = value;
         }
         
         [ObservableProperty]

@@ -49,7 +49,6 @@ public partial class App : Application
     {
         var smtc = Services.GetRequiredService<SmtcService>();
         var opt = Services.GetRequiredService<AppSettingService>().GetConfigMgr<AppOption>();
-        LyricHelper.EndPoint = opt.Data.LiteLyricServerHost;
 
         if (smtc.IsSessionValid)
         {
@@ -73,6 +72,7 @@ public partial class App : Application
 
     private void App_Exit(object sender, ExitEventArgs e)
     {
+        Services.GetRequiredService<NotifyIconService>().Dispose();
         Host.StopAsync().Wait();
     }
 

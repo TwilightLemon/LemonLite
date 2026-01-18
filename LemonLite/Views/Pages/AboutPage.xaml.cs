@@ -61,7 +61,7 @@ namespace LemonLite.Views.Pages
             new OpenSourceComponent
             { 
             Name="SlimeNull/AudioVisualizer",
-            Version="commit: 7fbf2ce",
+            Version="@7fbf2ce",
             License="MIT",
             Url="https://github.com/SlimeNull/AudioVisualizer"
             },
@@ -82,7 +82,7 @@ namespace LemonLite.Views.Pages
             new OpenSourceComponent
             {
                 Name = "Lyricify.Lyrics.Helper",
-                Version = "0.1.4",
+                Version = "@f89d565",
                 License = "MIT",
                 Url = "https://github.com/WXRIW/Lyricify-Lyrics-Helper"
             },
