@@ -219,7 +219,7 @@ public partial class LyricLineControl : UserControl
                                 transfrom.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(0, ActiveLrcLiftupHeight, TimeSpan.FromMilliseconds(unit * p))
                                 {
                                     BeginTime = TimeSpan.FromMilliseconds(delay),
-                                    EasingFunction = new CubicEase()
+                                    EasingFunction = new BackEase()
                                 });
                                 delay += addi;
                             }
