@@ -1,3 +1,6 @@
 [submodule "AudioVisualizer"]
 	path = AudioVisualizer
 	url = https://github.com/SlimeNull/AudioVisualizer.git
+[submodule "Lyricify-Lyrics-Helper"]
+	path = Lyricify-Lyrics-Helper
+	url = https://github.com/WXRIW/Lyricify-Lyrics-Helper
