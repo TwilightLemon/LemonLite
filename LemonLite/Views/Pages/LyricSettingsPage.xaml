@@ -63,6 +63,25 @@
                     <TextBlock Margin="12,0"
                                HorizontalAlignment="Left"
                                VerticalAlignment="Center"
+                               Text="Font Size When Mini Mode" />
+                    <ws:TextBox Height="24"
+                                MinWidth="100"
+                                Margin="0,0,24,0"
+                                Padding="8,2"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                Style="{StaticResource SimpleTextBoxStyleForWs}"
+                                Text="{Binding FontSizeMiniMode}" />
+                </Grid>
+            </Border>
+
+            <Border Height="48"
+                    Background="{DynamicResource MaskColor}"
+                    CornerRadius="12">
+                <Grid>
+                    <TextBlock Margin="12,0"
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
                                Text="Font Family" />
                     <ws:TextBox Height="24"
                                 MinWidth="220"

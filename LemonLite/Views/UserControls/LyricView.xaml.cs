@@ -76,7 +76,7 @@ namespace LemonLite.Views.UserControls
             {
                 IsShowTranslation = _settings?.Data?.ShowTranslation is true;
                 IsShowRomaji = _settings?.Data?.ShowRomaji is true;
-                SetFontSize(_settings?.Data?.FontSize ?? (int)LyricFontSize);
+                SetFontSize((_isMiniMode? _settings?.Data?.FontSize : _settings?.Data?.FontSizeMiniMode) ?? (int)LyricFontSize);
                 this.FontFamily = new FontFamily(_settings?.Data?.FontFamily ?? "Segou UI");
                 LrcHost.SetValue(HighlightTextBlock.UseAdditiveProperty, uiResourceService.GetIsDarkMode());
             });
@@ -94,6 +94,16 @@ namespace LemonLite.Views.UserControls
         #region Apperance
         public double LyricFontSize = 24;
         public const double LyricFontSizeScale = 0.6;
+        private bool _isMiniMode= false;
+        public bool IsMiniMode
+        {
+            get => _isMiniMode;
+            set
+            {
+                _isMiniMode = value;
+                SetFontSize(_isMiniMode ? _settings.Data.FontSizeMiniMode : _settings.Data.FontSize);
+            }
+        }
         #endregion
 
         [RelayCommand]
@@ -103,7 +113,9 @@ namespace LemonLite.Views.UserControls
         public void SetFontSize(int size)
         {
             LyricFontSize = size;
-            _settings.Data.FontSize = size;
+            if (_isMiniMode)
+                _settings.Data.FontSizeMiniMode = size;
+            else _settings.Data.FontSize = size;
             LrcHost.ApplyFontSize(size,LyricFontSizeScale);
         }
 

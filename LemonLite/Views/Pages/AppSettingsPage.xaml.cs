@@ -5,7 +5,6 @@ using LemonLite.Services;
 using LemonLite.Utils;
 using LemonLite.Views.Windows;
 using Microsoft.Extensions.DependencyInjection;
-using NAudio.Gui;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
@@ -49,6 +48,7 @@ namespace LemonLite.Views.Pages
             {
                 SmtcMediaIds.Add(id);
             }
+            ShowInTaskbarWhenMiniMode = appearanceSettings.Data.ShowInTaskbarWhenMiniMode;
         }
 
         [ObservableProperty]
@@ -239,6 +239,14 @@ namespace LemonLite.Views.Pages
         partial void OnBackgroundOpacityChanged(double value)
         {
             appearanceSettings.Data.BackgroundOpacity = value;
+            appearanceSettings.TriggerDataChanged();
+        }
+
+        [ObservableProperty]
+        private bool _showInTaskbarWhenMiniMode;
+        partial void OnShowInTaskbarWhenMiniModeChanged(bool value)
+        {
+            appearanceSettings.Data.ShowInTaskbarWhenMiniMode = value;
             appearanceSettings.TriggerDataChanged();
         }
     }

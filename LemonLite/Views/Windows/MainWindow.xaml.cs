@@ -113,6 +113,7 @@ public partial class MainWindow : Window
             SetResourceReference(BackgroundProperty, "BackgroundColor");
             ImageBackground.Background = null;
         }
+        ShowInTaskbar = !IsMiniMode || _mgr.Data.ShowInTaskbarWhenMiniMode;
     }
 
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -182,11 +183,15 @@ public partial class MainWindow : Window
         if (IsMiniMode)
         {
             SwitchToMobileLayout();
+            ShowInTaskbar = _mgr.Data.ShowInTaskbarWhenMiniMode;
         }
         else
         {
             SwitchToDesktopLayout();
+            // always show in taskbar when desktop mode
+            ShowInTaskbar = true;
         }
+        vm.LyricView.IsMiniMode = IsMiniMode;
     }
 
     private void SwitchToMobileLayout()

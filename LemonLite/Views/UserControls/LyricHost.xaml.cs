@@ -17,7 +17,7 @@ namespace LemonLite.Views.UserControls;
 
 public sealed class SelectiveLyricLine : Border
 {
-    public  LyricLineControl LyricLine { get; init; }
+    public LyricLineControl LyricLine { get; init; }
     public SelectiveLyricLine(LyricLineControl line)
     {
         Background = Brushes.Transparent;
@@ -31,11 +31,11 @@ public sealed class SelectiveLyricLine : Border
 
     private async void SelectiveLyricLine_MouseDown(object sender, MouseButtonEventArgs e)
     {
-        if( LyricLine.MainLineInfo?.StartTime is int startTime )
+        if (LyricLine.MainLineInfo?.StartTime is int startTime)
         {
             var smtc = App.Services.GetRequiredService<SmtcService>().SmtcListener;
             await smtc.SetPosition(TimeSpan.FromMilliseconds(startTime));
-            if(smtc.GetPlaybackStatus() != GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
+            if (smtc.GetPlaybackStatus() != GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
             {
                 await smtc.PlayOrPause();
             }
@@ -48,10 +48,10 @@ public sealed class SelectiveLyricLine : Border
             Background.BeginAnimation(SolidColorBrush.ColorProperty, new ColorAnimation(Colors.Transparent, TimeSpan.FromMilliseconds(200)));
 
         if (!LyricLine.IsCurrent)
-            LyricLine.SetActiveState(false,false);
+            LyricLine.SetActiveState(false, false);
     }
 
-    private void SelectiveLyricLine_MouseEnter(object sender,  MouseEventArgs e)
+    private void SelectiveLyricLine_MouseEnter(object sender, MouseEventArgs e)
     {
         var color = ((SolidColorBrush)Application.Current.FindResource("MaskColor")).Color;
         var brush = new SolidColorBrush(Colors.Transparent);
@@ -86,10 +86,10 @@ public partial class LyricHost : UserControl
     }
     public void ApplyFontSize(double size, double scale)
     {
-        foreach(var control in lrcs.Values)
+        foreach (var control in lrcs.Values)
         {
             control.LyricLine.FontSize = size * scale;
-            foreach( HighlightTextBlock tb in control.LyricLine.MainLrcContainer.Children)
+            foreach (HighlightTextBlock tb in control.LyricLine.MainLrcContainer.Children)
             {
                 tb.FontSize = size;
             }
@@ -129,22 +129,23 @@ public partial class LyricHost : UserControl
         currentLrc = null;
     }
 
-    private Thickness lyricSpacing= new(0, 0, 0, 36);
-    public void Load(LyricsData lyricsData,LyricsData? trans=null,LyricsData? romaji=null,bool isPureLrc=false)
+    private Thickness lyricSpacing = new(0, 0, 0, 36);
+    public void Load(LyricsData lyricsData, LyricsData? trans = null, LyricsData? romaji = null, bool isPureLrc = false)
     {
         _isLoading = true;
-        _isPureLrc= isPureLrc;
+        _isPureLrc = isPureLrc;
         Clear();
-        LrcContainer.Children.Add(new TextBlock() { Height = 300 ,Background=Brushes.Transparent});
+        LrcContainer.Children.Add(new TextBlock() { Height = 300, Background = Brushes.Transparent });
         foreach (var line in lyricsData.Lines)
         {
-            if(line is SyllableLineInfo{ } syllable)
+            if (line is SyllableLineInfo { } syllable)
             {
                 var lrc = new LyricLineControl(syllable);
-                var container =new SelectiveLyricLine(lrc) { Margin = lyricSpacing };
+                var container = new SelectiveLyricLine(lrc) { Margin = lyricSpacing };
                 LrcContainer.Children.Add(container);
                 lrcs[syllable] = container;
-            }else if(line is LineInfo { } pure)
+            }
+            else if (line is LineInfo { } pure)
             {
                 var lrc = new LyricLineControl(pure);
                 var container = new SelectiveLyricLine(lrc) { Margin = lyricSpacing };
@@ -153,28 +154,28 @@ public partial class LyricHost : UserControl
             }
         }
         LrcContainer.Children.Add(new TextBlock() { Height = 300, Background = Brushes.Transparent });
-        if (trans is { Lines:not null})
+        if (trans is { Lines: not null })
         {
-            foreach(var lrc in lrcs)
+            foreach (var lrc in lrcs)
             {
-                var transLrc = trans.Lines.FirstOrDefault(a=>a.StartTime>=lrc.Key.StartTime-10);
-                if (transLrc != null&&transLrc.Text!="//")
+                var transLrc = trans.Lines.FirstOrDefault(a => a.StartTime >= lrc.Key.StartTime - 10);
+                if (transLrc != null && transLrc.Text != "//")
                     lrc.Value.LyricLine.TranslationLrc.Text = transLrc.Text;
             }
         }
-        if (romaji  is { Lines: not null})
+        if (romaji is { Lines: not null })
         {
-                    foreach(var lrc in lrcs)
-                    {
-                        var romajiLrc = romaji.Lines.FirstOrDefault(a => a.StartTime >= lrc.Key.StartTime - 10);
-                        if (romajiLrc is SyllableLineInfo { } roma)
-                            lrc.Value.LyricLine.LoadRomajiLrc(roma);
-                        else if (romajiLrc is LineInfo { } pure)
-                            lrc.Value.LyricLine.LoadPlainRomaji(pure.Text);
-                    }
-                }
-                _isLoading = false;
+            foreach (var lrc in lrcs)
+            {
+                var romajiLrc = romaji.Lines.FirstOrDefault(a => a.StartTime >= lrc.Key.StartTime - 10);
+                if (romajiLrc is SyllableLineInfo { } roma)
+                    lrc.Value.LyricLine.LoadRomajiLrc(roma);
+                else if (romajiLrc is LineInfo { } pure)
+                    lrc.Value.LyricLine.LoadPlainRomaji(pure.Text);
             }
+        }
+        _isLoading = false;
+    }
 
     public void UpdateTime(int ms)
     {
@@ -185,7 +186,7 @@ public partial class LyricHost : UserControl
         }
 
         //从上一条结束到本条结束都是当前歌词时间，目的是本条歌词结束就跳转到下一个
-        KeyValuePair<ILineInfo, SelectiveLyricLine>? lastItem=null,target = null;
+        KeyValuePair<ILineInfo, SelectiveLyricLine>? lastItem = null, target = null;
         if (!_isPureLrc)
         {
             foreach (var cur in lrcs)
@@ -210,7 +211,7 @@ public partial class LyricHost : UserControl
             var control = target.Value.Value;
             if (line == null || control == null) return;
 
-            if (line.StartTime > ms || (line.EndTime??int.MaxValue) < ms) return;//skip if not in range.
+            if (line.StartTime > ms || (line.EndTime ?? int.MaxValue) < ms) return;//skip if not in range.
 
             if (line == currentLrc) return;//skip if already being the current lrc.
             if (currentLrc != null && lrcs.TryGetValue(currentLrc, out var lrc))
@@ -255,7 +256,7 @@ public partial class LyricHost : UserControl
 
             // 获取当前可见范围内的歌词行（向下扩展scrollDelta以包含动画后会出现的行）
             double viewportTop = scrollviewer.VerticalOffset;
-            double viewportBottom = viewportTop + scrollviewer.ActualHeight + Math.Max(0, scrollDelta*2);
+            double viewportBottom = viewportTop + scrollviewer.ActualHeight + Math.Max(0, scrollDelta * 2);
 
             var visibleLines = new List<SelectiveLyricLine>();
             foreach (var child in LrcContainer.Children)
@@ -366,4 +367,3 @@ public partial class LyricHost : UserControl
         _interruptedTime = DateTime.MinValue;
     }
 }
-
