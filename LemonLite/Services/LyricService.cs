@@ -124,7 +124,25 @@ public class LyricService
         //不能没有title
         if(string.IsNullOrEmpty(info.Title)) return;
 
-        var newInfo=info.Title + info.Artist;
+        string artist = info.Artist ?? "";
+        string album = info.AlbumTitle ?? "";
+        var mediaId = _smtcService.SmtcListener.GetAppMediaId()?.ToLower();
+        if (mediaId?.Contains("applemusic") is true)
+        {
+            //憨批苹果音乐把Album放在了Artist字段
+            if (!string.IsNullOrEmpty(info.Artist))
+            {
+                var tmp = info.Artist.Split('—', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                if (tmp.Length > 1)
+                {
+                    artist = tmp[0];
+                    album = tmp[1];
+                }
+            }
+        }
+
+
+        var newInfo=info.Title + artist;
         if (_currentMusicInfo == newInfo) return;
         _currentMusicInfo = newInfo;
 
@@ -139,7 +157,7 @@ public class LyricService
         int durationMs=(int)_smtcService.Duration * 1000;
         try
         {
-            if (await LyricHelper.SearchMusicAsync(info.Title, info.Artist, info.AlbumTitle, durationMs, cancellationToken) is { Id: not null } musicMetaData)
+            if (await LyricHelper.SearchMusicAsync(info.Title,artist, album, durationMs, cancellationToken) is { Id: not null } musicMetaData)
             {
                 if (cancellationToken.IsCancellationRequested) return;
 
@@ -160,7 +178,6 @@ public class LyricService
                     musicMetaData.Searcher?.DisplayName ?? "Unknown Source"
                 ));
 
-                var mediaId = _smtcService.SmtcListener.GetAppMediaId().ToLower();
                 _smtcSource = _smtcSource?.EndsWith(".exe") is true ? mediaId[..^4] : mediaId;
 
                 var source = musicMetaData.Searcher?.Name?.ToLower();

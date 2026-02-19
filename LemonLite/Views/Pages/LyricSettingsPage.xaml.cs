@@ -27,7 +27,7 @@ namespace LemonLite.Views.Pages
         {
             ShowTranslation = settings.Data.ShowTranslation;
             ShowRomaji = settings.Data.ShowRomaji;
-            FontSize = settings.Data.FontSize;
+            MainFontSize = settings.Data.FontSize;
             FontSizeMiniMode = settings.Data.FontSizeMiniMode;
             LyricFontFamily = settings.Data.FontFamily;
         }
@@ -39,7 +39,7 @@ namespace LemonLite.Views.Pages
         private bool _showRomaji;
 
         [ObservableProperty]
-        private int _fontSize;
+        private int _mainFontSize;
 
         [ObservableProperty]
         private int _fontSizeMiniMode;
@@ -59,7 +59,7 @@ namespace LemonLite.Views.Pages
             settings.TriggerDataChanged();
         }
 
-        partial void OnFontSizeChanged(int value)
+        partial void OnMainFontSizeChanged(int value)
         {
             settings.Data.FontSize = value;
             settings.TriggerDataChanged();

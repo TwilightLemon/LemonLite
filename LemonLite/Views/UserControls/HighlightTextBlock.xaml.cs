@@ -1,5 +1,6 @@
 using LemonLite.Shaders.Impl;
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Windows;
@@ -11,7 +12,7 @@ namespace LemonLite.Views.UserControls;
 
 public partial class HighlightTextBlock : UserControl
 {
-    private readonly ProgresiveHighlightEffect _effect;
+    private ProgresiveHighlightEffect? _effect = null;
 
     static HighlightTextBlock()
     {
@@ -34,16 +35,29 @@ public partial class HighlightTextBlock : UserControl
     public HighlightTextBlock(bool isSpiltEnabled)
     {
         InitializeComponent();
-        _effect = new()
+        Loaded += HighlightTextBlock_Loaded;
+        Unloaded += HighlightTextBlock_Unloaded;
+        SizeChanged += (_, _) => UpdateTextClip();
+        IsSpiltEnabled = isSpiltEnabled;
+    }
+
+    private void HighlightTextBlock_Unloaded(object sender, RoutedEventArgs e)
+    {
+        _effect = null;
+        Debug.WriteLine("unloaded..");
+    }
+    private void HighlightTextBlock_Loaded(object sender, RoutedEventArgs e)
+    {
+        _effect ??= new()
         {
             HighlightColor = HighlightColor,
             HighlightPos = HighlightPos,
-            HighlightWidth = HighlightWidth
+            HighlightWidth = HighlightWidth,
+            HighlightIntensity = GetHighlightIntensity(this),
+            UseAdditive = UseAdditive
         };
         PART_Rectangle.Effect = _effect;
-        Loaded += (_, _) => UpdateTextClip();
-        SizeChanged += (_, _) => UpdateTextClip();
-        IsSpiltEnabled = isSpiltEnabled;
+        UpdateTextClip();
     }
 
     #region Text
@@ -151,7 +165,7 @@ public partial class HighlightTextBlock : UserControl
 
     private static void OnHighlightPosChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        if (d is HighlightTextBlock c)
+        if (d is HighlightTextBlock c&&c._effect!=null)
         {
             c._effect.HighlightPos = (double)e.NewValue;
         }
@@ -179,7 +193,7 @@ public partial class HighlightTextBlock : UserControl
 
     private static void OnHighlightWidthChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        if (d is HighlightTextBlock c)
+        if (d is HighlightTextBlock c && c._effect != null)
         {
             c._effect.HighlightWidth = (double)e.NewValue;
         }
@@ -207,7 +221,7 @@ public partial class HighlightTextBlock : UserControl
 
     private static void OnHighlightColorChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        if (d is HighlightTextBlock c)
+        if (d is HighlightTextBlock c && c._effect != null)
         {
             c._effect.HighlightColor = (Color)e.NewValue;
         }
@@ -231,7 +245,7 @@ public partial class HighlightTextBlock : UserControl
 
     private static void OnUseAdditiveChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        if (d is HighlightTextBlock c)
+        if (d is HighlightTextBlock c && c._effect != null)
         {
             c._effect.UseAdditive = (bool)e.NewValue;
         }
@@ -252,7 +266,7 @@ public partial class HighlightTextBlock : UserControl
 
     private static void OnHighlightIntensityChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        if (d is HighlightTextBlock c)
+        if (d is HighlightTextBlock c && c._effect != null)
         {
             c._effect.HighlightIntensity = (double)e.NewValue;
         }

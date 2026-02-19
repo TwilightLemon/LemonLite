@@ -30,7 +30,10 @@ public partial class MainWindow : Window
     private Storyboard? LyricImgRTAni;
     public bool IsMiniMode { get; private set; }
 
-    public MainWindow(MainWindowViewModel vm, AppSettingService appSettingService, SmtcService smtcService, UIResourceService uiResourceService)
+    public MainWindow(MainWindowViewModel vm,
+        AppSettingService appSettingService,
+        SmtcService smtcService, 
+        UIResourceService uiResourceService)
     {
         InitializeComponent();
         this.DataContext = vm;
@@ -44,10 +47,17 @@ public partial class MainWindow : Window
         Loaded += MainWindow_Loaded;
         Closed += MainWindow_Closed;
 
+        ui.OnColorModeChanged += Ui_OnColorModeChanged;
+
         this.MouseEnter += MainWindow_MouseEnter;
         this.MouseLeave += MainWindow_MouseLeave;
 
         ApplySettings(isFirstCall: true);
+    }
+
+    private void Ui_OnColorModeChanged()
+    {
+        SongArtistBlock.UseAdditive = SongTitleBlock.UseAdditive = ui.GetIsDarkMode();
     }
 
     private void Appearance_OnDataChanged()
@@ -60,6 +70,7 @@ public partial class MainWindow : Window
         vm.Dispose();
         _mgr.Data.Window = new Rect(Left, Top, Width, Height);
         _mgr.OnDataChanged -= Appearance_OnDataChanged;
+        ui.OnColorModeChanged -= Ui_OnColorModeChanged;
         H.NotifyIcon.EfficiencyMode.EfficiencyModeUtilities.SetEfficiencyMode(true);
     }
 
@@ -120,7 +131,7 @@ public partial class MainWindow : Window
     {
         //Main Lyric Window runs on high performance mode
         H.NotifyIcon.EfficiencyMode.EfficiencyModeUtilities.SetEfficiencyMode(false);
-
+        Ui_OnColorModeChanged();
         UpdateLayout(ActualWidth);
 
         vm.PropertyChanged += (s, args) =>

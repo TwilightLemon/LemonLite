@@ -52,7 +52,7 @@
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
                                 Style="{StaticResource SimpleTextBoxStyleForWs}"
-                                Text="{Binding FontSize}" />
+                                Text="{Binding MainFontSize}" />
                 </Grid>
             </Border>
 
