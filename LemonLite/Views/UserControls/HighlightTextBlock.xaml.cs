@@ -36,17 +36,20 @@ public partial class HighlightTextBlock : UserControl
     {
         InitializeComponent();
         Loaded += HighlightTextBlock_Loaded;
-        Unloaded += HighlightTextBlock_Unloaded;
         SizeChanged += (_, _) => UpdateTextClip();
         IsSpiltEnabled = isSpiltEnabled;
     }
 
-    private void HighlightTextBlock_Unloaded(object sender, RoutedEventArgs e)
-    {
-        _effect = null;
-        Debug.WriteLine("unloaded..");
-    }
     private void HighlightTextBlock_Loaded(object sender, RoutedEventArgs e)
+    {
+        if (HighlightPos > 0)
+        {
+            InitEffect();
+        }
+        UpdateTextClip();
+    }
+    
+    private void InitEffect()
     {
         _effect ??= new()
         {
@@ -57,7 +60,6 @@ public partial class HighlightTextBlock : UserControl
             UseAdditive = UseAdditive
         };
         PART_Rectangle.Effect = _effect;
-        UpdateTextClip();
     }
 
     #region Text
@@ -165,9 +167,14 @@ public partial class HighlightTextBlock : UserControl
 
     private static void OnHighlightPosChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        if (d is HighlightTextBlock c&&c._effect!=null)
+        if (d is HighlightTextBlock c)
         {
-            c._effect.HighlightPos = (double)e.NewValue;
+            if((double)e.NewValue > LyricLineControl.InitialHighlightPos &&c._effect==null)
+            {
+                c.InitEffect();
+            }
+            if (c._effect != null)
+                c._effect.HighlightPos = (double)e.NewValue;
         }
     }
 

@@ -251,6 +251,7 @@ public partial class MainWindow : Window
         SongTitleBlock.TextAlignment = TextAlignment.Left;
         SongTitleBlock.TextWrapping = TextWrapping.NoWrap;
         SongTitleBlock.HorizontalAlignment = HorizontalAlignment.Stretch;
+        SongTitleBlock.FontSize = 18;
         SongArtistBlock.Margin = new Thickness(0);
         SongArtistBlock.TextAlignment = TextAlignment.Left;
         SongArtistBlock.HorizontalAlignment = HorizontalAlignment.Stretch;
@@ -355,6 +356,7 @@ public partial class MainWindow : Window
         SongTitleBlock.TextAlignment = TextAlignment.Center;
         SongTitleBlock.HorizontalAlignment = HorizontalAlignment.Stretch;
         SongTitleBlock.TextWrapping = TextWrapping.Wrap;
+        SongTitleBlock.FontSize = 20;
         SongArtistBlock.Margin = new Thickness(48, 0, 48, 0);
         SongArtistBlock.TextAlignment = TextAlignment.Center;
         SongArtistBlock.HorizontalAlignment = HorizontalAlignment.Stretch;

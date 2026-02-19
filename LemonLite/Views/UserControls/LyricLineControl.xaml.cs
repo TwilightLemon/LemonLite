@@ -15,6 +15,9 @@ namespace LemonLite.Views.UserControls;
 /// </summary>
 public partial class LyricLineControl : UserControl
 {
+    internal const double DefaultHighlightWidth = 0.5;
+    internal const double InitialHighlightPos = -0.5;
+
     private readonly Dictionary<ISyllableInfo, HighlightTextBlock> mainSyllableLrcs = [];
     private readonly Dictionary<ISyllableInfo, TextBlock> romajiSyllableLrcs = [];
     private const int InActiveLrcBlurRadius = 6;
@@ -68,7 +71,7 @@ public partial class LyricLineControl : UserControl
             Text = lrc,
             TextWrapping = TextWrapping.Wrap,
             FontSize = fontSize,
-            HighlightPos = -0.5
+            HighlightPos = InitialHighlightPos
         };
         //tb.SetResourceReference(ForegroundProperty, "InActiveLrcForeground");
         MainLrcContainer.Children.Add(tb);
@@ -110,8 +113,8 @@ public partial class LyricLineControl : UserControl
             {
                 Text = word.Text,
                 FontSize = fontSize,
-                HighlightPos = -0.5,
-                HighlightWidth = 0.5,
+                HighlightPos = InitialHighlightPos,
+                HighlightWidth = DefaultHighlightWidth,
                 RenderTransform = isSpiltEnabled ? null : new TranslateTransform()
             };
             textBlock.SetResourceReference(HighlightTextBlock.HighlightColorProperty, "ActiveLrcForegroundColor");
@@ -172,7 +175,7 @@ public partial class LyricLineControl : UserControl
                 {
                     // 还没到，保持未填充
                     textBlock.BeginAnimation(HighlightTextBlock.HighlightPosProperty, null);
-                    textBlock.HighlightPos = -0.5;
+                    textBlock.HighlightPos = InitialHighlightPos;
                     mainSyllableAnimated[syllable] = false;
 
                     //clear lift-up
@@ -204,7 +207,7 @@ public partial class LyricLineControl : UserControl
 
                         // HighlightPos animation: from -0.5 to 1
                         var duration = TimeSpan.FromMilliseconds(syllable.Duration);
-                        var highlightAnim = new DoubleAnimation(-0.5, 1, new Duration(duration));
+                        var highlightAnim = new DoubleAnimation(InitialHighlightPos, 1, new Duration(duration));
                         textBlock.BeginAnimation(HighlightTextBlock.HighlightPosProperty, highlightAnim);
 
                         bool liftup = true;
@@ -284,7 +287,7 @@ public partial class LyricLineControl : UserControl
                 lrc.Value.HighlightPos = 1;
                 lrc.Value.BeginAnimation(HighlightTextBlock.HighlightIntensityProperty, new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(300)));
             }
-            else lrc.Value.HighlightPos = -0.5;
+            else lrc.Value.HighlightPos = InitialHighlightPos;
 
             //clear lift-up
             var clearAnimation = new DoubleAnimation(0, TimeSpan.FromMilliseconds(200));
@@ -320,7 +323,7 @@ public partial class LyricLineControl : UserControl
             {
                 if (control.MainLrcContainer.Children[0] is HighlightTextBlock tb)
                 {
-                    tb.HighlightPos = inactiveAnimated ? 1 : -0.5;
+                    tb.HighlightPos = inactiveAnimated ? 1 : InitialHighlightPos;
                 }
             }
             else
@@ -328,7 +331,7 @@ public partial class LyricLineControl : UserControl
                 // Reset HighlightPos to initial state for all syllables
                 foreach (var lrc in control.mainSyllableLrcs)
                 {
-                    lrc.Value.HighlightPos = -0.5;
+                    lrc.Value.HighlightPos = InitialHighlightPos;
                     lrc.Value.BeginAnimation(HighlightTextBlock.HighlightIntensityProperty, null);
                 }
             }
@@ -342,7 +345,7 @@ public partial class LyricLineControl : UserControl
             {
                 if (control.MainLrcContainer.Children[0] is HighlightTextBlock tb)
                 {
-                    tb.HighlightPos = -0.5;
+                    tb.HighlightPos = InitialHighlightPos;
                 }
             }
             else control.ClearHighlighter(inactiveAnimated);
