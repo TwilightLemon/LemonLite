@@ -140,7 +140,7 @@
                                            HighlightPos="1"
                                            uc:HighlightTextBlock.HighlightIntensity="1"
                                            FontWeight="Bold"
-                                           Foreground="Transparent"
+                                           Foreground="{DynamicResource InActiveLrcForeground}"
                                            HighlightColor="{DynamicResource ActiveLrcForegroundColor}"
                                            Text="{Binding Title, Mode=OneWay}"
                                            TextAlignment="Center"
@@ -153,7 +153,7 @@
                                            d:Text="Taylor Swift"
                                            HighlightPos="1"
                                            uc:HighlightTextBlock.HighlightIntensity="0.8"
-                                           Foreground="Transparent"
+                                           Foreground="{DynamicResource InActiveLrcForeground}"
                                            HighlightColor="{DynamicResource ActiveLrcForegroundColor}"
                                            TextAlignment="Center"
                                            TextWrapping="Wrap">

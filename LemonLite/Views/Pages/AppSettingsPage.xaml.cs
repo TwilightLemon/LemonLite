@@ -5,7 +5,6 @@ using LemonLite.Services;
 using LemonLite.Utils;
 using LemonLite.Views.Windows;
 using Microsoft.Extensions.DependencyInjection;
-using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using static LemonLite.Configs.Appearance;
@@ -43,11 +42,6 @@ namespace LemonLite.Views.Pages
             AcrylicOpacity = appearanceSettings.Data.AcylicOpacity;
             BackgroundImagePath = appearanceSettings.Data.BackgroundImagePath ?? "";
             BackgroundOpacity = appearanceSettings.Data.BackgroundOpacity;
-            SmtcMediaIds.Clear();
-            foreach (var id in settings.Data.SmtcMediaIds)
-            {
-                SmtcMediaIds.Add(id);
-            }
             ShowInTaskbarWhenMiniMode = appearanceSettings.Data.ShowInTaskbarWhenMiniMode;
         }
 
@@ -102,58 +96,6 @@ namespace LemonLite.Views.Pages
         {
             get => ColorMode == ColorModeType.Auto;
             set { if (value) ColorMode = ColorModeType.Auto; }
-        }
-
-        public ObservableCollection<string> SmtcMediaIds { get; } = [];
-
-        [RelayCommand]
-        private void AddSmtcMediaId()
-        {
-            var dialog = new Microsoft.Win32.SaveFileDialog
-            {
-                Title = "Add SMTC Media ID",
-                Filter = "Executable Files (*.exe)|*.exe|All Files (*.*)|*.*",
-                FileName = "example.exe",
-                CheckFileExists = false,
-                CheckPathExists = false,
-                OverwritePrompt = false
-            };
-
-            if (dialog.ShowDialog() == true)
-            {
-                var fileName = System.IO.Path.GetFileName(dialog.FileName).ToLower();
-                AddSmtcMediaId(fileName);
-            }
-        }
-
-        private void AddSmtcMediaId(string mediaId)
-        {
-            if (!string.IsNullOrWhiteSpace(mediaId) && !SmtcMediaIds.Contains(mediaId))
-            {
-                SmtcMediaIds.Add(mediaId);
-                settings.Data.SmtcMediaIds.Add(mediaId);
-                //refresh smtc session immediately once the whitelist changed.
-                App.Services.GetRequiredService<SmtcService>().SmtcListener.RefreshCurrentSession();
-            }
-        }
-
-        [RelayCommand]
-        private void AddCurrentSMTCMediaId()
-        {
-            var smtc = App.Services.GetRequiredService<SmtcService>();
-            var cur = smtc.SmtcListener.SessionManager.GetCurrentSession();
-            var mediaId = cur.SourceAppUserModelId.ToLower();
-            AddSmtcMediaId(mediaId);
-        }
-
-        [RelayCommand]
-        private void RemoveSmtcMediaId(string mediaId)
-        {
-            if (SmtcMediaIds.Remove(mediaId))
-            {
-                settings.Data.SmtcMediaIds.Remove(mediaId);
-                App.Services.GetRequiredService<SmtcService>().SmtcListener.RefreshCurrentSession();
-            }
         }
 
         [ObservableProperty]

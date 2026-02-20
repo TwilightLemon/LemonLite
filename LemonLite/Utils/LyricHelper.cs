@@ -5,6 +5,7 @@ using Lyricify.Lyrics.Searchers;
 using Lyricify.Lyrics.Searchers.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -45,17 +46,17 @@ public static class LyricHelper
         return null;
     }
 
-    public static async Task<MusicMetaData?> SearchMusicAsync(string title, string artist, string album, int durationMs, CancellationToken cancellationToken = default)
+    public static async Task<MusicMetaData?> SearchMusicAsync(string title, string artist, string album, int durationMs, IReadOnlyList<string>? sources = null, CancellationToken cancellationToken = default)
     {
         try
         {
             if (string.IsNullOrWhiteSpace(album)) album = null;
-            var defaultSources = new[] { "qq music", "netease" };
+            var sourcesToSearch = (sources != null && sources.Count > 0) ? sources : (IReadOnlyList<string>)["qq music", "netease"];
             var artists = artist.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
             var metadata = new TrackMetadata() { Title = title, Artist = artist, Album = album, DurationMs = durationMs };
 
-            foreach (var src in defaultSources)
+            foreach (var src in sourcesToSearch)
             {
                 ISearcher? searcher = src switch
                 {

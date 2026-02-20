@@ -1,3 +1,4 @@
+using LemonLite.Configs;
 using LemonLite.Entities;
 using LemonLite.Utils;
 using Lyricify.Lyrics.Models;
@@ -31,10 +32,12 @@ public record class LrcLine(ILineInfo Lrc, string? Trans = null, ILineInfo? Roma
 public class LyricService
 {
     private readonly SmtcService _smtcService;
+    private readonly SettingsMgr<AppOption> _appOption;
 
-    public LyricService(SmtcService smtcService)
+    public LyricService(SmtcService smtcService, AppSettingService appSettingService)
     {
         _smtcService = smtcService;
+        _appOption = appSettingService.GetConfigMgr<AppOption>();
         _smtcService.SmtcListener.MediaPropertiesChanged += OnMediaPropertiesChanged;
         _smtcService.SmtcListener.SessionChanged += OnMediaPropertiesChanged;
         _smtcService.PositionChanged += OnPositionChanged;
@@ -157,7 +160,8 @@ public class LyricService
         int durationMs=(int)_smtcService.Duration * 1000;
         try
         {
-            if (await LyricHelper.SearchMusicAsync(info.Title,artist, album, durationMs, cancellationToken) is { Id: not null } musicMetaData)
+            var sources = _appOption.Data.GetSearchSources(mediaId);
+            if (await LyricHelper.SearchMusicAsync(info.Title,artist, album, durationMs, sources, cancellationToken) is { Id: not null } musicMetaData)
             {
                 if (cancellationToken.IsCancellationRequested) return;
 

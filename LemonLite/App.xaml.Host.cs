@@ -64,6 +64,7 @@ public partial class App
         services.AddTransient<SettingsWindow>();
         services.AddTransient<SettingsWindowViewModel>();
         services.AddTransient<AppSettingsPage>();
+        services.AddTransient<SmtcAppsPage>();
         services.AddTransient<LyricSettingsPage>();
         services.AddTransient<DesktopLyricSettingsPage>();
         services.AddTransient<AudioVisualizerSettingsPage>();

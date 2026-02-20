@@ -3,6 +3,7 @@ using LemonLite.Utils;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
@@ -300,7 +301,7 @@ public class SmtcService(AppSettingService appSettingService) : IHostedService
     private bool ValidSmtcSessionChecker(string? id)
     {
         if (string.IsNullOrEmpty(id)) return false;
-        return appOption.Data.SmtcMediaIds.Contains(id.ToLower());
+        return appOption.Data.SmtcApps.Any(a => a.AppId == id.ToLower());
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
