@@ -1,12 +1,8 @@
-using System;
+锘縰sing System;
 using System.IO;
 using System.Text;
 
 namespace LemonLite.Utils;
-
-/// <summary>
-/// 简单的日志记录器
-/// </summary>
 public static class Logger
 {
     private static readonly object _lock = new();
@@ -36,10 +32,7 @@ public static class Logger
                 File.AppendAllText(LogFilePath, sb.ToString(), Encoding.UTF8);
             }
         }
-        catch
-        {
-            // 日志写入失败时忽略，避免循环异常
-        }
+        catch { }
     }
 
     public static void Info(string message) => Log(LogLevel.Info, message);

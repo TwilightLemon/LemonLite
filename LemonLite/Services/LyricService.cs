@@ -123,29 +123,12 @@ public class LyricService
     /// </summary>
     private async Task LoadLyricFromCurrentMediaAsync()
     {
-        if (await _smtcService.SmtcListener.GetMediaInfoAsync() is not { PlaybackType: Windows.Media.MediaPlaybackType.Music } info) return;
-        //不能没有title
-        if(string.IsNullOrEmpty(info.Title)) return;
+        if (await _smtcService.SmtcListener.GetNormalizedMediaInfoAsync() is not { PlaybackType: Windows.Media.MediaPlaybackType.Music } info) return;
+        if (string.IsNullOrEmpty(info.Title)) return;
 
-        string artist = info.Artist ?? "";
-        string album = info.AlbumTitle ?? "";
         var mediaId = _smtcService.SmtcListener.GetAppMediaId()?.ToLower();
-        if (mediaId?.Contains("applemusic") is true)
-        {
-            //憨批苹果音乐把Album放在了Artist字段
-            if (!string.IsNullOrEmpty(info.Artist))
-            {
-                var tmp = info.Artist.Split('—', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-                if (tmp.Length > 1)
-                {
-                    artist = tmp[0];
-                    album = tmp[1];
-                }
-            }
-        }
 
-
-        var newInfo=info.Title + artist;
+        var newInfo = info.Title + info.Artist;
         if (_currentMusicInfo == newInfo) return;
         _currentMusicInfo = newInfo;
 
@@ -161,7 +144,7 @@ public class LyricService
         try
         {
             var sources = _appOption.Data.GetSearchSources(mediaId);
-            if (await LyricHelper.SearchMusicAsync(info.Title,artist, album, durationMs, sources, cancellationToken) is { Id: not null } musicMetaData)
+            if (await LyricHelper.SearchMusicAsync(info.Title, info.Artist, info.Album, durationMs, sources, cancellationToken) is { Id: not null } musicMetaData)
             {
                 if (cancellationToken.IsCancellationRequested) return;
 

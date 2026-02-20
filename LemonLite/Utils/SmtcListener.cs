@@ -313,7 +313,7 @@ public class SmtcListener(GlobalSystemMediaTransportControlsSessionManager mgr)
     {
         var session = GetSessionSnapshot();
         if (session == null) return null;
-        
+
         try
         {
             return await session.TryGetMediaPropertiesAsync();
@@ -322,6 +322,34 @@ public class SmtcListener(GlobalSystemMediaTransportControlsSessionManager mgr)
         {
             return null;
         }
+    }
+
+    /// <summary>
+    /// Returns normalized media metadata for the current session.
+    /// Raw SMTC properties are mapped to <see cref="SmtcMediaInfo"/> and then
+    /// passed through every registered <see cref="ISmtcMetadataProcessor"/>.
+    /// </summary>
+    public async Task<SmtcMediaInfo?> GetNormalizedMediaInfoAsync()
+    {
+        var raw = await GetMediaInfoAsync();
+        if (raw == null) return null;
+
+        var info = new SmtcMediaInfo
+        {
+            PlaybackType = raw.PlaybackType,
+            Title        = raw.Title      ?? "",
+            Artist       = raw.Artist     ?? "",
+            Album        = raw.AlbumTitle ?? "",
+        };
+
+        var appId = GetAppMediaId()?.ToLower() ?? "";
+        foreach (var processor in SmtcMetadataProcessorPipeline.All)
+        {
+            if (processor.CanProcess(appId))
+                processor.Process(info, appId);
+        }
+
+        return info;
     }
 
     public GlobalSystemMediaTransportControlsSessionPlaybackStatus? GetPlaybackStatus()

@@ -2,7 +2,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LemonLite.Configs;
 using LemonLite.Services;
+using LemonLite.Sources;
 using LemonLite.Utils;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
@@ -21,12 +23,7 @@ public partial class SmtcSourceEntryViewModel : ObservableObject
     {
         SourceId = sourceId;
         _owner = owner;
-        DisplayName = sourceId switch
-        {
-            "qq music" => "QQ Music",
-            "netease" or "cloudmusic" => "Netease",
-            _ => sourceId
-        };
+        DisplayName = LyricSourceRegistry.Get(sourceId)?.DisplayName ?? sourceId;
     }
 
     [RelayCommand]
@@ -34,6 +31,9 @@ public partial class SmtcSourceEntryViewModel : ObservableObject
 
     [RelayCommand]
     private void MoveDown() => _owner.MoveSourceDown(this);
+
+    [RelayCommand]
+    private void Remove() => _owner.RemoveSource(this);
 }
 
 public partial class SmtcAppItemViewModel : ObservableObject
@@ -51,6 +51,12 @@ public partial class SmtcAppItemViewModel : ObservableObject
         Sources.CollectionChanged += SyncToConfig;
     }
 
+    /// <summary>
+    /// Sources from the registry that are not yet present in this app's list.
+    /// </summary>
+    public IEnumerable<ILyricSource> InactiveSources =>
+        LyricSourceRegistry.All.Where(s => Sources.All(e => e.SourceId != s.Id));
+
     internal void MoveSourceUp(SmtcSourceEntryViewModel entry)
     {
         var idx = Sources.IndexOf(entry);
@@ -65,10 +71,23 @@ public partial class SmtcAppItemViewModel : ObservableObject
             Sources.Move(idx, idx + 1);
     }
 
+    internal void RemoveSource(SmtcSourceEntryViewModel entry)
+    {
+        Sources.Remove(entry);
+    }
+
+    [RelayCommand]
+    private void AddSource(string sourceId)
+    {
+        if (Sources.Any(e => e.SourceId == sourceId)) return;
+        Sources.Add(new SmtcSourceEntryViewModel(sourceId, this));
+    }
+
     private void SyncToConfig(object? sender, NotifyCollectionChangedEventArgs e)
     {
         Config.SearchSources.Clear();
         Config.SearchSources.AddRange(Sources.Select(s => s.SourceId));
+        OnPropertyChanged(nameof(InactiveSources));
     }
 }
 
@@ -82,6 +101,11 @@ public partial class SmtcAppsPage : Page
     private readonly SmtcService _smtc;
 
     public ObservableCollection<SmtcAppItemViewModel> SmtcApps { get; } = [];
+
+    /// <summary>
+    /// All sources known to the registry — bound to the "Available Sources" section in XAML.
+    /// </summary>
+    public IReadOnlyCollection<ILyricSource> AvailableSources => LyricSourceRegistry.All;
 
     public SmtcAppsPage(AppSettingService appSettingService, SmtcService smtcService)
     {
@@ -132,7 +156,12 @@ public partial class SmtcAppsPage : Page
     {
         if (string.IsNullOrWhiteSpace(appId)) return;
         if (_settings.Data.SmtcApps.Any(a => a.AppId == appId)) return;
-        var config = new SmtcAppConfig { AppId = appId };
+        // Initialize with registry default order so new apps work out of the box
+        var config = new SmtcAppConfig
+        {
+            AppId = appId,
+            SearchSources = LyricSourceRegistry.DefaultSourceIds.ToList()
+        };
         _settings.Data.SmtcApps.Add(config);
         SmtcApps.Add(new SmtcAppItemViewModel(config));
         _smtc.SmtcListener.RefreshCurrentSession();

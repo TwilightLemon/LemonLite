@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using LemonLite.Sources;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace LemonLite.Configs;
@@ -7,9 +8,10 @@ public class SmtcAppConfig
 {
     public string AppId { get; set; } = "";
     /// <summary>
-    /// Ordered list of search sources to try. Supported values: "qq music", "netease".
+    /// Ordered list of source IDs to search. See <see cref="LyricSourceRegistry"/> for registered IDs.
+    /// An empty list means use the registry default order.
     /// </summary>
-    public List<string> SearchSources { get; set; } = ["qq music", "netease"];
+    public List<string> SearchSources { get; set; } = [];
 }
 
 public class AppOption
@@ -34,6 +36,6 @@ public class AppOption
             if (config != null && config.SearchSources.Count > 0)
                 return config.SearchSources;
         }
-        return ["qq music", "netease"];
+        return LyricSourceRegistry.DefaultSourceIds;
     }
 }

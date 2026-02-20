@@ -1,49 +1,21 @@
 ﻿using LemonLite.Entities;
+using LemonLite.Sources;
 using Lyricify.Lyrics.Helpers;
 using Lyricify.Lyrics.Models;
-using Lyricify.Lyrics.Searchers;
 using Lyricify.Lyrics.Searchers.Helpers;
-using Microsoft.Extensions.DependencyInjection;
-using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace LemonLite.Utils;
-//先丑陋地把服务器去掉了... 日后再优化
+
 public static class LyricHelper
 {
-    private static async Task<LyricData?> GetLyricOnline(string id,string source, CancellationToken cancellationToken = default)
+    private static Task<LyricData?> GetLyricOnline(string id, string source, CancellationToken cancellationToken = default)
     {
-        try
-        {
-            if (source == "qq music" || string.IsNullOrEmpty(source))
-            {
-                var hc = App.Services.GetRequiredService<IHttpClientFactory>().CreateClient(App.DefaultHttpClientFlag);
-                return await TencGetLyric.GetLyricsAsync(hc, id);
-            }
-            else if (source is "cloudmusic" or "netease")
-            {
-                var api = new Lyricify.Lyrics.Providers.Web.Netease.Api();
-                var data = await api.GetLyricNew(id);
-                if (data == null) return null;
-                var result = new LyricData()
-                {
-                    Lyric = data.Yrc?.Lyric ?? data.Lrc.Lyric,
-                    Trans = data.Tlyric?.Lyric,
-                    Romaji = data.Romalrc?.Lyric
-                };
-                if (data.Yrc?.Lyric == null && data.Lrc.Lyric != null)
-                {
-                    //没有单句分词
-                    result.Type = LyricType.PureLrc;
-                }
-                return result;
-            }
-        }
-        catch { throw; }
-        return null;
+        var src = LyricSourceRegistry.Get(source);
+        if (src is null) return Task.FromResult<LyricData?>(null);
+        return src.GetLyricAsync(id, cancellationToken);
     }
 
     public static async Task<MusicMetaData?> SearchMusicAsync(string title, string artist, string album, int durationMs, IReadOnlyList<string>? sources = null, CancellationToken cancellationToken = default)
@@ -51,51 +23,22 @@ public static class LyricHelper
         try
         {
             if (string.IsNullOrWhiteSpace(album)) album = null;
-            var sourcesToSearch = (sources != null && sources.Count > 0) ? sources : (IReadOnlyList<string>)["qq music", "netease"];
-            var artists = artist.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            var sourcesToSearch = (sources != null && sources.Count > 0)
+                ? sources
+                : LyricSourceRegistry.DefaultSourceIds;
 
             var metadata = new TrackMetadata() { Title = title, Artist = artist, Album = album, DurationMs = durationMs };
 
-            foreach (var src in sourcesToSearch)
+            foreach (var srcId in sourcesToSearch)
             {
-                ISearcher? searcher = src switch
-                {
-                    "netease" or "cloudmusic" => new NeteaseSearcher(),
-                    // "kugou" => new Lyricify.Lyrics.Searchers.KugouSearcher(),
-                    "qq music" => new QQMusicSearcher(),
-                    _ => null
-                };
+                var src = LyricSourceRegistry.Get(srcId);
+                if (src is null) continue;
 
-                if (searcher is null)
+                var result = await src.CreateSearcher().SearchForResult(metadata);
+                if (result is not null && result.MatchType >= CompareHelper.MatchType.Medium)
                 {
-                    continue;
-                }
-
-                var result = await searcher.SearchForResult(metadata);
-                if (result is not null && (result.MatchType >= CompareHelper.MatchType.Medium ))
-                {
-                    return result switch
-                    {
-                        NeteaseSearchResult nrs => new MusicMetaData()
-                        {
-                            Id = nrs.Id,
-                            Searcher = nrs.Searcher,
-                            Title = nrs.Title,
-                            Artists = nrs.Artists,
-                            Album = nrs.Album,
-                            DurationMs = nrs.DurationMs ?? 0
-                        },
-                        QQMusicSearchResult qqrs => new MusicMetaData()
-                        {
-                            Id = qqrs.Id,
-                            Searcher = qqrs.Searcher,
-                            Title = qqrs.Title,
-                            Artists = qqrs.Artists,
-                            Album = qqrs.Album,
-                            DurationMs = qqrs.DurationMs ?? 0
-                        },
-                        _ => null
-                    };
+                    var mapped = src.MapSearchResult(result);
+                    if (mapped is not null) return mapped;
                 }
             }
         }
@@ -103,7 +46,7 @@ public static class LyricHelper
         return null;
     }
 
-    public static async Task<LyricData?> GetLyricById(string id,string source, CancellationToken cancellationToken = default)
+    public static async Task<LyricData?> GetLyricById(string id, string source, CancellationToken cancellationToken = default)
     {
         var path = Settings.CachePath;
         path = System.IO.Path.Combine(path, id + ".lmrc");
@@ -113,7 +56,7 @@ public static class LyricHelper
         }
         else
         {
-            if (await GetLyricOnline(id,source, cancellationToken) is { } ly)
+            if (await GetLyricOnline(id, source, cancellationToken) is { } ly)
             {
                 await Settings.SaveAsJsonAsync(ly, path, false);
                 return ly;
