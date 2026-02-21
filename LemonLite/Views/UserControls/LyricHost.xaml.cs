@@ -84,11 +84,14 @@ public partial class LyricHost : UserControl
         await Task.Delay(100);
         Dispatcher.Invoke(ScrollToCurrent);
     }
+    private double mainLrcFontSize = 24, transLrcFontSize = 18;
     public void ApplyFontSize(double size, double scale)
     {
+        mainLrcFontSize = size;
+        transLrcFontSize = scale;
+        this.FontSize = size * scale;
         foreach (var control in lrcs.Values)
         {
-            control.LyricLine.FontSize = size * scale;
             foreach (HighlightTextBlock tb in control.LyricLine.MainLrcContainer.Children)
             {
                 tb.FontSize = size;
@@ -96,8 +99,10 @@ public partial class LyricHost : UserControl
         }
         _ = WaitToScroll();
     }
+    private bool isShowTranslation = true, isShowRomaji = true;
     public void SetShowTranslation(bool show)
     {
+        isShowTranslation = show;
         foreach (var lrc in lrcs.Values)
         {
             lrc.LyricLine.TranslationLrc.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
@@ -106,6 +111,7 @@ public partial class LyricHost : UserControl
     }
     public void SetShowRomaji(bool show)
     {
+        isShowRomaji = true;
         foreach (var lrc in lrcs.Values)
         {
             lrc.LyricLine.RomajiLrcContainer.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
@@ -140,14 +146,15 @@ public partial class LyricHost : UserControl
         {
             if (line is SyllableLineInfo { } syllable)
             {
-                var lrc = new LyricLineControl(syllable);
+                var lrc = new LyricLineControl(syllable, mainLrcFontSize);
                 var container = new SelectiveLyricLine(lrc) { Margin = lyricSpacing };
                 LrcContainer.Children.Add(container);
                 lrcs[syllable] = container;
             }
             else if (line is LineInfo { } pure)
             {
-                var lrc = new LyricLineControl(pure);
+                var lrc = new LyricLineControl(pure, mainLrcFontSize);
+                lrc.FontSize = transLrcFontSize;
                 var container = new SelectiveLyricLine(lrc) { Margin = lyricSpacing };
                 LrcContainer.Children.Add(container);
                 lrcs[pure] = container;
@@ -161,6 +168,7 @@ public partial class LyricHost : UserControl
                 var transLrc = trans.Lines.FirstOrDefault(a => a.StartTime >= lrc.Key.StartTime - 10);
                 if (transLrc != null && transLrc.Text != "//")
                     lrc.Value.LyricLine.TranslationLrc.Text = transLrc.Text;
+                lrc.Value.LyricLine.TranslationLrc.Visibility = isShowTranslation ? Visibility.Visible : Visibility.Collapsed;
             }
         }
         if (romaji is { Lines: not null })
@@ -172,6 +180,7 @@ public partial class LyricHost : UserControl
                     lrc.Value.LyricLine.LoadRomajiLrc(roma);
                 else if (romajiLrc is LineInfo { } pure)
                     lrc.Value.LyricLine.LoadPlainRomaji(pure.Text);
+                lrc.Value.LyricLine.RomajiLrcContainer.Visibility = isShowRomaji ? Visibility.Visible : Visibility.Collapsed;
             }
         }
         _isLoading = false;

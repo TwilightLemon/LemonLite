@@ -157,13 +157,13 @@ public partial class MainWindowViewModel : ObservableObject
             Album = string.Empty;
         });
 
-        if (await _smtcListener.GetMediaInfoAsync() is { PlaybackType: Windows.Media.MediaPlaybackType.Music } info)
+        if (await _smtcListener.GetNormalizedMediaInfoAsync() is { PlaybackType: Windows.Media.MediaPlaybackType.Music } info)
         {
             App.Current.Dispatcher.Invoke(() =>
             {
                 Title = info.Title ?? "Welcome~";
                 Artist = info.Artist ?? string.Empty;
-                Album = info.AlbumTitle ?? string.Empty;
+                Album = info.Album ?? string.Empty;
             });
             UpdateCover();
             // 歌词加载由LyricService处理

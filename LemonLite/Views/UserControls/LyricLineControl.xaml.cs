@@ -28,7 +28,7 @@ public partial class LyricLineControl : UserControl
     public ILineInfo? MainLineInfo { get; private set; }
     public Dictionary<ISyllableInfo, HighlightTextBlock> MainSyllableLrcs => mainSyllableLrcs;
 
-    private bool _isPlainLrc = false;
+    private readonly bool _isPlainLrc = false;
 
     //reserved for desktop lyric view
     public LyricLineControl()
@@ -37,21 +37,21 @@ public partial class LyricLineControl : UserControl
         //no blur effect
     }
 
-    public LyricLineControl(SyllableLineInfo info)
+    public LyricLineControl(SyllableLineInfo info,double fontsize=22)
     {
         InitializeComponent();
         MainLineInfo = info;
         Effect = new BlurEffect() { Radius = InActiveLrcBlurRadius };
-        LoadMainLrc(info.Syllables);
+        LoadMainLrc(info.Syllables,fontsize);
     }
 
-    public LyricLineControl(LineInfo info)
+    public LyricLineControl(LineInfo info,double fontsize=22)
     {
         InitializeComponent();
         MainLineInfo = info;
         Effect = new BlurEffect() { Radius = InActiveLrcBlurRadius };
         _isPlainLrc = true;
-        LoadPlainLrc(info.Text);
+        LoadPlainLrc(info.Text,fontsize);
     }
 
     public void ClearAll()

@@ -82,13 +82,6 @@ namespace LemonLite.Views.UserControls
             });
         }
 
-        private void RefreshHostSettings()
-        {
-            LrcHost.SetShowTranslation(_settings.Data.ShowTranslation&&IsTranslationAvailable);
-            LrcHost.SetShowRomaji(_settings.Data.ShowRomaji&&IsRomajiAvailable);
-            LrcHost.ApplyFontSize((_isMiniMode ? _settings?.Data?.FontSizeMiniMode : _settings?.Data?.FontSize) ?? (int)LyricFontSize, LyricFontSizeScale);
-        }
-
         #endregion
 
         #region Apperance
@@ -216,7 +209,6 @@ namespace LemonLite.Views.UserControls
                 IsTranslationAvailable = args.Trans != null;
                 IsRomajiAvailable = args.Romaji != null;
                 LrcHost.Load(args.Lyric, args.Trans, args.Romaji, args.IsPureLrc);
-                RefreshHostSettings();
 
                 await Task.Delay(100);
                 //fade-in animation after loaded
