@@ -159,6 +159,8 @@ public sealed class SelectiveLyricLine : Border
 
 public partial class LyricHost : UserControl
 {
+    private const double ItemsPresenterMargin = 300;
+
     public LyricHost()
     {
         InitializeComponent();
@@ -175,6 +177,7 @@ public partial class LyricHost : UserControl
             _scrollViewer.PreviewMouseWheel += ScrollViewer_PreviewMouseWheel;
             _scrollViewer.PreviewMouseDown += ScrollViewer_PreviewMouseDown;
         }
+        UpdateItemsPresenterMargin();
     }
 
     private static readonly DependencyProperty ScrollAnimationOffsetProperty =
@@ -199,6 +202,7 @@ public partial class LyricHost : UserControl
     }
 
     private ScrollViewer? _scrollViewer;
+    private ItemsPresenter? _itemsPresenter;
     private List<LyricLineData> _items = [];
     private LyricLineData? _currentItem;
     private bool _isPureLrc = false;
@@ -431,6 +435,7 @@ public partial class LyricHost : UserControl
     }
     private void SimpleLyricView_SizeChanged(object sender, SizeChangedEventArgs e)
     {
+        UpdateItemsPresenterMargin();
         ScrollToCurrent();
     }
 
@@ -462,5 +467,19 @@ public partial class LyricHost : UserControl
                 return result;
         }
         return null;
+    }
+
+    private void UpdateItemsPresenterMargin()
+    {
+        if (_scrollViewer == null)
+            return;
+
+        _itemsPresenter ??= _scrollViewer.Content as ItemsPresenter ?? FindVisualChild<ItemsPresenter>(_scrollViewer);
+        if (_itemsPresenter == null)
+            return;
+
+        var maxMargin = Math.Max(0, (_scrollViewer.ActualHeight / 2d) - 1);
+        var margin = Math.Min(ItemsPresenterMargin, maxMargin);
+        _itemsPresenter.Margin = new Thickness(0, margin, 0, margin);
     }
 }

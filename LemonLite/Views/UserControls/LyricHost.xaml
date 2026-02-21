@@ -12,7 +12,7 @@
     <local:LyricItemsControl x:Name="LrcItemsControl"
                               FocusVisualStyle="{x:Null}"
                               ScrollViewer.CanContentScroll="True"
-                              VirtualizingPanel.CacheLength="2,2"
+                              VirtualizingPanel.CacheLength="2,3"
                               VirtualizingPanel.CacheLengthUnit="Item"
                               VirtualizingPanel.IsVirtualizing="True"
                               VirtualizingPanel.ScrollUnit="Pixel">
@@ -23,7 +23,7 @@
                                    FocusVisualStyle="{x:Null}"
                                    HorizontalScrollBarVisibility="Disabled"
                                    VerticalScrollBarVisibility="Hidden">
-                    <ItemsPresenter Margin="0,300,0,300" />
+                    <ItemsPresenter />
                 </base:ScrollViewer>
             </ControlTemplate>
         </ItemsControl.Template>
