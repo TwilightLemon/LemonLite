@@ -3,21 +3,34 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:base="clr-namespace:LemonLite.Utils"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:LemonLite.Views.UserControls"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:ws="https://schemas.elecho.dev/wpfsuite"
              d:DesignHeight="450"
              d:DesignWidth="800"
              FontWeight="Bold"
              mc:Ignorable="d">
-    <base:ScrollViewer x:Name="scrollviewer"
-                       FocusVisualStyle="{x:Null}"
-                       HorizontalScrollBarVisibility="Hidden"
-                       PreviewMouseDown="scrollviewer_PreviewMouseDown"
-                       PreviewMouseWheel="scrollviewer_PreviewMouseWheel"
-                       VerticalScrollBarVisibility="Hidden">
-        <VirtualizingStackPanel x:Name="LrcContainer"
-                                Width="{Binding ActualWidth, ElementName=scrollviewer}"
-                                VirtualizingPanel.CacheLength="2"
-                                VirtualizingPanel.CacheLengthUnit="Item" />
-    </base:ScrollViewer>
+    <local:LyricItemsControl x:Name="LrcItemsControl"
+                              FocusVisualStyle="{x:Null}"
+                              ScrollViewer.CanContentScroll="True"
+                              VirtualizingPanel.CacheLength="2,2"
+                              VirtualizingPanel.CacheLengthUnit="Item"
+                              VirtualizingPanel.IsVirtualizing="True"
+                              VirtualizingPanel.ScrollUnit="Pixel">
+        <ItemsControl.Template>
+            <ControlTemplate TargetType="ItemsControl">
+                <base:ScrollViewer x:Name="PART_ScrollViewer"
+                                   CanContentScroll="True"
+                                   FocusVisualStyle="{x:Null}"
+                                   HorizontalScrollBarVisibility="Disabled"
+                                   VerticalScrollBarVisibility="Hidden">
+                    <ItemsPresenter Margin="0,300,0,300" />
+                </base:ScrollViewer>
+            </ControlTemplate>
+        </ItemsControl.Template>
+        <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+                <VirtualizingStackPanel />
+            </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+    </local:LyricItemsControl>
 </UserControl>

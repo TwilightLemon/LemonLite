@@ -6,6 +6,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              d:DesignHeight="200"
              d:DesignWidth="100"
+             Background="Transparent"
              mc:Ignorable="d">
     <local:LyricHost x:Name="LrcHost" />
 </UserControl>

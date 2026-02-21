@@ -12,26 +12,120 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using Windows.Media.Control;
+using ScrollViewer = LemonLite.Utils.ScrollViewer;
 
 namespace LemonLite.Views.UserControls;
 
+public class LyricLineData(ILineInfo lineInfo)
+{
+    public ILineInfo LineInfo { get; } = lineInfo;
+    public string? TranslationText { get; set; }
+    public SyllableLineInfo? RomajiSyllables { get; set; }
+    public string? PlainRomaji { get; set; }
+}
+
+public class LyricItemsControl : ItemsControl
+{
+    public ScrollViewer? InternalScrollViewer { get; private set; }
+
+    public double MainLrcFontSize { get; set; } = 24;
+    public double TransLrcFontSize { get; set; } = 18;
+    public bool ShowTranslation { get; set; } = true;
+    public bool ShowRomaji { get; set; } = true;
+    public LyricLineData? CurrentItem { get; set; }
+    public Thickness LyricSpacing { get; set; } = new(0, 0, 0, 36);
+
+    public override void OnApplyTemplate()
+    {
+        base.OnApplyTemplate();
+        InternalScrollViewer = GetTemplateChild("PART_ScrollViewer") as ScrollViewer;
+    }
+
+    protected override DependencyObject GetContainerForItemOverride()
+    {
+        return new SelectiveLyricLine();
+    }
+
+    protected override bool IsItemItsOwnContainerOverride(object item)
+    {
+        return item is SelectiveLyricLine;
+    }
+
+    protected override void PrepareContainerForItemOverride(DependencyObject element, object item)
+    {
+        base.PrepareContainerForItemOverride(element, item);
+        if (element is SelectiveLyricLine container && item is LyricLineData data)
+        {
+            container.Margin = LyricSpacing;
+            container.LoadData(data, MainLrcFontSize, TransLrcFontSize, ShowTranslation, ShowRomaji);
+            if (data == CurrentItem && container.LyricLine != null)
+            {
+                container.LyricLine.IsCurrent = true;
+            }
+        }
+    }
+
+    protected override void ClearContainerForItemOverride(DependencyObject element, object item)
+    {
+        base.ClearContainerForItemOverride(element, item);
+        if (element is SelectiveLyricLine container)
+        {
+            container.ClearData();
+        }
+    }
+}
+
 public sealed class SelectiveLyricLine : Border
 {
-    public LyricLineControl LyricLine { get; init; }
-    public SelectiveLyricLine(LyricLineControl line)
+    public LyricLineControl? LyricLine { get; private set; }
+
+    public SelectiveLyricLine()
     {
         Background = Brushes.Transparent;
         CornerRadius = new(12);
         Padding = new(8, 4, 8, 4);
-        Child = LyricLine = line;
         MouseEnter += SelectiveLyricLine_MouseEnter;
         MouseLeave += SelectiveLyricLine_MouseLeave;
         MouseDown += SelectiveLyricLine_MouseDown;
     }
 
+    public void LoadData(LyricLineData data, double mainFontSize, double transFontSize, bool showTranslation, bool showRomaji)
+    {
+        LyricLineControl lrc;
+        if (data.LineInfo is SyllableLineInfo syllable)
+        {
+            lrc = new LyricLineControl(syllable, mainFontSize);
+        }
+        else if (data.LineInfo is LineInfo pure)
+        {
+            lrc = new LyricLineControl(pure, mainFontSize);
+            lrc.FontSize = transFontSize;
+        }
+        else return;
+
+        if (data.TranslationText != null)
+            lrc.TranslationLrc.Text = data.TranslationText;
+        lrc.TranslationLrc.Visibility = showTranslation ? Visibility.Visible : Visibility.Collapsed;
+
+        if (data.RomajiSyllables != null)
+            lrc.LoadRomajiLrc(data.RomajiSyllables);
+        else if (data.PlainRomaji != null)
+            lrc.LoadPlainRomaji(data.PlainRomaji);
+        lrc.RomajiLrcContainer.Visibility = showRomaji ? Visibility.Visible : Visibility.Collapsed;
+
+        LyricLine = lrc;
+        Child = lrc;
+    }
+
+    public void ClearData()
+    {
+        LyricLine = null;
+        Child = null;
+    }
+
     private async void SelectiveLyricLine_MouseDown(object sender, MouseButtonEventArgs e)
     {
-        if (LyricLine.MainLineInfo?.StartTime is int startTime)
+        if (LyricLine?.MainLineInfo?.StartTime is int startTime)
         {
             var smtc = App.Services.GetRequiredService<SmtcService>().SmtcListener;
             await smtc.SetPosition(TimeSpan.FromMilliseconds(startTime));
@@ -47,7 +141,7 @@ public sealed class SelectiveLyricLine : Border
         if (Background is SolidColorBrush)
             Background.BeginAnimation(SolidColorBrush.ColorProperty, new ColorAnimation(Colors.Transparent, TimeSpan.FromMilliseconds(200)));
 
-        if (!LyricLine.IsCurrent)
+        if (LyricLine != null && !LyricLine.IsCurrent)
             LyricLine.SetActiveState(false, false);
     }
 
@@ -58,7 +152,7 @@ public sealed class SelectiveLyricLine : Border
         var da = new ColorAnimation(color, TimeSpan.FromMilliseconds(200));
         Background = brush;
         brush.BeginAnimation(SolidColorBrush.ColorProperty, da);
-        if (!LyricLine.IsCurrent)
+        if (LyricLine != null && !LyricLine.IsCurrent)
             LyricLine.SetActiveState(true);
     }
 }
@@ -69,15 +163,47 @@ public partial class LyricHost : UserControl
     {
         InitializeComponent();
         SizeChanged += SimpleLyricView_SizeChanged;
+        LrcItemsControl.Loaded += LrcItemsControl_Loaded;
     }
 
-    private readonly Dictionary<ILineInfo, SelectiveLyricLine> lrcs = [];
-    private ILineInfo? currentLrc;
+    private void LrcItemsControl_Loaded(object sender, RoutedEventArgs e)
+    {
+        if (_scrollViewer != null) return;
+        _scrollViewer = LrcItemsControl.InternalScrollViewer;
+        if (_scrollViewer != null)
+        {
+            _scrollViewer.PreviewMouseWheel += ScrollViewer_PreviewMouseWheel;
+            _scrollViewer.PreviewMouseDown += ScrollViewer_PreviewMouseDown;
+        }
+    }
+
+    private static readonly DependencyProperty ScrollAnimationOffsetProperty =
+        DependencyProperty.Register(
+            nameof(ScrollAnimationOffset),
+            typeof(double),
+            typeof(LyricHost),
+            new PropertyMetadata(0.0, OnScrollAnimationOffsetChanged));
+
+    private double ScrollAnimationOffset
+    {
+        get => (double)GetValue(ScrollAnimationOffsetProperty);
+        set => SetValue(ScrollAnimationOffsetProperty, value);
+    }
+
+    private static void OnScrollAnimationOffsetChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is LyricHost host && host._scrollViewer != null)
+        {
+            host._scrollViewer.ScrollToVerticalOffset((double)e.NewValue);
+        }
+    }
+
+    private ScrollViewer? _scrollViewer;
+    private List<LyricLineData> _items = [];
+    private LyricLineData? _currentItem;
     private bool _isPureLrc = false;
     private DateTime _interruptedTime;
     private bool _isLoading = false;
-    private List<SelectiveLyricLine>? _animatingLines = null;
-    private double _pendingTargetOffset = 0;
 
     private async Task WaitToScroll()
     {
@@ -90,49 +216,51 @@ public partial class LyricHost : UserControl
         mainLrcFontSize = size;
         transLrcFontSize = scale;
         this.FontSize = size * scale;
-        foreach (var control in lrcs.Values)
+        LrcItemsControl.MainLrcFontSize = size;
+        LrcItemsControl.TransLrcFontSize = scale;
+        ForEachRealizedContainer(line =>
         {
-            foreach (HighlightTextBlock tb in control.LyricLine.MainLrcContainer.Children)
+            if (line.LyricLine != null)
             {
-                tb.FontSize = size;
+                foreach (HighlightTextBlock tb in line.LyricLine.MainLrcContainer.Children)
+                {
+                    tb.FontSize = size;
+                }
             }
-        }
+        });
         _ = WaitToScroll();
     }
     private bool isShowTranslation = true, isShowRomaji = true;
     public void SetShowTranslation(bool show)
     {
         isShowTranslation = show;
-        foreach (var lrc in lrcs.Values)
+        LrcItemsControl.ShowTranslation = show;
+        ForEachRealizedContainer(line =>
         {
-            lrc.LyricLine.TranslationLrc.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
-        }
+            if (line.LyricLine != null)
+                line.LyricLine.TranslationLrc.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
+        });
         _ = WaitToScroll();
     }
     public void SetShowRomaji(bool show)
     {
-        isShowRomaji = true;
-        foreach (var lrc in lrcs.Values)
+        isShowRomaji = show;
+        LrcItemsControl.ShowRomaji = show;
+        ForEachRealizedContainer(line =>
         {
-            lrc.LyricLine.RomajiLrcContainer.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
-        }
+            if (line.LyricLine != null)
+                line.LyricLine.RomajiLrcContainer.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
+        });
         _ = WaitToScroll();
     }
     public void Clear()
     {
-        // 停止所有正在进行的动画
-        foreach (var child in LrcContainer.Children)
-        {
-            if (child is SelectiveLyricLine line && line.RenderTransform is TranslateTransform t)
-            {
-                t.BeginAnimation(TranslateTransform.YProperty, null);
-                t.Y = 0;
-            }
-        }
-        LrcContainer.Children.Clear();
-        lrcs.Clear();
-        scrollviewer.ScrollToVerticalOffset(0);
-        currentLrc = null;
+        StopScrollAnimation();
+        _items = [];
+        _currentItem = null;
+        LrcItemsControl.CurrentItem = null;
+        LrcItemsControl.ItemsSource = null;
+        _scrollViewer?.ScrollToVerticalOffset(0);
     }
 
     private Thickness lyricSpacing = new(0, 0, 0, 36);
@@ -141,66 +269,66 @@ public partial class LyricHost : UserControl
         _isLoading = true;
         _isPureLrc = isPureLrc;
         Clear();
-        LrcContainer.Children.Add(new TextBlock() { Height = 300, Background = Brushes.Transparent });
+
+        LrcItemsControl.MainLrcFontSize = mainLrcFontSize;
+        LrcItemsControl.TransLrcFontSize = transLrcFontSize;
+        LrcItemsControl.ShowTranslation = isShowTranslation;
+        LrcItemsControl.ShowRomaji = isShowRomaji;
+        LrcItemsControl.LyricSpacing = lyricSpacing;
+
+        var items = new List<LyricLineData>();
         foreach (var line in lyricsData.Lines)
         {
-            if (line is SyllableLineInfo { } syllable)
+            if (line is SyllableLineInfo or LineInfo)
             {
-                var lrc = new LyricLineControl(syllable, mainLrcFontSize);
-                var container = new SelectiveLyricLine(lrc) { Margin = lyricSpacing };
-                LrcContainer.Children.Add(container);
-                lrcs[syllable] = container;
-            }
-            else if (line is LineInfo { } pure)
-            {
-                var lrc = new LyricLineControl(pure, mainLrcFontSize);
-                lrc.FontSize = transLrcFontSize;
-                var container = new SelectiveLyricLine(lrc) { Margin = lyricSpacing };
-                LrcContainer.Children.Add(container);
-                lrcs[pure] = container;
+                items.Add(new LyricLineData(line));
             }
         }
-        LrcContainer.Children.Add(new TextBlock() { Height = 300, Background = Brushes.Transparent });
+
         if (trans is { Lines: not null })
         {
-            foreach (var lrc in lrcs)
+            foreach (var data in items)
             {
-                var transLrc = trans.Lines.FirstOrDefault(a => a.StartTime >= lrc.Key.StartTime - 10);
+                var transLrc = trans.Lines.FirstOrDefault(a => a.StartTime >= data.LineInfo.StartTime - 10);
                 if (transLrc != null && transLrc.Text != "//")
-                    lrc.Value.LyricLine.TranslationLrc.Text = transLrc.Text;
-                lrc.Value.LyricLine.TranslationLrc.Visibility = isShowTranslation ? Visibility.Visible : Visibility.Collapsed;
+                    data.TranslationText = transLrc.Text;
             }
         }
         if (romaji is { Lines: not null })
         {
-            foreach (var lrc in lrcs)
+            foreach (var data in items)
             {
-                var romajiLrc = romaji.Lines.FirstOrDefault(a => a.StartTime >= lrc.Key.StartTime - 10);
-                if (romajiLrc is SyllableLineInfo { } roma)
-                    lrc.Value.LyricLine.LoadRomajiLrc(roma);
-                else if (romajiLrc is LineInfo { } pure)
-                    lrc.Value.LyricLine.LoadPlainRomaji(pure.Text);
-                lrc.Value.LyricLine.RomajiLrcContainer.Visibility = isShowRomaji ? Visibility.Visible : Visibility.Collapsed;
+                var romajiLrc = romaji.Lines.FirstOrDefault(a => a.StartTime >= data.LineInfo.StartTime - 10);
+                if (romajiLrc is SyllableLineInfo roma)
+                    data.RomajiSyllables = roma;
+                else if (romajiLrc is LineInfo pure)
+                    data.PlainRomaji = pure.Text;
             }
         }
+
+        _items = items;
+        LrcItemsControl.ItemsSource = _items;
         _isLoading = false;
     }
 
     public void UpdateTime(int ms)
     {
-        if (_isLoading) return;
+        if (_isLoading || _scrollViewer == null) return;
+
+        if (_currentItem != null)
         {
-            if (currentLrc != null && lrcs.TryGetValue(currentLrc, out var lrc))
-                lrc.LyricLine.UpdateTime(ms);
+            var container = GetContainerForItem(_currentItem);
+            container?.LyricLine?.UpdateTime(ms);
         }
 
         //从上一条结束到本条结束都是当前歌词时间，目的是本条歌词结束就跳转到下一个
-        KeyValuePair<ILineInfo, SelectiveLyricLine>? lastItem = null, target = null;
+        LyricLineData? target = null;
         if (!_isPureLrc)
         {
-            foreach (var cur in lrcs)
+            LyricLineData? lastItem = null;
+            foreach (var cur in _items)
             {
-                if ((lastItem?.Key.EndTime ?? cur.Key.StartTime) <= ms && cur.Key.EndTime >= ms)
+                if ((lastItem?.LineInfo.EndTime ?? cur.LineInfo.StartTime) <= ms && cur.LineInfo.EndTime >= ms)
                 {
                     target = cur;
                     break;
@@ -210,169 +338,129 @@ public partial class LyricHost : UserControl
         }
         else
         {
-            target = lrcs.LastOrDefault(a => a.Key.StartTime <= ms);
+            target = _items.LastOrDefault(a => a.LineInfo.StartTime <= ms);
         }
 
         //next found. 对于LyricPage希望准确使用当前时间来定位歌词
-        if (target != null && target.HasValue)
+        if (target != null)
         {
-            var line = target.Value.Key;
-            var control = target.Value.Value;
-            if (line == null || control == null) return;
+            var line = target.LineInfo;
+            if (line.StartTime > ms || (line.EndTime ?? int.MaxValue) < ms) return;
 
-            if (line.StartTime > ms || (line.EndTime ?? int.MaxValue) < ms) return;//skip if not in range.
-
-            if (line == currentLrc) return;//skip if already being the current lrc.
-            if (currentLrc != null && lrcs.TryGetValue(currentLrc, out var lrc))
+            if (target == _currentItem) return;
+            if (_currentItem != null)
             {
-                lrc.LyricLine.IsCurrent = false;// set last-played lrc inactive.
+                var prevContainer = GetContainerForItem(_currentItem);
+                if (prevContainer?.LyricLine != null)
+                    prevContainer.LyricLine.IsCurrent = false;
             }
-            currentLrc = line;
-            var currentControl = control;
-            currentControl.LyricLine.IsCurrent = true;
+            _currentItem = target;
+            LrcItemsControl.CurrentItem = target;
+
+            var currentContainer = GetContainerForItem(_currentItem);
+            if (currentContainer?.LyricLine != null)
+                currentContainer.LyricLine.IsCurrent = true;
+
             ScrollToCurrent();
         }
     }
 
+    private SelectiveLyricLine? GetContainerForItem(LyricLineData item)
+    {
+        return LrcItemsControl.ItemContainerGenerator.ContainerFromItem(item) as SelectiveLyricLine;
+    }
+
     private void ScrollToCurrent()
     {
-        //加载中或被打断的xs内不再滚动
-        if (_isLoading) return;
+        if (_isLoading || _scrollViewer == null) return;
         if ((DateTime.Now - _interruptedTime).TotalSeconds < 5) return;
         try
         {
-            if (currentLrc == null) return;
-            var currentControl = lrcs[currentLrc];
+            if (_currentItem == null) return;
+            var currentControl = GetContainerForItem(_currentItem);
 
-            // 如果有动画正在进行，使用其目标位置作为当前基准，否则使用实际滚动位置
-            double baseOffset = _animatingLines != null ? _pendingTargetOffset : scrollviewer.VerticalOffset;
+            // If the container is not realized, bring it into view
+            if (currentControl == null)
+            {
+                int index = _items.IndexOf(_currentItem);
+                if (index >= 0)
+                {
+                    var panel = FindVisualChild<VirtualizingStackPanel>(LrcItemsControl);
+                    panel?.BringIndexIntoViewPublic(index);
+                    LrcItemsControl.UpdateLayout();
+                    currentControl = GetContainerForItem(_currentItem);
+                }
+                if (currentControl == null) return;
+            }
 
-            // 停止所有正在进行的动画并应用之前的目标位置
-            StopCurrentAnimations();
-
-            // 计算目标滚动位置（基于上一个动画的目标位置）
-            GeneralTransform gf = currentControl.TransformToVisual(LrcContainer);
+            // 计算目标滚动位置
+            GeneralTransform gf = currentControl.TransformToVisual(_scrollViewer);
             Point p = gf.Transform(new Point(0, 0));
-            double targetOffset = p.Y - (scrollviewer.ActualHeight / 2d) + currentControl.ActualHeight / 2d;
-            double scrollDelta = targetOffset - baseOffset;
+            double targetOffset = _scrollViewer.VerticalOffset + p.Y
+                - (_scrollViewer.ActualHeight / 2d) + currentControl.ActualHeight / 2d;
+            targetOffset = Math.Max(0, Math.Min(targetOffset, _scrollViewer.ScrollableHeight));
 
-            //如果滚动距离过大，直接跳转
-            if (Math.Abs(scrollDelta) > scrollviewer.ActualHeight)
+            double currentOffset = _scrollViewer.VerticalOffset;
+            double scrollDelta = Math.Abs(targetOffset - currentOffset);
+
+            if (scrollDelta < 1) return;
+
+            // SnapshotAndReplace 会自动捕获当前动画值作为起点，
+            // 新动画无缝衔接，无需手动停止旧动画
+            var animation = new DoubleAnimation
             {
-                scrollviewer.ScrollToVerticalOffset(targetOffset);
-                return;
-            }
-
-            // 获取当前可见范围内的歌词行（向下扩展scrollDelta以包含动画后会出现的行）
-            double viewportTop = scrollviewer.VerticalOffset;
-            double viewportBottom = viewportTop + scrollviewer.ActualHeight + Math.Max(0, scrollDelta * 2);
-
-            var visibleLines = new List<SelectiveLyricLine>();
-            foreach (var child in LrcContainer.Children)
-            {
-                if (child is SelectiveLyricLine line)
-                {
-                    GeneralTransform transform = line.TransformToVisual(LrcContainer);
-                    Point linePos = transform.Transform(new Point(0, 0));
-                    double lineTop = linePos.Y;
-                    double lineBottom = lineTop + line.ActualHeight;
-
-                    if (lineBottom >= viewportTop && lineTop <= viewportBottom)
-                    {
-                        visibleLines.Add(line);
-                    }
-                }
-            }
-
-            // 记录当前动画状态
-            _animatingLines = visibleLines;
-            _pendingTargetOffset = targetOffset;
-
-            // 为每一行可见歌词依次应用跳动动画
-            int delayStep = 50; // 每行延迟的毫秒数
-            for (int i = 0; i < visibleLines.Count; i++)
-            {
-                var line = visibleLines[i];
-                var translateTransform = line.RenderTransform as TranslateTransform;
-                if (translateTransform == null)
-                {
-                    translateTransform = new TranslateTransform();
-                    line.RenderTransform = translateTransform;
-                }
-
-                // 从当前位置跳动到目标位置（向上移动scrollDelta）
-                var animation = new DoubleAnimation
-                {
-                    From = 0,
-                    To = -scrollDelta,
-                    Duration = TimeSpan.FromMilliseconds(400),
-                    BeginTime = TimeSpan.FromMilliseconds(i * delayStep),
-                    EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
-                };
-
-                // 动画完成后重置Transform并更新实际滚动位置
-                if (i == visibleLines.Count - 1)
-                {
-                    var capturedLines = visibleLines;
-                    var capturedOffset = targetOffset;
-                    animation.Completed += (s, e) =>
-                    {
-                        // 只有当这组动画仍然是当前动画时才处理完成逻辑
-                        if (_animatingLines == capturedLines)
-                        {
-                            FinalizeAnimation(capturedLines, capturedOffset);
-                        }
-                    };
-                }
-
-                translateTransform.BeginAnimation(TranslateTransform.YProperty, animation);
-            }
+                From = currentOffset,
+                To = targetOffset,
+                Duration = TimeSpan.FromMilliseconds(500),
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+            };
+            this.BeginAnimation(ScrollAnimationOffsetProperty, animation, HandoffBehavior.SnapshotAndReplace);
         }
         catch { }
     }
 
-    private void StopCurrentAnimations()
+    private void StopScrollAnimation()
     {
-        if (_animatingLines != null)
-        {
-            foreach (var line in _animatingLines)
-            {
-                if (line.RenderTransform is TranslateTransform t)
-                {
-                    t.BeginAnimation(TranslateTransform.YProperty, null);
-                    t.Y = 0;
-                }
-            }
-            scrollviewer.ScrollToVerticalOffset(_pendingTargetOffset);
-            _animatingLines = null;
-        }
+        this.BeginAnimation(ScrollAnimationOffsetProperty, null);
     }
 
-    private void FinalizeAnimation(List<SelectiveLyricLine> lines, double targetOffset)
-    {
-        foreach (var l in lines)
-        {
-            if (l.RenderTransform is TranslateTransform t)
-            {
-                t.BeginAnimation(TranslateTransform.YProperty, null);
-                t.Y = 0;
-            }
-        }
-        scrollviewer.ScrollToVerticalOffset(targetOffset);
-        _animatingLines = null;
-    }
-
-    private void scrollviewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+    private void ScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
     {
         _interruptedTime = DateTime.Now;
+        StopScrollAnimation();
     }
     private void SimpleLyricView_SizeChanged(object sender, SizeChangedEventArgs e)
     {
         ScrollToCurrent();
     }
 
-    private void scrollviewer_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+    private void ScrollViewer_PreviewMouseDown(object sender, MouseButtonEventArgs e)
     {
         _interruptedTime = DateTime.MinValue;
+    }
+
+    private void ForEachRealizedContainer(Action<SelectiveLyricLine> action)
+    {
+        for (int i = 0; i < _items.Count; i++)
+        {
+            if (LrcItemsControl.ItemContainerGenerator.ContainerFromIndex(i) is SelectiveLyricLine line)
+            {
+                action(line);
+            }
+        }
+    }
+
+    private static T? FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
+    {
+        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+            if (child is T found)
+                return found;
+            var result = FindVisualChild<T>(child);
+            if (result != null)
+                return result;
+        }
+        return null;
     }
 }
