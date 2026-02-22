@@ -8,4 +8,6 @@ public class DesktopLyricOption
     public bool ShowTranslation { get; set; } = true;
     public double LrcFontSize { get; set; } = 32d;
     public string FontFamily { get; set; } = "Segoe UI";
+    public bool EnableBackground { get; set; } = true;
+    public bool UseHighlightLyricEffect { get; set; } = true;
 }

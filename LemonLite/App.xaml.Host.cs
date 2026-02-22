@@ -43,7 +43,8 @@ public partial class App
                                                             .AddConfig<DesktopLyricOption>()
                                                             .AddConfig<AppOption>()
                                                             .AddConfig<AudioVisualizerConfig>()
-                                                            .AddConfig<SmtcMetadataAliasConfig>());
+                                                            .AddConfig<SmtcMetadataAliasConfig>()
+                                                            .Init());
         services.AddHostedService(p => p.GetRequiredService<SmtcService>());
 
         services.AddSingleton<AppSettingService>();

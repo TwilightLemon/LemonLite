@@ -28,6 +28,8 @@ namespace LemonLite.Views.Pages
             ShowTranslation = settings.Data.ShowTranslation;
             LrcFontSize = settings.Data.LrcFontSize;
             LyricFontFamily = settings.Data.FontFamily;
+            EnableBackground = settings.Data.EnableBackground;
+            UseHighlightLyricEffect = settings.Data.UseHighlightLyricEffect;
         }
 
         [ObservableProperty]
@@ -38,6 +40,24 @@ namespace LemonLite.Views.Pages
 
         [ObservableProperty]
         private string _lyricFontFamily = "";
+
+        [ObservableProperty]
+        private bool _enableBackground = false;
+
+        [ObservableProperty]
+        private bool _useHighlightLyricEffect = false;
+
+        partial void OnUseHighlightLyricEffectChanged(bool value)
+        {
+            settings.Data.UseHighlightLyricEffect = value;
+            settings.TriggerDataChanged();
+        }
+
+        partial void OnEnableBackgroundChanged(bool value)
+        {
+            settings.Data.EnableBackground = value;
+            settings.TriggerDataChanged();
+        }
 
         partial void OnShowTranslationChanged(bool value)
         {

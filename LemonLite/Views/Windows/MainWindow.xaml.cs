@@ -138,16 +138,6 @@ public partial class MainWindow : Window
         H.NotifyIcon.EfficiencyMode.EfficiencyModeUtilities.SetEfficiencyMode(false);
         Ui_OnColorModeChanged();
         UpdateLayout(ActualWidth);
-
-        vm.PropertyChanged += (s, args) =>
-        {
-            if (args.PropertyName == nameof(vm.IsPlaying))
-            {
-                ControlRotationAnimation(vm.IsPlaying);
-            }
-        };
-
-        ControlRotationAnimation(vm.IsPlaying);
     }
 
     private bool _isSliderCtrl = false;
@@ -407,40 +397,6 @@ public partial class MainWindow : Window
         LyricToolBar.Height = double.NaN;
         LyricToolBar.Width = 36;
         LyricToolBar.Visibility = Visibility.Visible;
-    }
-
-    private void ControlRotationAnimation(bool play)
-    {
-        if (LyricImgRTAni == null)
-        {
-            LyricImgRTAni = new();
-            DoubleAnimation da = new(0, 360, TimeSpan.FromSeconds(30))
-            {
-                RepeatBehavior = RepeatBehavior.Forever
-            };
-            Storyboard.SetTarget(da, LyricImgRT);
-            Storyboard.SetTargetProperty(da, new PropertyPath("(RotateTransform.Angle)"));
-            LyricImgRTAni.Children.Add(da);
-            LyricImgRTAni.Freeze();
-            LyricImgRTAni.Begin();
-        }
-        else
-        {
-            //if no background, pause animation
-            if (vm.BackgroundImageSource == null)
-            {
-                LyricImgRTAni.Pause();
-                return;
-            }
-            if (play)
-            {
-                LyricImgRTAni.Resume();
-            }
-            else
-            {
-                LyricImgRTAni.Pause();
-            }
-        }
     }
 
     private void SwitchTopMostBtn_Click(object sender, RoutedEventArgs e)

@@ -354,20 +354,20 @@ public partial class LyricLineControl : UserControl
 
 
 
-    public SolidColorBrush CustomHighlightColorBrush
+    public Color CustomHighlightColorBrush
     {
-        get { return (SolidColorBrush)GetValue(CustomHighlightColorBrushProperty); }
+        get { return (Color)GetValue(CustomHighlightColorBrushProperty); }
         set { SetValue(CustomHighlightColorBrushProperty, value); }
     }
 
     public static readonly DependencyProperty CustomHighlightColorBrushProperty =
-        DependencyProperty.Register(nameof(CustomHighlightColorBrush), typeof(SolidColorBrush), typeof(LyricLineControl), new PropertyMetadata(null, OnCustomHighlightColorBrushChanged));
+        DependencyProperty.Register(nameof(CustomHighlightColorBrush), typeof(Color), typeof(LyricLineControl), new PropertyMetadata(Colors.Transparent, OnCustomHighlightColorBrushChanged));
 
     private static void OnCustomHighlightColorBrushChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        if (d is LyricLineControl control && e.NewValue is SolidColorBrush brush)
+        if (d is LyricLineControl control && e.NewValue is Color color && color!=Colors.Transparent)
         {
-            control.MainLrcContainer.Resources["ActiveLrcForegroundColor"] = brush.Color;
+            control.MainLrcContainer.Resources["ActiveLrcForegroundColor"] = color;
         }
     }
 

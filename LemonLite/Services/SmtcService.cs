@@ -2,10 +2,14 @@ using LemonLite.Configs;
 using LemonLite.Utils;
 using Microsoft.Extensions.Hosting;
 using System;
+using System.ComponentModel.Design;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Windows.Media.Control;
 
@@ -20,7 +24,7 @@ namespace LemonLite.Services;
 /// 2. 当SMTC时间线无效时，根据播放状态本地推演时间线
 /// 3. SMTC可能高频触发TimelinePropertiesChanged，但精度只到秒，需要平滑处理避免时间跳动
 /// </summary>
-public class SmtcService(AppSettingService appSettingService) : IHostedService
+public class SmtcService(AppSettingService appSettingService, UIResourceService uiResourceService) : IHostedService
 {
     private SmtcListener _smtcListener = null!;
     private readonly SettingsMgr<AppOption> appOption = appSettingService.GetConfigMgr<AppOption>();
@@ -65,6 +69,12 @@ public class SmtcService(AppSettingService appSettingService) : IHostedService
     /// </summary>
     public bool IsPlaying => _isPlaying;
 
+    public ImageSource? CoverImageSource { get; private set; }
+    public ImageSource? BackgroundImageSource { get; private set; }
+
+    public event Action? CoverUpdated;
+    public event Action? UpdateCoverFailed;
+
     /// <summary>
     /// 当播放位置更新时触发
     /// </summary>
@@ -106,6 +116,7 @@ public class SmtcService(AppSettingService appSettingService) : IHostedService
         _smtcListener.TimelinePropertiesChanged -= OnTimelinePropertiesChanged;
         _smtcListener.SessionExited -= OnSessionExited;
         _smtcListener.SessionChanged -= OnSessionChanged;
+        uiResourceService.OnColorModeChanged -= UiResourceService_OnColorModeChanged;
     }
 
     private void OnPlaybackInfoChanged(object? sender, EventArgs e)
@@ -128,6 +139,7 @@ public class SmtcService(AppSettingService appSettingService) : IHostedService
         // 会话切换时重新同步播放状态和时间线
         Reset();
         UpdatePlayingState();
+        UpdateCover();
     }
 
     private void UpdatePlayingState()
@@ -304,6 +316,63 @@ public class SmtcService(AppSettingService appSettingService) : IHostedService
         return appOption.Data.SmtcApps.Any(a => a.AppId == id.ToLower());
     }
 
+    private async void UpdateCover(int retryCount = 0)
+    {
+        if (await _smtcListener.GetMediaInfoAsync() is { PlaybackType: Windows.Media.MediaPlaybackType.Music } info)
+        {
+            try
+            {
+                // load cover
+                if (info.Thumbnail != null)
+                {
+                    using var streamRef = await info.Thumbnail.OpenReadAsync();
+                    using var stream = streamRef.AsStreamForRead();
+
+                    using var memoryStream = new MemoryStream();
+                    await stream.CopyToAsync(memoryStream);
+                    memoryStream.Position = 0;
+
+                    var img = new BitmapImage();
+                    img.BeginInit();
+                    img.CacheOption = BitmapCacheOption.OnLoad;
+                    img.StreamSource = memoryStream;
+                    img.EndInit();
+                    if (img.CanFreeze)
+                        img.Freeze();
+                    CoverImageSource = img;
+
+                    var bitmap = img.ToBitmap();
+                    var isDark = uiResourceService.GetIsDarkMode();
+                    var accentColor = bitmap.GetMajorColor().AdjustColor(isDark);
+                    var focusColor = accentColor.ApplyColorMode(isDark);
+                    UIResourceService.UpdateAccentColor(accentColor, focusColor);
+
+                    bitmap.ApplyMicaEffect(isDark);
+                    var background = bitmap.ToBitmapImage();
+                    BackgroundImageSource = background;
+
+                    CoverUpdated?.Invoke();
+                }
+            }
+            catch
+            {
+                if (retryCount > 3)
+                {
+                    UpdateCoverFailed?.Invoke();
+                }
+                else
+                {
+                    await Task.Delay(retryCount * 200);
+                    UpdateCover(retryCount + 1);
+                }
+            }
+        }
+    }
+    private void UiResourceService_OnColorModeChanged()
+    {
+        UpdateCover();
+    }
+
     public Task StartAsync(CancellationToken cancellationToken)
     {
         _smtcListener = SmtcListener.CreateInstance(ValidSmtcSessionChecker).GetAwaiter().GetResult();
@@ -313,7 +382,9 @@ public class SmtcService(AppSettingService appSettingService) : IHostedService
         _smtcListener.TimelinePropertiesChanged += OnTimelinePropertiesChanged;
         _smtcListener.SessionExited += OnSessionExited;
         _smtcListener.SessionChanged += OnSessionChanged;
+        uiResourceService.OnColorModeChanged += UiResourceService_OnColorModeChanged;
         UpdatePlayingState();
+        UpdateCover();
         return Task.CompletedTask;
     }
 

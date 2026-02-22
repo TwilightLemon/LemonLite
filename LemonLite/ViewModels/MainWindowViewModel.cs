@@ -16,29 +16,30 @@ namespace LemonLite.ViewModels;
 public partial class MainWindowViewModel : ObservableObject
 {
     private readonly SmtcListener _smtcListener;
-    private readonly SmtcService _smtc;
+    private readonly SmtcService _smtcService;
     private readonly LyricService _lyricService;
-    private readonly UIResourceService uiResourceService;
 
-    public MainWindowViewModel(LyricView lyricView, UIResourceService uiResourceService, SmtcService playback, LyricService lyricService)
+    public MainWindowViewModel(LyricView lyricView, SmtcService playback, LyricService lyricService)
     {
         _smtcListener = playback.SmtcListener;
         LyricView = lyricView;
-        this.uiResourceService = uiResourceService;
         _lyricService = lyricService;
 
-        _smtc = playback;
-        _smtc.PositionChanged += OnPositionChanged;
-        _smtc.DurationChanged += OnDurationChanged;
-        _smtc.PlayingStateChanged += OnPlayingStateChanged;
+        _smtcService = playback;
+        _smtcService.PositionChanged += OnPositionChanged;
+        _smtcService.DurationChanged += OnDurationChanged;
+        _smtcService.PlayingStateChanged += OnPlayingStateChanged;
         _smtcListener.MediaPropertiesChanged += SmtcListener_MediaPropertiesChanged;
         _smtcListener.SessionExited += SmtcListener_SessionExited;
         _smtcListener.SessionChanged += SmtcListener_SessionChanged;
         _lyricService.MediaMetaDataUpdated += OnMediaMetaDataUpdated;
-        uiResourceService.OnColorModeChanged += UiResourceService_OnColorModeChanged;
+
+        _smtcService.CoverUpdated += Smtc_CoverUpdated;
+        _smtcService.UpdateCoverFailed += Smtc_UpdateCoverFailed;
 
         UpdateSmtcInfo();
         InitPlaybackStatus();
+        Smtc_CoverUpdated();
     }
 
     private void SmtcListener_SessionExited(object? sender, EventArgs e)
@@ -54,26 +55,52 @@ public partial class MainWindowViewModel : ObservableObject
 
     private void InitPlaybackStatus()
     {
-        IsPlaying = _smtc.IsPlaying;
-        OnPositionChanged(_smtc.Position);
-        OnDurationChanged(_smtc.Duration);
-    }
-
-    private void UiResourceService_OnColorModeChanged()
-    {
-        UpdateCover();
+        IsPlaying = _smtcService.IsPlaying;
+        OnPositionChanged(_smtcService.Position);
+        OnDurationChanged(_smtcService.Duration);
     }
 
     public void Dispose()
     {
-        _smtc.PositionChanged -= OnPositionChanged;
-        _smtc.DurationChanged -= OnDurationChanged;
-        _smtc.PlayingStateChanged -= OnPlayingStateChanged;
+        _smtcService.PositionChanged -= OnPositionChanged;
+        _smtcService.DurationChanged -= OnDurationChanged;
+        _smtcService.PlayingStateChanged -= OnPlayingStateChanged;
         _smtcListener.MediaPropertiesChanged -= SmtcListener_MediaPropertiesChanged;
         _smtcListener.SessionExited -= SmtcListener_SessionExited;
         _smtcListener.SessionChanged -= SmtcListener_SessionChanged;
+
+        _smtcService.CoverUpdated -= Smtc_CoverUpdated;
+        _smtcService.UpdateCoverFailed -= Smtc_UpdateCoverFailed;
+
         _lyricService.MediaMetaDataUpdated -= OnMediaMetaDataUpdated;
-        uiResourceService.OnColorModeChanged -= UiResourceService_OnColorModeChanged;
+    }
+
+    private void Smtc_UpdateCoverFailed()
+    {
+        App.Current.Dispatcher.Invoke(() =>
+        {
+            CoverImage = Brushes.Azure;
+            BackgroundImageSource = null;
+            IsBackgroundValid = false;
+        });
+    }
+
+    private void Smtc_CoverUpdated()
+    {
+        App.Current.Dispatcher.Invoke(() =>
+        {
+            if (_smtcService.CoverImageSource != null)
+                CoverImage = new ImageBrush(_smtcService.CoverImageSource);
+            if (_smtcService.BackgroundImageSource != null)
+            {
+                BackgroundImageSource = _smtcService.BackgroundImageSource;
+                IsBackgroundValid= true;
+            }
+            else
+            {
+                IsBackgroundValid = false;
+            }
+        });
     }
 
     public LyricView LyricView { get; set; }
@@ -92,7 +119,7 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     private Brush? coverImage;
     [ObservableProperty]
-    private BitmapImage? backgroundImageSource;
+    private ImageSource? backgroundImageSource;
 
     [ObservableProperty]
     private double _currentPlayingPosition = 0;
@@ -108,6 +135,9 @@ public partial class MainWindowViewModel : ObservableObject
 
     [ObservableProperty]
     private bool _isPlaying = false;
+
+    [ObservableProperty]
+    private bool _isBackgroundValid = false;
 
     private void OnPositionChanged(double position)
     {
@@ -165,66 +195,7 @@ public partial class MainWindowViewModel : ObservableObject
                 Artist = info.Artist ?? string.Empty;
                 Album = info.Album ?? string.Empty;
             });
-            UpdateCover();
-            // 歌词加载由LyricService处理
         }
-    }
-
-    private async void UpdateCover(int retryCount=0)
-    {
-        if (await _smtcListener.GetMediaInfoAsync() is { PlaybackType: Windows.Media.MediaPlaybackType.Music } info)
-        {
-            try
-            {
-                // load cover
-                if (info.Thumbnail != null)
-                {
-                    using var streamRef = await info.Thumbnail.OpenReadAsync();
-                    using var stream = streamRef.AsStreamForRead();
-
-                    using var memoryStream = new MemoryStream();
-                    await stream.CopyToAsync(memoryStream);
-                    memoryStream.Position = 0;
-
-                    var img = new BitmapImage();
-                    img.BeginInit();
-                    img.CacheOption = BitmapCacheOption.OnLoad;
-                    img.StreamSource = memoryStream;
-                    img.EndInit();
-                    if (img.CanFreeze)
-                        img.Freeze();
-                    App.Current.Dispatcher.Invoke(() => CoverImage = new ImageBrush(img));
-
-                    var bitmap = img.ToBitmap();
-                    var isdark = uiResourceService.GetIsDarkMode();
-                    var accentColor = bitmap.GetMajorColor().AdjustColor(isdark);
-                    var focusColor = accentColor.ApplyColorMode(isdark);
-                    UIResourceService.UpdateAccentColor(accentColor, focusColor);
-
-                    bitmap.ApplyMicaEffect(isdark);
-                    var background = bitmap.ToBitmapImage();
-                    App.Current.Dispatcher.Invoke(() => BackgroundImageSource = background);
-                }
-            }
-            catch {
-                if (retryCount > 3)
-                    ResetCoverImg();
-                else
-                {
-                    await Task.Delay(retryCount * 200);
-                    UpdateCover(retryCount+1);
-                }
-            }
-        }
-    }
-
-    private void ResetCoverImg()
-    {
-        App.Current.Dispatcher.Invoke(() =>
-        {
-            CoverImage = Brushes.Azure;
-            BackgroundImageSource = null;
-        });
     }
 
     [RelayCommand]

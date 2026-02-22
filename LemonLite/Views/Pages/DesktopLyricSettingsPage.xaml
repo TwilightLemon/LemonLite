@@ -31,6 +31,24 @@
             <Border Height="48"
                     Background="{DynamicResource MaskColor}"
                     CornerRadius="12">
+                <ToggleButton Margin="12,0,12,0"
+                              Content="Enable Background"
+                              IsChecked="{Binding EnableBackground}"
+                              Style="{DynamicResource RoundToggleButtonStyle}" />
+            </Border>
+
+            <Border Height="48"
+                    Background="{DynamicResource MaskColor}"
+                    CornerRadius="12">
+                <ToggleButton Margin="12,0,12,0"
+                              Content="Use Highlight Lyric Effect"
+                              IsChecked="{Binding UseHighlightLyricEffect}"
+                              Style="{DynamicResource RoundToggleButtonStyle}" />
+            </Border>
+
+            <Border Height="48"
+                    Background="{DynamicResource MaskColor}"
+                    CornerRadius="12">
                 <Grid>
                     <TextBlock Margin="12,0"
                                HorizontalAlignment="Left"

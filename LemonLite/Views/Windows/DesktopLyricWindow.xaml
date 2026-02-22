@@ -11,7 +11,7 @@
         x:Name="window"
         Title="DesktopLyricWindow"
         Width="720"
-        Height="158"
+        Height="145"
         d:DataContext="{d:DesignInstance Type=vm:DesktopLyricWindowViewModel}"
         Background="Transparent"
         FontFamily="{StaticResource DefaultFontFamily}"
@@ -40,9 +40,40 @@
                       Icon="{x:Null}" />
         </ContextMenu>
     </Window.ContextMenu>
-    <ws:BoxPanel>
+    <ws:BoxPanel x:Name="windowRoot">
+        <Border x:Name="AnimatedBackgroundBd"
+                Visibility="{Binding BackgroundVisibility}"
+                CornerRadius="12">
+            <Border.Background>
+                <ImageBrush ImageSource="{Binding BackgroundImageSource, Mode=OneWay}"
+                            Stretch="UniformToFill">
+                    <ImageBrush.RelativeTransform>
+                        <TransformGroup>
+                            <TranslateTransform Y="0.5" />
+                            <ScaleTransform CenterX="0.5"
+                                            CenterY="1"
+                                            ScaleX="2.4"
+                                            ScaleY="2.4" />
+                            <RotateTransform Angle="0"
+                                             CenterX="0.5"
+                                             CenterY="1">
+                                <i:Interaction.Behaviors>
+                                    <behavior:RotateWithPlayingStateBehavior IsEnabled="{Binding IsBackgroundValid}"
+                                                                             IsPlaying="{Binding IsPlaying}" />
+                                </i:Interaction.Behaviors>
+                            </RotateTransform>
+                        </TransformGroup>
+                    </ImageBrush.RelativeTransform>
+                </ImageBrush>
+            </Border.Background>
+            <i:Interaction.Behaviors>
+                <behavior:FadeBorderBehavior Source="{Binding BackgroundImageSource}"
+                                             Duration="00:00:1.5" />
+            </i:Interaction.Behaviors>
+        </Border>
         <Grid x:Name="LrcPanel">
             <ScrollViewer x:Name="LrcScrollViewer"
+                          Margin="8 0 8 0"
                           HorizontalScrollBarVisibility="Hidden"
                           PanningMode="HorizontalOnly"
                           VerticalScrollBarVisibility="Disabled">

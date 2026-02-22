@@ -41,12 +41,13 @@ public class AppSettingService : IHostedService
         }
         return false;
     }
-    private void Load()
+    public AppSettingService Init()
     {
         foreach (var mgr in _settingsMgrs.Values)
         {
             mgr.Load();
         }
+        return this;
     }
     private void Save()
     {
@@ -74,7 +75,6 @@ public class AppSettingService : IHostedService
     }
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        Load();
         _timer = new Timer(_ => Save(), null, SaveInterval, SaveInterval);
         return Task.CompletedTask;
     }
