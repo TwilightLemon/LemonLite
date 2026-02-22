@@ -20,13 +20,14 @@
                        Text="SMTC Apps" />
             <TextBlock Margin="0,0,0,4"
                        Foreground="{DynamicResource HintForeColor}"
-                       Text="Configure which apps are monitored and the search source priority for each." />
+                       Text="Configure which apps are monitored. Click an app to configure its sources and aliases." />
 
             <Border Background="{DynamicResource MaskColor}" CornerRadius="12">
                 <ws:StackPanel Margin="12" Spacing="8">
                     <Grid>
                         <TextBlock HorizontalAlignment="Left"
                                    VerticalAlignment="Center"
+                                   Margin="4 0 0 0"
                                    Text="Whitelist" />
                         <ws:StackPanel Margin="0,0,6,0"
                                        HorizontalAlignment="Right"
@@ -61,22 +62,21 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="{x:Type local:SmtcAppItemViewModel}">
                                 <Border x:Name="AppItemRoot"
-                                        Margin="0,2"
-                                        Padding="10,8"
+                                        Margin="0,4"
+                                        Padding="10,12"
                                         Background="{DynamicResource MaskColor}"
-                                        CornerRadius="8"
-                                        Tag="{Binding}">
-                                    <ws:StackPanel Spacing="6">
-                                        <!--  App header row  -->
-                                        <Grid>
-                                            <TextBlock HorizontalAlignment="Left"
+                                        CornerRadius="8">
+                                    <Grid>
+                                        <TextBlock HorizontalAlignment="Left"
+                                                   VerticalAlignment="Center"
+                                                   FontSize="18"
+                                                   Text="{Binding AppId}" />
+                                        <ws:StackPanel HorizontalAlignment="Right"
                                                        VerticalAlignment="Center"
-                                                       FontWeight="Bold"
-                                                       FontSize="18"
-                                                       Text="{Binding AppId}" />
-                                            <ws:Button Name="DeleteButton"
+                                                       Orientation="Horizontal"
+                                                       Spacing="4">
+                                            <ws:Button x:Name="DeleteButton"
                                                        Padding="6"
-                                                       HorizontalAlignment="Right"
                                                        Command="{Binding DataContext.RemoveAppCommand, RelativeSource={RelativeSource AncestorType=Page}}"
                                                        CommandParameter="{Binding}"
                                                        Content="&#xf78a;"
@@ -84,82 +84,15 @@
                                                        FontSize="11"
                                                        Opacity="0"
                                                        Style="{DynamicResource SimpleIconButtonStyleForWs}" />
-                                        </Grid>
-
-                                        <!--  Sources order list  -->
-                                        <ItemsControl ItemsSource="{Binding Sources}">
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate DataType="{x:Type local:SmtcSourceEntryViewModel}">
-                                                    <Grid Margin="0,1">
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="Auto" />
-                                                            <ColumnDefinition Width="*" />
-                                                            <ColumnDefinition Width="Auto" />
-                                                        </Grid.ColumnDefinitions>
-                                                        <TextBlock Grid.Column="0"
-                                                                   Margin="4,0,8,0"
-                                                                   VerticalAlignment="Center"
-                                                                   Foreground="{DynamicResource HintForeColor}"
-                                                                   Text="{Binding DisplayName}" />
-                                                        <ws:StackPanel Grid.Column="2"
-                                                                       Orientation="Horizontal"
-                                                                       Spacing="2">
-                                                            <ws:Button Width="26"
-                                                                       Height="26"
-                                                                       Padding="4"
-                                                                       Command="{Binding MoveUpCommand}"
-                                                                       Content="&#xe74a;"
-                                                                       FontFamily="{StaticResource SegoeFluentIcon}"
-                                                                       FontSize="11"
-                                                                       Style="{DynamicResource SimpleIconButtonStyleForWs}"
-                                                                       ToolTip="Move Up" />
-                                                            <ws:Button Width="26"
-                                                                       Height="26"
-                                                                       Padding="4"
-                                                                       Command="{Binding MoveDownCommand}"
-                                                                       Content="&#xe74b;"
-                                                                       FontFamily="{StaticResource SegoeFluentIcon}"
-                                                                       FontSize="11"
-                                                                       Style="{DynamicResource SimpleIconButtonStyleForWs}"
-                                                                       ToolTip="Move Down" />
-                                                            <ws:Button Width="26"
-                                                                       Height="26"
-                                                                       Padding="4"
-                                                                       Command="{Binding RemoveCommand}"
-                                                                       Content="&#xf78a;"
-                                                                       FontFamily="{StaticResource SegoeFluentIcon}"
-                                                                       FontSize="11"
-                                                                       Style="{DynamicResource SimpleIconButtonStyleForWs}"
-                                                                       ToolTip="Remove" />
-                                                        </ws:StackPanel>
-                                                    </Grid>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-
-                                        <!--  Inactive sources — click to add  -->
-                                        <ItemsControl ItemsSource="{Binding InactiveSources}">
-                                            <ItemsControl.ItemsPanel>
-                                                <ItemsPanelTemplate>
-                                                    <ws:StackPanel Orientation="Horizontal" Spacing="4" />
-                                                </ItemsPanelTemplate>
-                                            </ItemsControl.ItemsPanel>
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <ws:Button Padding="12,8"
-                                                               Command="{Binding DataContext.AddSourceCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                               CommandParameter="{Binding Id}"
-                                                               Style="{StaticResource SimpleButtonStyleForWs}">
-                                                        <TextBlock>
-                                                            <Run FontFamily="{StaticResource SegoeFluentIcon}"
-                                                                 Text="&#xe710;" BaselineAlignment="Center"/>
-                                                            <Run Text=" " /><Run Text="{Binding DisplayName, Mode=OneWay}" />
-                                                        </TextBlock>
-                                                    </ws:Button>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-                                    </ws:StackPanel>
+                                            <ws:Button Padding="6"
+                                                       Command="{Binding DataContext.OpenAppCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                       CommandParameter="{Binding}"
+                                                       Content="&#xe76c;"
+                                                       FontFamily="{StaticResource SegoeFluentIcon}"
+                                                       FontSize="14"
+                                                       Style="{DynamicResource SimpleIconButtonStyleForWs}" />
+                                        </ws:StackPanel>
+                                    </Grid>
                                     <Border.Triggers>
                                         <EventTrigger RoutedEvent="MouseEnter">
                                             <BeginStoryboard>
@@ -182,30 +115,6 @@
                                             </BeginStoryboard>
                                         </EventTrigger>
                                     </Border.Triggers>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ws:StackPanel>
-            </Border>
-
-            <!--  Available Sources reference  -->
-            <Border Background="{DynamicResource MaskColor}" CornerRadius="12">
-                <ws:StackPanel Margin="12,10" Spacing="6">
-                    <TextBlock Text="Available Sources" />
-                    <ItemsControl ItemsSource="{Binding AvailableSources}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <ws:StackPanel Orientation="Horizontal" Spacing="8" />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border Padding="8,4"
-                                        Background="{DynamicResource TabMaskColor}"
-                                        CornerRadius="6">
-                                    <TextBlock Foreground="{DynamicResource HintForeColor}"
-                                               Text="{Binding DisplayName}" />
                                 </Border>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>

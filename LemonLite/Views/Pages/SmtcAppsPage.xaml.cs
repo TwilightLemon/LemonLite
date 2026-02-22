@@ -4,6 +4,7 @@ using LemonLite.Configs;
 using LemonLite.Services;
 using LemonLite.Sources;
 using LemonLite.Utils;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -39,16 +40,26 @@ public partial class SmtcSourceEntryViewModel : ObservableObject
 public partial class SmtcAppItemViewModel : ObservableObject
 {
     internal readonly SmtcAppConfig Config;
+    private readonly SmtcMetadataAliaConfig _aliaConfig;
 
     public string AppId => Config.AppId;
     public ObservableCollection<SmtcSourceEntryViewModel> Sources { get; }
+    public ObservableCollection<SmtcMetadataAliaItem> Aliases { get; }
+    public IReadOnlyList<SmtcMetadataAliaType> AvailableTypes { get; } = Enum.GetValues<SmtcMetadataAliaType>();
 
-    public SmtcAppItemViewModel(SmtcAppConfig config)
+    public SmtcAppItemViewModel(SmtcAppConfig config, SmtcMetadataAliaConfig aliaConfig)
     {
         Config = config;
+        _aliaConfig = aliaConfig;
+
         Sources = new ObservableCollection<SmtcSourceEntryViewModel>(
             config.SearchSources.Select(s => new SmtcSourceEntryViewModel(s, this)));
-        Sources.CollectionChanged += SyncToConfig;
+        Sources.CollectionChanged += SyncSourcesToConfig;
+
+        if (!_aliaConfig.TryGetValue(config.AppId, out var aliaList))
+            aliaList = [];
+        Aliases = new ObservableCollection<SmtcMetadataAliaItem>(aliaList);
+        Aliases.CollectionChanged += SyncAliasesToConfig;
     }
 
     /// <summary>
@@ -83,11 +94,41 @@ public partial class SmtcAppItemViewModel : ObservableObject
         Sources.Add(new SmtcSourceEntryViewModel(sourceId, this));
     }
 
-    private void SyncToConfig(object? sender, NotifyCollectionChangedEventArgs e)
+    [RelayCommand]
+    private void AddAlias()
+    {
+        Aliases.Add(new SmtcMetadataAliaItem
+        {
+            AppId = AppId,
+            Type = SmtcMetadataAliaType.Name,
+            Target = string.Empty,
+            Name = string.Empty
+        });
+    }
+
+    [RelayCommand]
+    private void RemoveAlias(SmtcMetadataAliaItem item)
+    {
+        if (item == null) return;
+        Aliases.Remove(item);
+    }
+
+    private void SyncSourcesToConfig(object? sender, NotifyCollectionChangedEventArgs e)
     {
         Config.SearchSources.Clear();
         Config.SearchSources.AddRange(Sources.Select(s => s.SourceId));
         OnPropertyChanged(nameof(InactiveSources));
+    }
+
+    private void SyncAliasesToConfig(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (!_aliaConfig.TryGetValue(AppId, out var list))
+        {
+            list = [];
+            _aliaConfig[AppId] = list;
+        }
+        list.Clear();
+        list.AddRange(Aliases);
     }
 }
 
@@ -98,14 +139,10 @@ public partial class SmtcAppItemViewModel : ObservableObject
 public partial class SmtcAppsPage : Page
 {
     private readonly SettingsMgr<AppOption> _settings;
+    private readonly SettingsMgr<SmtcMetadataAliaConfig> _aliasSettings;
     private readonly SmtcService _smtc;
 
     public ObservableCollection<SmtcAppItemViewModel> SmtcApps { get; } = [];
-
-    /// <summary>
-    /// All sources known to the registry — bound to the "Available Sources" section in XAML.
-    /// </summary>
-    public IReadOnlyCollection<ILyricSource> AvailableSources => LyricSourceRegistry.All;
 
     public SmtcAppsPage(AppSettingService appSettingService, SmtcService smtcService)
     {
@@ -113,6 +150,7 @@ public partial class SmtcAppsPage : Page
         DataContext = this;
         Loaded += SmtcAppsPage_Loaded;
         _settings = appSettingService.GetConfigMgr<AppOption>();
+        _aliasSettings = appSettingService.GetConfigMgr<SmtcMetadataAliaConfig>();
         _smtc = smtcService;
     }
 
@@ -120,7 +158,13 @@ public partial class SmtcAppsPage : Page
     {
         SmtcApps.Clear();
         foreach (var app in _settings.Data.SmtcApps)
-            SmtcApps.Add(new SmtcAppItemViewModel(app));
+            SmtcApps.Add(new SmtcAppItemViewModel(app, _aliasSettings.Data));
+    }
+
+    [RelayCommand]
+    private void OpenApp(SmtcAppItemViewModel app)
+    {
+        NavigationService?.Navigate(new SmtcAppDetailPage(app));
     }
 
     [RelayCommand]
@@ -163,7 +207,7 @@ public partial class SmtcAppsPage : Page
             SearchSources = LyricSourceRegistry.DefaultSourceIds.ToList()
         };
         _settings.Data.SmtcApps.Add(config);
-        SmtcApps.Add(new SmtcAppItemViewModel(config));
+        SmtcApps.Add(new SmtcAppItemViewModel(config, _aliasSettings.Data));
         _smtc.SmtcListener.RefreshCurrentSession();
     }
 
