@@ -13,6 +13,7 @@ public partial class SettingsWindowViewModel:ObservableObject
     public ObservableCollection<SettingsMenuItem> SettingsMenus{ get; set; } = [
         new SettingsMenuItem("General",(Geometry)App.Current.FindResource("Icon_Settings"),typeof(AppSettingsPage)),
         new SettingsMenuItem("SMTC Apps",null!,typeof(SmtcAppsPage)),
+        new SettingsMenuItem("SMTC Alias",null!,typeof(SmtcMetadataAliaPage)),
         new SettingsMenuItem("Lyric View",null!,typeof(LyricSettingsPage)),
         new SettingsMenuItem("Desktop Lyric",null!,typeof(DesktopLyricSettingsPage)),
         new SettingsMenuItem("Audio Visualizer",null!,typeof(AudioVisualizerSettingsPage)),

@@ -42,7 +42,8 @@ public partial class App
                                                             .AddConfig<Appearance>()
                                                             .AddConfig<DesktopLyricOption>()
                                                             .AddConfig<AppOption>()
-                                                            .AddConfig<AudioVisualizerConfig>());
+                                                            .AddConfig<AudioVisualizerConfig>()
+                                                            .AddConfig<SmtcMetadataAliaConfig>());
         services.AddHostedService(p => p.GetRequiredService<SmtcService>());
 
         services.AddSingleton<AppSettingService>();
@@ -65,6 +66,7 @@ public partial class App
         services.AddTransient<SettingsWindowViewModel>();
         services.AddTransient<AppSettingsPage>();
         services.AddTransient<SmtcAppsPage>();
+        services.AddTransient<SmtcMetadataAliaPage>();
         services.AddTransient<LyricSettingsPage>();
         services.AddTransient<DesktopLyricSettingsPage>();
         services.AddTransient<AudioVisualizerSettingsPage>();

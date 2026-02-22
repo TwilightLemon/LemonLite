@@ -1,3 +1,4 @@
+using LemonLite.Configs;
 using System;
 using System.Collections.Generic;
 
@@ -51,6 +52,38 @@ internal sealed class AppleMusicMetadataProcessor : ISmtcMetadataProcessor
         {
             info.Artist = parts[0];
             info.Album  = parts[1];
+        }
+    }
+}
+internal sealed class NameAliaMetadataProcessor(SettingsMgr<SmtcMetadataAliaConfig> alias) : ISmtcMetadataProcessor
+{
+    public bool CanProcess(string appId)
+    {
+        return alias.Data.ContainsKey(appId);
+    }
+
+    public void Process(SmtcMediaInfo info, string appId)
+    {
+        foreach(var alia in alias.Data[appId])
+        {
+            if (string.IsNullOrEmpty(alia.Target)) continue;
+            switch (alia.Type)
+            {
+                case SmtcMetadataAliaType.Artist:
+                    info.Artist = info.Artist.Replace(alia.Target, alia.Name);
+                    break;
+                case SmtcMetadataAliaType.Album:
+                    info.Album = info.Album.Replace(alia.Target, alia.Name);
+                    break;
+                case SmtcMetadataAliaType.Name:
+                    info.Title = info.Title.Replace(alia.Target, alia.Name);
+                    break;
+                case SmtcMetadataAliaType.All:
+                    info.Artist = info.Artist.Replace(alia.Target, alia.Name);
+                    info.Album = info.Album.Replace(alia.Target, alia.Name);
+                    info.Title = info.Title.Replace(alia.Target, alia.Name);
+                    break;
+            }
         }
     }
 }

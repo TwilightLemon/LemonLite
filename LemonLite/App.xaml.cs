@@ -63,6 +63,12 @@ public partial class App : Application
         Services.GetRequiredService<NotifyIconService>().InitNotifyIcon();
 
         ApplyAppOptions();
+
+        //这行代码有点烫嘴
+        SmtcMetadataProcessorPipeline.Register(
+            new NameAliaMetadataProcessor(Services.GetRequiredService<AppSettingService>()
+                                                                                .GetConfigMgr<SmtcMetadataAliaConfig>()));
+
         var smtc = Services.GetRequiredService<SmtcService>();
         smtc.SmtcListener.SessionChanged += delegate
         {
