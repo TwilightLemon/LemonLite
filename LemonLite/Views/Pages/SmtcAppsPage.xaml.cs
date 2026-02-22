@@ -40,14 +40,14 @@ public partial class SmtcSourceEntryViewModel : ObservableObject
 public partial class SmtcAppItemViewModel : ObservableObject
 {
     internal readonly SmtcAppConfig Config;
-    private readonly SmtcMetadataAliaConfig _aliaConfig;
+    private readonly SmtcMetadataAliasConfig _aliaConfig;
 
     public string AppId => Config.AppId;
     public ObservableCollection<SmtcSourceEntryViewModel> Sources { get; }
-    public ObservableCollection<SmtcMetadataAliaItem> Aliases { get; }
-    public IReadOnlyList<SmtcMetadataAliaType> AvailableTypes { get; } = Enum.GetValues<SmtcMetadataAliaType>();
+    public ObservableCollection<SmtcMetadataAliasItem> Aliases { get; }
+    public IReadOnlyList<SmtcMetadataAliasType> AvailableTypes { get; } = Enum.GetValues<SmtcMetadataAliasType>();
 
-    public SmtcAppItemViewModel(SmtcAppConfig config, SmtcMetadataAliaConfig aliaConfig)
+    public SmtcAppItemViewModel(SmtcAppConfig config, SmtcMetadataAliasConfig aliaConfig)
     {
         Config = config;
         _aliaConfig = aliaConfig;
@@ -58,7 +58,7 @@ public partial class SmtcAppItemViewModel : ObservableObject
 
         if (!_aliaConfig.TryGetValue(config.AppId, out var aliaList))
             aliaList = [];
-        Aliases = new ObservableCollection<SmtcMetadataAliaItem>(aliaList);
+        Aliases = new ObservableCollection<SmtcMetadataAliasItem>(aliaList);
         Aliases.CollectionChanged += SyncAliasesToConfig;
     }
 
@@ -97,17 +97,17 @@ public partial class SmtcAppItemViewModel : ObservableObject
     [RelayCommand]
     private void AddAlias()
     {
-        Aliases.Add(new SmtcMetadataAliaItem
+        Aliases.Add(new SmtcMetadataAliasItem
         {
             AppId = AppId,
-            Type = SmtcMetadataAliaType.Name,
+            Type = SmtcMetadataAliasType.Artist,
             Target = string.Empty,
             Name = string.Empty
         });
     }
 
     [RelayCommand]
-    private void RemoveAlias(SmtcMetadataAliaItem item)
+    private void RemoveAlias(SmtcMetadataAliasItem item)
     {
         if (item == null) return;
         Aliases.Remove(item);
@@ -139,7 +139,7 @@ public partial class SmtcAppItemViewModel : ObservableObject
 public partial class SmtcAppsPage : Page
 {
     private readonly SettingsMgr<AppOption> _settings;
-    private readonly SettingsMgr<SmtcMetadataAliaConfig> _aliasSettings;
+    private readonly SettingsMgr<SmtcMetadataAliasConfig> _aliasSettings;
     private readonly SmtcService _smtc;
 
     public ObservableCollection<SmtcAppItemViewModel> SmtcApps { get; } = [];
@@ -150,7 +150,7 @@ public partial class SmtcAppsPage : Page
         DataContext = this;
         Loaded += SmtcAppsPage_Loaded;
         _settings = appSettingService.GetConfigMgr<AppOption>();
-        _aliasSettings = appSettingService.GetConfigMgr<SmtcMetadataAliaConfig>();
+        _aliasSettings = appSettingService.GetConfigMgr<SmtcMetadataAliasConfig>();
         _smtc = smtcService;
     }
 

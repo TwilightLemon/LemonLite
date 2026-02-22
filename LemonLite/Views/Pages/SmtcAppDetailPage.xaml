@@ -159,7 +159,7 @@
 
                     <ItemsControl ItemsSource="{Binding Aliases}">
                         <ItemsControl.ItemTemplate>
-                            <DataTemplate DataType="{x:Type configs:SmtcMetadataAliaItem}">
+                            <DataTemplate DataType="{x:Type configs:SmtcMetadataAliasItem}">
                                 <Grid Margin="0,2">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="150" />

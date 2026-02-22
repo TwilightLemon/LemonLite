@@ -260,11 +260,17 @@ public partial class LyricHost : UserControl
     public void Clear()
     {
         StopScrollAnimation();
-        _items = [];
         _currentItem = null;
         LrcItemsControl.CurrentItem = null;
-        LrcItemsControl.ItemsSource = null;
+
+        // Reset scroll position and flush layout BEFORE clearing items
+        // to prevent VirtualizingStackPanel.OnAnchorOperation from accessing
+        // containers that have been disconnected from the visual tree.
         _scrollViewer?.ScrollToVerticalOffset(0);
+        LrcItemsControl.UpdateLayout();
+
+        _items = [];
+        LrcItemsControl.ItemsSource = null;
     }
 
     private Thickness lyricSpacing = new(0, 0, 0, 36);
@@ -332,6 +338,7 @@ public partial class LyricHost : UserControl
             LyricLineData? lastItem = null;
             foreach (var cur in _items)
             {
+                if (string.IsNullOrEmpty(cur.LineInfo.Text)) continue;
                 if ((lastItem?.LineInfo.EndTime ?? cur.LineInfo.StartTime) <= ms && cur.LineInfo.EndTime >= ms)
                 {
                     target = cur;

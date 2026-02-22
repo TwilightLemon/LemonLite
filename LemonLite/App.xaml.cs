@@ -25,6 +25,18 @@ public partial class App : Application
 
         Settings.LoadPath();
 
+        // Handle known WPF VirtualizingStackPanel.OnAnchorOperation bug in all builds.
+        // This deferred dispatcher callback can crash when accessing containers
+        // that have been disconnected from the visual tree during virtualization.
+        Current.DispatcherUnhandledException += (_, e) =>
+        {
+            if (!e.Handled &&
+                e.Exception.StackTrace?.Contains("VirtualizingStackPanel") == true)
+            {
+                e.Handled = true;
+            }
+        };
+
 #if !DEBUG
         AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
         Current.DispatcherUnhandledException += Current_DispatcherUnhandledException;
@@ -67,7 +79,7 @@ public partial class App : Application
         //这行代码有点烫嘴
         SmtcMetadataProcessorPipeline.Register(
             new NameAliaMetadataProcessor(Services.GetRequiredService<AppSettingService>()
-                                                                                .GetConfigMgr<SmtcMetadataAliaConfig>()));
+                                                                                .GetConfigMgr<SmtcMetadataAliasConfig>()));
 
         var smtc = Services.GetRequiredService<SmtcService>();
         smtc.SmtcListener.SessionChanged += delegate

@@ -55,33 +55,34 @@ internal sealed class AppleMusicMetadataProcessor : ISmtcMetadataProcessor
         }
     }
 }
-internal sealed class NameAliaMetadataProcessor(SettingsMgr<SmtcMetadataAliaConfig> alias) : ISmtcMetadataProcessor
+internal sealed class NameAliaMetadataProcessor(SettingsMgr<SmtcMetadataAliasConfig> aliases) : ISmtcMetadataProcessor
 {
     public bool CanProcess(string appId)
     {
-        return alias.Data.ContainsKey(appId);
+        return aliases.Data.ContainsKey(appId);
     }
 
     public void Process(SmtcMediaInfo info, string appId)
     {
-        foreach(var alia in alias.Data[appId])
+        foreach(var alias in aliases.Data[appId])
         {
-            if (string.IsNullOrEmpty(alia.Target)) continue;
-            switch (alia.Type)
+            if (string.IsNullOrEmpty(alias.Target)) continue;
+            switch (alias.Type)
             {
-                case SmtcMetadataAliaType.Artist:
-                    info.Artist = info.Artist.Replace(alia.Target, alia.Name);
+                case SmtcMetadataAliasType.Artist:
+                    info.Artist = info.Artist.Replace(alias.Target, alias.Name);
                     break;
-                case SmtcMetadataAliaType.Album:
-                    info.Album = info.Album.Replace(alia.Target, alia.Name);
+                case SmtcMetadataAliasType.Album:
+                    info.Album = info.Album.Replace(alias.Target, alias.Name);
                     break;
-                case SmtcMetadataAliaType.Name:
-                    info.Title = info.Title.Replace(alia.Target, alia.Name);
+                case SmtcMetadataAliasType.Name:
+                    if (alias.VerifyCondition(info.Artist,info.Title,info.Album))
+                        info.Title = info.Title.Replace(alias.Target, alias.Name);
                     break;
-                case SmtcMetadataAliaType.All:
-                    info.Artist = info.Artist.Replace(alia.Target, alia.Name);
-                    info.Album = info.Album.Replace(alia.Target, alia.Name);
-                    info.Title = info.Title.Replace(alia.Target, alia.Name);
+                case SmtcMetadataAliasType.All:
+                    info.Artist = info.Artist.Replace(alias.Target, alias.Name);
+                    info.Album = info.Album.Replace(alias.Target, alias.Name);
+                    info.Title = info.Title.Replace(alias.Target, alias.Name);
                     break;
             }
         }

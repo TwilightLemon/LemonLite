@@ -93,7 +93,7 @@ public partial class LyricLineControl : UserControl
         MainLrcContainer.Children.Clear();
         mainSyllableLrcs.Clear();
         ClearHighlighter();
-
+        if (words.Count == 0) return;
         //计算EmphasisThreshold
         var aver = AverageWordDuration = words.Average(w => w.Duration);
         if (aver > 0)

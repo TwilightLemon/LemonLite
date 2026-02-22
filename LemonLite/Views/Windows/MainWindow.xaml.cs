@@ -30,6 +30,11 @@ public partial class MainWindow : Window
     private Storyboard? LyricImgRTAni;
     public bool IsMiniMode { get; private set; }
 
+    private void OpenAliasCreator_Click(object sender, RoutedEventArgs e)
+    {
+        App.WindowManager.CreateOrActivate<MetadataAliasCreatorWindow>();
+    }
+
     public MainWindow(MainWindowViewModel vm,
         AppSettingService appSettingService,
         SmtcService smtcService, 
@@ -252,10 +257,15 @@ public partial class MainWindow : Window
         SongTitleBlock.TextWrapping = TextWrapping.NoWrap;
         SongTitleBlock.HorizontalAlignment = HorizontalAlignment.Stretch;
         SongTitleBlock.FontSize = 18;
+        SongTitleBlock.TextTrimming = TextTrimming.CharacterEllipsis;
+        SongTitleBlock.Height = 24;
+
         SongArtistBlock.Margin = new Thickness(0);
         SongArtistBlock.TextAlignment = TextAlignment.Left;
         SongArtistBlock.HorizontalAlignment = HorizontalAlignment.Stretch;
         SongArtistBlock.TextWrapping = TextWrapping.NoWrap;
+        SongArtistBlock.TextTrimming = TextTrimming.CharacterEllipsis;
+        SongArtistBlock.Height = 18;
 
         //ProgressPanel.Margin = new Thickness(0, 10, 0, 0);
         //ProgressPanel.MaxWidth = double.PositiveInfinity;
@@ -357,10 +367,15 @@ public partial class MainWindow : Window
         SongTitleBlock.HorizontalAlignment = HorizontalAlignment.Stretch;
         SongTitleBlock.TextWrapping = TextWrapping.Wrap;
         SongTitleBlock.FontSize = 20;
+        SongTitleBlock.TextTrimming = TextTrimming.None;
+        SongTitleBlock.Height = double.NaN;
+
         SongArtistBlock.Margin = new Thickness(48, 0, 48, 0);
         SongArtistBlock.TextAlignment = TextAlignment.Center;
         SongArtistBlock.HorizontalAlignment = HorizontalAlignment.Stretch;
         SongArtistBlock.TextWrapping = TextWrapping.Wrap;
+        SongArtistBlock.TextTrimming = TextTrimming.None;
+        SongArtistBlock.Height = double.NaN;
 
         ProgressPanel.Margin = new Thickness(60, 20, 60, 0);
         ProgressPanel.MaxWidth = 480;

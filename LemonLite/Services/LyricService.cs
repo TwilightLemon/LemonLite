@@ -247,6 +247,7 @@ public class LyricService
         {
             foreach (var line in _currentLyric.Lines)
             {
+                if (string.IsNullOrEmpty(line.Text)) continue;
                 if ((lastItem?.EndTime ?? line.StartTime) <= ms && line.EndTime >= ms)
                 {
                     target = line;

@@ -12,7 +12,7 @@
         xmlns:ws="https://schemas.elecho.dev/wpfsuite"
         xmlns:uc="clr-namespace:LemonLite.Views.UserControls"
         x:Name="window"
-        Title="MainWindow"
+        Title="Lemon Lite"
         Width="874"
         Height="504"
         MinWidth="300"
@@ -144,10 +144,12 @@
                                            HighlightColor="{DynamicResource ActiveLrcForegroundColor}"
                                            Text="{Binding Title, Mode=OneWay}"
                                            TextAlignment="Center"
+                                           TextTrimming="None"
                                            TextWrapping="Wrap" />
                     <uc:HighlightTextBlock x:Name="SongArtistBlock"
                                            MinWidth="150"
                                            Margin="48,0"
+                                           FontSize="14"
                                            HorizontalAlignment="Stretch"
                                            VerticalAlignment="Top"
                                            d:Text="Taylor Swift"
@@ -298,12 +300,22 @@
                                   Tag="{StaticResource Icon_Trans}"
                                   Visibility="{Binding LyricView.IsTranslationAvailable, Converter={StaticResource BoolToVisibility}}" />
                     <ToggleButton Width="36"
-                                  Height="36"
-                                  Padding="10"
-                                  IsChecked="{Binding LyricView.IsShowRomaji}"
-                                  Style="{StaticResource IconToggleButton}"
-                                  Tag="{StaticResource Icon_Romaji}"
-                                  Visibility="{Binding LyricView.IsRomajiAvailable, Converter={StaticResource BoolToVisibility}}" />
+                                   Height="36"
+                                   Padding="10"
+                                   IsChecked="{Binding LyricView.IsShowRomaji}"
+                                   Style="{StaticResource IconToggleButton}"
+                                   Tag="{StaticResource Icon_Romaji}"
+                                   Visibility="{Binding LyricView.IsRomajiAvailable, Converter={StaticResource BoolToVisibility}}" />
+                    <ws:Button Width="36"
+                               Height="36"
+                               Padding="10"
+                               Click="OpenAliasCreator_Click"
+                               Style="{StaticResource SimpleIconButtonStyleForWs}"
+                               ToolTip="Create Metadata Alias">
+                        <TextBlock FontFamily="{StaticResource SegoeFluentIcon}"
+                                   FontSize="14"
+                                   Text="&#xe8ac;" />
+                    </ws:Button>
                 </StackPanel>
             </Border>
         </Grid>

@@ -36,7 +36,6 @@ public partial class HighlightTextBlock : UserControl
     {
         InitializeComponent();
         Loaded += HighlightTextBlock_Loaded;
-        SizeChanged += (_, _) => UpdateTextClip();
         IsSpiltEnabled = isSpiltEnabled;
     }
 
@@ -46,9 +45,41 @@ public partial class HighlightTextBlock : UserControl
         {
             InitEffect();
         }
-        UpdateTextClip();
     }
-    
+
+    private double _layoutConstraintWidth;
+    private double _layoutConstraintHeight;
+
+    protected override Size MeasureOverride(Size availableSize)
+    {
+        if (IsSpiltEnabled)
+        {
+            // 拆分模式：无视容器限制
+            _layoutConstraintWidth = double.PositiveInfinity;
+            _layoutConstraintHeight = double.PositiveInfinity;
+        }
+        else
+        {
+            _layoutConstraintWidth = availableSize.Width;
+            _layoutConstraintHeight = availableSize.Height;
+        }
+        UpdateTextClip();
+        return base.MeasureOverride(availableSize);
+    }
+
+    protected override Size ArrangeOverride(Size finalSize)
+    {
+        if (!IsSpiltEnabled && !string.IsNullOrEmpty(Text) &&
+            (Math.Abs(finalSize.Width - _layoutConstraintWidth) > 0.5 ||
+             Math.Abs(finalSize.Height - _layoutConstraintHeight) > 0.5))
+        {
+            _layoutConstraintWidth = finalSize.Width;
+            _layoutConstraintHeight = finalSize.Height;
+            UpdateCompleteTextClip();
+        }
+        return base.ArrangeOverride(finalSize);
+    }
+
     private void InitEffect()
     {
         _effect ??= new()
@@ -292,7 +323,7 @@ public partial class HighlightTextBlock : UserControl
     {
         if (d is HighlightTextBlock control)
         {
-            control.UpdateTextClip();
+            control.InvalidateMeasure();
         }
     }
 
@@ -369,13 +400,25 @@ public partial class HighlightTextBlock : UserControl
             formattedText.LineHeight = LineHeight;
         }
 
-        // 计算约束宽度（用于换行）
-        var constraintWidth = !double.IsNaN(Width) && Width > 0
-            ? Width
-            : (!double.IsInfinity(MaxWidth) && MaxWidth > 0 ? MaxWidth : ActualWidth);
+        // 计算约束宽度（用于换行）：优先使用布局系统提供的约束
+        var constraintWidth = !double.IsInfinity(_layoutConstraintWidth) && _layoutConstraintWidth > 0
+            ? _layoutConstraintWidth : 0;
+        //计算约束高度（用于裁剪）
+        var constraintHeight = !double.IsInfinity(_layoutConstraintHeight) && _layoutConstraintHeight > 0
+            ? _layoutConstraintHeight : 0;
 
-        // 仅在需要换行且有约束宽度时设置 MaxTextWidth
-        if (TextWrapping != TextWrapping.NoWrap && constraintWidth > 0)
+        //当需要裁剪时，设置约束高度
+        if (TextTrimming != TextTrimming.None)
+        {
+            if (constraintHeight < formattedText.Height)
+                constraintHeight = formattedText.Height;
+            formattedText.MaxTextHeight = constraintHeight;
+        }
+
+        // 仅在需要换行(或者不换行，但是需要裁剪)且有约束宽度时设置 MaxTextWidth
+        if ((TextWrapping != TextWrapping.NoWrap ||
+            (TextWrapping==TextWrapping.NoWrap && TextTrimming!=TextTrimming.None)) &&
+            constraintWidth > 0)
         {
             formattedText.MaxTextWidth = constraintWidth;
         }
@@ -384,15 +427,19 @@ public partial class HighlightTextBlock : UserControl
         var textWidth = formattedText.WidthIncludingTrailingWhitespace;
         var textHeight = formattedText.Height;
 
-        // 计算容器宽度：NoWrap 时使用文本宽度，换行时使用约束宽度
-        var containerWidth = TextWrapping == TextWrapping.NoWrap
+        // 计算容器宽度：NoWrap且无裁剪时使用文本宽度，换行或裁剪使用约束宽度
+        var containerWidth = TextWrapping == TextWrapping.NoWrap && TextTrimming == TextTrimming.None
             ? textWidth
             : (constraintWidth > 0 ? constraintWidth : textWidth);
+        //计算容器高度：当不换行且无裁剪时使用文本高度，否则使用约束高度
+        var containerHeight = TextWrapping == TextWrapping.NoWrap && TextTrimming == TextTrimming.None
+            ? textHeight
+            : (constraintHeight > 0 ? constraintHeight : textHeight);
 
         var geometry = formattedText.BuildGeometry(new Point(0, 0));
         PART_Rectangle.Clip = geometry;
         PART_Rectangle.Width = containerWidth;
-        PART_Rectangle.Height = textHeight;
+        PART_Rectangle.Height = containerHeight;
 
         // 根据对齐方式设置 Rectangle 的水平对齐
         PART_Rectangle.HorizontalAlignment = TextAlignment switch
