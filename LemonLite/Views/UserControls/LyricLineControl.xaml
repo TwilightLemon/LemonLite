@@ -8,7 +8,7 @@
              d:DesignWidth="300"
              Foreground="{DynamicResource InActiveLrcForeground}"
              mc:Ignorable="d">
-    <ws:StackPanel Margin="8,0" Spacing="8">
+    <ws:StackPanel Margin="8,0" Spacing="4">
         <WrapPanel x:Name="RomajiLrcContainer" Opacity="0.8" />
         <WrapPanel x:Name="MainLrcContainer" />
         <TextBlock x:Name="TranslationLrc" TextWrapping="Wrap" />

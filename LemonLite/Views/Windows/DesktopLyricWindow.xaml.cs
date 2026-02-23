@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Effects;
 
@@ -40,13 +41,56 @@ namespace LemonLite.Views.Windows
             MouseLeave += DesktopLyricWindow_MouseLeave;
             MouseDoubleClick += DesktopLyricWindow_MouseDoubleClick;
             Closing += DesktopLyricWindow_Closing;
+            this.LocationChanged += DesktopLyricWindow_LocationChanged;
             this.vm = vm;
+        }
+        private bool _isIslandMode = false;
+        private double _restoredWidth = 0d;
+        private void DesktopLyricWindow_LocationChanged(object? sender, EventArgs e)
+        {
+            if(this.Top == 0)
+            {
+                EnterIslandMode();
+            }
+            else
+            {
+                ExitIslandMode();
+            }
+        }
+
+        private void EnterIslandMode()
+        {
+            if (_isIslandMode)
+            {
+                return;
+            }
+            _isIslandMode = true;
+            AnimatedBackgroundBd.TopCutRadius = 12d;
+            windowRoot.HorizontalAlignment = HorizontalAlignment.Center;
+            _restoredWidth = this.Width;
+            this.Width= SystemParameters.WorkArea.Width;
+            this.Left = 0;
+            IsLandBaseBackground.Visibility= Visibility.Visible;
+        }
+
+        private void ExitIslandMode()
+        {
+            if (!_isIslandMode)
+            {
+                return;
+            }
+            _isIslandMode = false;
+            AnimatedBackgroundBd.TopCutRadius = 0d;
+            windowRoot.HorizontalAlignment = HorizontalAlignment.Stretch;
+            this.Width = _restoredWidth;
+            IsLandBaseBackground.Visibility = Visibility.Collapsed;
         }
 
         private void DesktopLyricWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
         {
             vm.UpdateAnimation = null;
-            _settingsMgr.Data.WindowSize = new Size(Width, Height);
+            _settingsMgr.Data.WindowSize = new Size(_isIslandMode?_restoredWidth:Width, Height);
+            _settingsMgr.Data.IsIslandMode = _isIslandMode;
             vm.Dispose();
         }
 
@@ -71,6 +115,21 @@ namespace LemonLite.Views.Windows
 
         private void ShowLyricAnimation()
         {
+            if(_isIslandMode)
+            {
+                var trans = windowRoot.RenderTransform = new TranslateTransform();
+                trans.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimationUsingKeyFrames()
+                {
+                    KeyFrames = [new EasingDoubleKeyFrame(-this.Height,TimeSpan.FromMilliseconds(200)){
+                        EasingFunction=new CubicEase(){EasingMode=EasingMode.EaseIn}
+                    },
+                                      new EasingDoubleKeyFrame(-this.Height,TimeSpan.FromMilliseconds(300)),
+                                      new EasingDoubleKeyFrame(0,TimeSpan.FromMilliseconds(500)){
+                        EasingFunction=new CubicEase(){EasingMode =EasingMode.EaseOut}
+                    }]
+                });
+                return;
+            }
             var blur=new BlurEffect() { Radius = 0 };
             LrcHost.Effect = blur;
             LrcHost.BeginAnimation(OpacityProperty, new DoubleAnimationUsingKeyFrames()
@@ -142,6 +201,10 @@ namespace LemonLite.Views.Windows
             {
                 Width = size.Width;
                 Height = size.Height;
+            }
+            if(_settingsMgr.Data.IsIslandMode)
+            {
+                Top = 0;
             }
         }
 

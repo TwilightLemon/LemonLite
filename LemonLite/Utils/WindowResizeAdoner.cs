@@ -130,7 +130,7 @@ public class WindowResizeAdorner : Adorner
         }
         if (thumb.HorizontalAlignment != HorizontalAlignment.Stretch)
         {
-            if (width > 63)
+            if (width > 0)
             {
                 c.Left = left;
                 c.Width = width;
@@ -150,7 +150,7 @@ public class WindowResizeAdorner : Adorner
 
         if (thumb.VerticalAlignment != VerticalAlignment.Stretch)
         {
-            if (height > 63)
+            if (height > 0)
             {
                 c.Top = top;
                 c.Height = height;

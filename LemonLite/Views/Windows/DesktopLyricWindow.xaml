@@ -8,22 +8,22 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:LemonLite.ViewModels"
         xmlns:ws="https://schemas.elecho.dev/wpfsuite"
+        xmlns:ut="clr-namespace:LemonLite.Utils"
         x:Name="window"
         Title="DesktopLyricWindow"
         Width="720"
         Height="145"
         d:DataContext="{d:DesignInstance Type=vm:DesktopLyricWindowViewModel}"
-        Background="Transparent"
+        Background="{x:Null}"
         FontFamily="{StaticResource DefaultFontFamily}"
         Foreground="{DynamicResource ForeColor}"
         ResizeMode="NoResize"
         ShowInTaskbar="False"
+        MinHeight="36"
         Topmost="True"
         WindowStyle="None"
+        AllowsTransparency="True"
         mc:Ignorable="d">
-    <WindowChrome.WindowChrome>
-        <WindowChrome CaptionHeight="0" GlassFrameThickness="-1" />
-    </WindowChrome.WindowChrome>
     <i:Interaction.Behaviors>
         <behavior:WindowDragMoveBehavior />
     </i:Interaction.Behaviors>
@@ -41,10 +41,15 @@
         </ContextMenu>
     </Window.ContextMenu>
     <ws:BoxPanel x:Name="windowRoot">
-        <Border x:Name="AnimatedBackgroundBd"
+        <ut:TopCutBorder x:Name="IsLandBaseBackground"
+                         Background="Black"
+                         CornerRadius="12"
+                         TopCutRadius="12"
+                         Visibility="Collapsed"/>
+        <ut:TopCutBorder x:Name="AnimatedBackgroundBd"
                 Visibility="{Binding BackgroundVisibility}"
                 CornerRadius="12">
-            <Border.Background>
+            <ut:TopCutBorder.Background>
                 <ImageBrush ImageSource="{Binding BackgroundImageSource, Mode=OneWay}"
                             Stretch="UniformToFill">
                     <ImageBrush.RelativeTransform>
@@ -65,15 +70,15 @@
                         </TransformGroup>
                     </ImageBrush.RelativeTransform>
                 </ImageBrush>
-            </Border.Background>
+            </ut:TopCutBorder.Background>
             <i:Interaction.Behaviors>
                 <behavior:FadeBorderBehavior Source="{Binding BackgroundImageSource}"
                                              Duration="00:00:1.5" />
             </i:Interaction.Behaviors>
-        </Border>
+        </ut:TopCutBorder>
         <Grid x:Name="LrcPanel">
             <ScrollViewer x:Name="LrcScrollViewer"
-                          Margin="8 0 8 0"
+                          Margin="20 0"
                           HorizontalScrollBarVisibility="Hidden"
                           PanningMode="HorizontalOnly"
                           VerticalScrollBarVisibility="Disabled">

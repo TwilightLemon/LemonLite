@@ -41,6 +41,7 @@ public partial class DesktopLyricWindowViewModel:ObservableObject
         _smtcService.UpdateCoverFailed += Smtc_UpdateCoverFailed;
 
         ApplySettings();
+        Smtc_CoverUpdated();
         LyricControl.Dispatcher.Invoke(() => Update(_lyricService.CurrentLine));
     }
 
