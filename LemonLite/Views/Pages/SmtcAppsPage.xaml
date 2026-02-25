@@ -4,6 +4,7 @@
       xmlns:base="clr-namespace:LemonLite.Utils"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:local="clr-namespace:LemonLite.Views.Pages"
+      xmlns:loc="clr-namespace:LemonLite.Services"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:ws="https://schemas.elecho.dev/wpfsuite"
       Title="SmtcAppsPage"
@@ -17,10 +18,10 @@
         <ws:StackPanel Spacing="8">
             <TextBlock Margin="0,8"
                        FontSize="22"
-                       Text="SMTC Apps" />
+                       Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[SMTC Apps], Mode=OneWay}" />
             <TextBlock Margin="0,0,0,4"
                        Foreground="{DynamicResource HintForeColor}"
-                       Text="Configure which apps are monitored. Click an app to configure its sources and aliases." />
+                       Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Configure which apps are monitored. Click an app to configure its sources and aliases.], Mode=OneWay}" />
 
             <Border Background="{DynamicResource MaskColor}" CornerRadius="12">
                 <ws:StackPanel Margin="12" Spacing="8">
@@ -28,7 +29,7 @@
                         <TextBlock HorizontalAlignment="Left"
                                    VerticalAlignment="Center"
                                    Margin="4 0 0 0"
-                                   Text="Whitelist" />
+                                   Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Whitelist], Mode=OneWay}" />
                         <ws:StackPanel Margin="0,0,6,0"
                                        HorizontalAlignment="Right"
                                        Orientation="Horizontal"
@@ -37,23 +38,19 @@
                                        Padding="8"
                                        Command="{Binding AddCurrentAppCommand}"
                                        Style="{StaticResource AccentButtonStyleForWs}">
-                                <TextBlock>
-                                    <Run BaselineAlignment="Center"
-                                         FontFamily="{StaticResource SegoeFluentIcon}"
-                                         Text="&#xe710;" />
-                                    <Run BaselineAlignment="Center" Text=" Add Current" />
-                                </TextBlock>
+                                <ws:StackPanel Orientation="Horizontal" VerticalAlignment="Center" Spacing="4">
+                                    <TextBlock FontFamily="{StaticResource SegoeFluentIcon}" Text="&#xe710;" />
+                                    <TextBlock Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Add Current], Mode=OneWay}" />
+                                </ws:StackPanel>
                             </ws:Button>
                             <ws:Button Height="32"
                                        Padding="8"
                                        Command="{Binding AddAppCommand}"
                                        Style="{StaticResource SimpleButtonStyleForWs}">
-                                <TextBlock>
-                                    <Run BaselineAlignment="Center"
-                                         FontFamily="{StaticResource SegoeFluentIcon}"
-                                         Text="&#xec50;" />
-                                    <Run BaselineAlignment="Center" Text=" Select File" />
-                                </TextBlock>
+                                <ws:StackPanel Orientation="Horizontal" VerticalAlignment="Center" Spacing="4">
+                                    <TextBlock FontFamily="{StaticResource SegoeFluentIcon}" Text="&#xec50;" />
+                                    <TextBlock Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Select File], Mode=OneWay}" />
+                                </ws:StackPanel>
                             </ws:Button>
                         </ws:StackPanel>
                     </Grid>

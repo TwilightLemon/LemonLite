@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LemonLite.Configs;
 using LemonLite.Services;
@@ -43,6 +43,17 @@ namespace LemonLite.Views.Pages
             BackgroundImagePath = appearanceSettings.Data.BackgroundImagePath ?? "";
             BackgroundOpacity = appearanceSettings.Data.BackgroundOpacity;
             ShowInTaskbarWhenMiniMode = appearanceSettings.Data.ShowInTaskbarWhenMiniMode;
+            
+            // Load language setting
+            var localizationService = LocalizationService.Instance;
+            localizationService.LanguageChanged += OnLanguageChanged;
+        }
+        
+        private void OnLanguageChanged()
+        {
+            // Refresh UI when language changes
+            OnPropertyChanged(nameof(IsEnglishLanguage));
+            OnPropertyChanged(nameof(IsChineseLanguage));
         }
 
         [ObservableProperty]
@@ -190,6 +201,18 @@ namespace LemonLite.Views.Pages
         {
             appearanceSettings.Data.ShowInTaskbarWhenMiniMode = value;
             appearanceSettings.TriggerDataChanged();
+        }
+        
+        public bool IsEnglishLanguage
+        {
+            get => LocalizationService.Instance.CurrentLanguage == "en";
+            set { if (value) LocalizationService.Instance.SetLanguage("en"); }
+        }
+        
+        public bool IsChineseLanguage
+        {
+            get => LocalizationService.Instance.CurrentLanguage == "zh";
+            set { if (value) LocalizationService.Instance.SetLanguage("zh"); }
         }
     }
 }

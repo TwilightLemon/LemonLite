@@ -4,6 +4,7 @@
       xmlns:base="clr-namespace:LemonLite.Utils"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:local="clr-namespace:LemonLite.Views.Pages"
+      xmlns:loc="clr-namespace:LemonLite.Services"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:ws="https://schemas.elecho.dev/wpfsuite"
       Title="AudioVisualizerSettingsPage"
@@ -17,13 +18,13 @@
         <ws:StackPanel x:Name="SettingsList" Spacing="8">
             <TextBlock Margin="0,8"
                        FontSize="22"
-                       Text="Audio Visualizer Settings" />
+                       Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Audio Visualizer Settings], Mode=OneWay}" />
 
             <Border Height="48"
                     Background="{DynamicResource MaskColor}"
                     CornerRadius="12">
                 <ToggleButton Margin="12,0,12,0"
-                              Content="Enable Border Rendering"
+                              Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Enable Border Rendering], Mode=OneWay}"
                               IsChecked="{Binding EnableBorderRendering}"
                               Style="{DynamicResource RoundToggleButtonStyle}" />
             </Border>
@@ -32,7 +33,7 @@
                     Background="{DynamicResource MaskColor}"
                     CornerRadius="12">
                 <ToggleButton Margin="12,0,12,0"
-                              Content="Enable Strips Rendering"
+                              Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Enable Strips Rendering], Mode=OneWay}"
                               IsChecked="{Binding EnableStripsRendering}"
                               Style="{DynamicResource RoundToggleButtonStyle}" />
             </Border>
@@ -44,7 +45,7 @@
                     <TextBlock Margin="12,0"
                                HorizontalAlignment="Left"
                                VerticalAlignment="Center"
-                               Text="Opacity" />
+                               Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Opacity], Mode=OneWay}" />
                     <ws:StackPanel Margin="0,0,24,0"
                                    HorizontalAlignment="Right"
                                    VerticalAlignment="Center"

@@ -4,6 +4,7 @@
       xmlns:base="clr-namespace:LemonLite.Utils"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:local="clr-namespace:LemonLite.Views.Pages"
+      xmlns:loc="clr-namespace:LemonLite.Services"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:ws="https://schemas.elecho.dev/wpfsuite"
       Title="DesktopLyricSettingsPage"
@@ -17,13 +18,13 @@
         <ws:StackPanel x:Name="SettingsList" Spacing="8">
             <TextBlock Margin="0,8"
                        FontSize="22"
-                       Text="Desktop Lyric Settings" />
+                       Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Desktop Lyric Settings], Mode=OneWay}" />
 
             <Border Height="48"
                     Background="{DynamicResource MaskColor}"
                     CornerRadius="12">
                 <ToggleButton Margin="12,0,12,0"
-                              Content="Show Translation"
+                              Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Show Translation], Mode=OneWay}"
                               IsChecked="{Binding ShowTranslation}"
                               Style="{DynamicResource RoundToggleButtonStyle}" />
             </Border>
@@ -32,7 +33,7 @@
                     Background="{DynamicResource MaskColor}"
                     CornerRadius="12">
                 <ToggleButton Margin="12,0,12,0"
-                              Content="Enable Background"
+                              Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Enable Background], Mode=OneWay}"
                               IsChecked="{Binding EnableBackground}"
                               Style="{DynamicResource RoundToggleButtonStyle}" />
             </Border>
@@ -41,7 +42,7 @@
                     Background="{DynamicResource MaskColor}"
                     CornerRadius="12">
                 <ToggleButton Margin="12,0,12,0"
-                              Content="Use Highlight Lyric Effect"
+                              Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Use Highlight Lyric Effect], Mode=OneWay}"
                               IsChecked="{Binding UseHighlightLyricEffect}"
                               Style="{DynamicResource RoundToggleButtonStyle}" />
             </Border>
@@ -53,7 +54,7 @@
                     <TextBlock Margin="12,0"
                                HorizontalAlignment="Left"
                                VerticalAlignment="Center"
-                               Text="Font Size" />
+                               Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Font Size], Mode=OneWay}" />
                     <ws:TextBox Height="24"
                                 MinWidth="100"
                                 Margin="0,0,24,0"
@@ -72,7 +73,7 @@
                     <TextBlock Margin="12,0"
                                HorizontalAlignment="Left"
                                VerticalAlignment="Center"
-                               Text="Font Family" />
+                               Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Font Family], Mode=OneWay}" />
                     <ws:TextBox Height="24"
                                 MinWidth="220"
                                 Margin="0,0,24,0"

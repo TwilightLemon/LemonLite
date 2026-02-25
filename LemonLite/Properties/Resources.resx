@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ...
+    <data name="Name1" type="System.String">
+        <value>Hello</value>
+    </data>
+    ...
+    <data name="Image1" type="System.Drawing.Bitmap">
+        <value>base64 data here</value>
+    </data>
+    ...
+    
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The type and mimetype 
+    are optional.
+    
+    The mimetype is used for MIME types associated with the data. For 
+    example, if the value is a string that is HTML markup, you 
+    could specify mimetype="text/html" to indicate this.
+    
+    The type is used to specify the .NET type of the data stored in 
+    the value. This is used to avoid deserialization of all values 
+    into strings.
+  -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AppSettings" xml:space="preserve">
+    <value>App Settings</value>
+  </data>
+  <data name="Appearance" xml:space="preserve">
+    <value>Appearance</value>
+  </data>
+  <data name="EnableMainWindow" xml:space="preserve">
+    <value>Enable Main Window</value>
+  </data>
+  <data name="EnableDesktopLyric" xml:space="preserve">
+    <value>Enable Desktop Lyric</value>
+  </data>
+  <data name="EnableAudioVisualizer" xml:space="preserve">
+    <value>Enable Audio Visualizer</value>
+  </data>
+  <data name="ShowInTaskbarWhenMiniMode" xml:space="preserve">
+    <value>Show in Taskbar When Mini Mode</value>
+  </data>
+  <data name="ThemeMode" xml:space="preserve">
+    <value>Theme Mode</value>
+  </data>
+  <data name="Light" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="Dark" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="System" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="AppFontFamily" xml:space="preserve">
+    <value>App Font Family</value>
+  </data>
+  <data name="BackgroundType" xml:space="preserve">
+    <value>Background Type</value>
+  </data>
+  <data name="None" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="Acrylic" xml:space="preserve">
+    <value>Acrylic</value>
+  </data>
+  <data name="Image" xml:space="preserve">
+    <value>Image</value>
+  </data>
+  <data name="AcrylicOpacity" xml:space="preserve">
+    <value>Acrylic Opacity</value>
+  </data>
+  <data name="BackgroundImage" xml:space="preserve">
+    <value>Background Image</value>
+  </data>
+  <data name="Browse" xml:space="preserve">
+    <value>Browse</value>
+  </data>
+  <data name="BackgroundOpacity" xml:space="preserve">
+    <value>Background Opacity</value>
+  </data>
+  <data name="SmtcApps" xml:space="preserve">
+    <value>SMTC Apps</value>
+  </data>
+  <data name="SmtcAppsDescription" xml:space="preserve">
+    <value>Configure which apps are monitored. Click an app to configure its sources and aliases.</value>
+  </data>
+  <data name="Whitelist" xml:space="preserve">
+    <value>Whitelist</value>
+  </data>
+  <data name="AddCurrent" xml:space="preserve">
+    <value>Add Current</value>
+  </data>
+  <data name="SelectFile" xml:space="preserve">
+    <value>Select File</value>
+  </data>
+  <data name="Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Exit" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="Welcome" xml:space="preserve">
+    <value>Welcome~</value>
+  </data>
+  <data name="LyricWindow" xml:space="preserve">
+    <value>Lyric Window</value>
+  </data>
+  <data name="DesktopLyrics" xml:space="preserve">
+    <value>Desktop Lyrics</value>
+  </data>
+  <data name="AudioVisualizer" xml:space="preserve">
+    <value>Audio Visualizer</value>
+  </data>
+  <data name="RefreshLyrics" xml:space="preserve">
+    <value>Refresh Lyrics</value>
+  </data>
+  <data name="General" xml:space="preserve">
+    <value>General</value>
+  </data>
+  <data name="LyricView" xml:space="preserve">
+    <value>Lyric View</value>
+  </data>
+  <data name="About" xml:space="preserve">
+    <value>About</value>
+  </data>
+  <data name="LyricViewSettings" xml:space="preserve">
+    <value>Lyric View Settings</value>
+  </data>
+  <data name="ShowTranslation" xml:space="preserve">
+    <value>Show Translation</value>
+  </data>
+  <data name="ShowRomaji" xml:space="preserve">
+    <value>Show Romaji</value>
+  </data>
+  <data name="FontSize" xml:space="preserve">
+    <value>Font Size</value>
+  </data>
+  <data name="FontSizeWhenMiniMode" xml:space="preserve">
+    <value>Font Size When Mini Mode</value>
+  </data>
+  <data name="FontFamily" xml:space="preserve">
+    <value>Font Family</value>
+  </data>
+  <data name="DesktopLyricSettings" xml:space="preserve">
+    <value>Desktop Lyric Settings</value>
+  </data>
+  <data name="EnableBackground" xml:space="preserve">
+    <value>Enable Background</value>
+  </data>
+  <data name="UseHighlightLyricEffect" xml:space="preserve">
+    <value>Use Highlight Lyric Effect</value>
+  </data>
+  <data name="AudioVisualizerSettings" xml:space="preserve">
+    <value>Audio Visualizer Settings</value>
+  </data>
+  <data name="EnableBorderRendering" xml:space="preserve">
+    <value>Enable Border Rendering</value>
+  </data>
+  <data name="EnableStripsRendering" xml:space="preserve">
+    <value>Enable Strips Rendering</value>
+  </data>
+  <data name="Opacity" xml:space="preserve">
+    <value>Opacity</value>
+  </data>
+  <data name="PlayTheLastOne" xml:space="preserve">
+    <value>Play the last one</value>
+  </data>
+  <data name="PlayOrPause" xml:space="preserve">
+    <value>Play or Pause</value>
+  </data>
+  <data name="PlayTheNextOne" xml:space="preserve">
+    <value>Play the next one</value>
+  </data>
+  <data name="CreateMetadataAlias" xml:space="preserve">
+    <value>Create Metadata Alias</value>
+  </data>
+  <data name="ShowTranslationAndRomaji" xml:space="preserve">
+    <value>Show Translation and Romaji</value>
+  </data>
+  <data name="ShowMainWindow" xml:space="preserve">
+    <value>Show Main Window</value>
+  </data>
+  <data name="CloseDesktopLyricViewer" xml:space="preserve">
+    <value>Close desktop lyric viewer</value>
+  </data>
+  <data name="Language" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="English" xml:space="preserve">
+    <value>English</value>
+  </data>
+  <data name="Chinese" xml:space="preserve">
+    <value>中文</value>
+  </data>
+  <data name="FontSizeUp" xml:space="preserve">
+    <value>Font size ++</value>
+  </data>
+  <data name="FontSizeDown" xml:space="preserve">
+    <value>Font size --</value>
+  </data>
+</root>

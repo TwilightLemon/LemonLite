@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LemonLite.Services;
 using LemonLite.Utils;
@@ -182,7 +182,7 @@ public partial class MainWindowViewModel : ObservableObject
         // clean up previous info
         App.Current.Dispatcher.Invoke(() =>
         {
-            Title = "Welcome~";
+            Title = LemonLite.Services.LocalizationService.Instance["Welcome~"];
             Artist = string.Empty;
             Album = string.Empty;
         });
@@ -191,7 +191,7 @@ public partial class MainWindowViewModel : ObservableObject
         {
             App.Current.Dispatcher.Invoke(() =>
             {
-                Title = info.Title ?? "Welcome~";
+                Title = info.Title ?? LemonLite.Services.LocalizationService.Instance["Welcome~"];
                 Artist = info.Artist ?? string.Empty;
                 Album = info.Album ?? string.Empty;
             });

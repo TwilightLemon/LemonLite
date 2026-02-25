@@ -1,4 +1,4 @@
-﻿using FluentWpfCore.Interop;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using FluentWpfCore.Interop;
 using LemonLite.Configs;
 using LemonLite.Services;
 using LemonLite.Utils;
@@ -27,7 +27,6 @@ public partial class MainWindow : Window
     private readonly UIResourceService ui;
     private readonly SettingsMgr<Appearance> _mgr;
     private const double MobileLayoutThreshold = 600;
-    private Storyboard? LyricImgRTAni;
     public bool IsMiniMode { get; private set; }
 
     private void OpenAliasCreator_Click(object sender, RoutedEventArgs e)
