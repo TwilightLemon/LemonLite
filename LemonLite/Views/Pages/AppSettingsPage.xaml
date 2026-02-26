@@ -1,9 +1,10 @@
-﻿<Page x:Class="LemonLite.Views.Pages.AppSettingsPage"
+<Page x:Class="LemonLite.Views.Pages.AppSettingsPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:base="clr-namespace:LemonLite.Utils"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:local="clr-namespace:LemonLite.Views.Pages"
+      xmlns:loc="clr-namespace:LemonLite.Services"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:ws="https://schemas.elecho.dev/wpfsuite"
       Title="AppSettingsPage"
@@ -19,13 +20,13 @@
             <ws:StackPanel Spacing="8">
                 <TextBlock Margin="0,8"
                            FontSize="22"
-                           Text="App Settings" />
+                           Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[App Settings], Mode=OneWay}" />
 
                 <Border Height="48"
                         Background="{DynamicResource MaskColor}"
                         CornerRadius="12">
                     <ToggleButton Margin="12,0,12,0"
-                                  Content="Enable Main Window"
+                                  Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Enable Main Window], Mode=OneWay}"
                                   IsChecked="{Binding EnableMainWindow}"
                                   Style="{DynamicResource RoundToggleButtonStyle}" />
                 </Border>
@@ -34,7 +35,7 @@
                         Background="{DynamicResource MaskColor}"
                         CornerRadius="12">
                     <ToggleButton Margin="12,0,12,0"
-                                  Content="Enable Desktop Lyric"
+                                  Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Enable Desktop Lyric], Mode=OneWay}"
                                   IsChecked="{Binding EnableDesktopLyricWindow}"
                                   Style="{DynamicResource RoundToggleButtonStyle}" />
                 </Border>
@@ -43,22 +44,46 @@
                         Background="{DynamicResource MaskColor}"
                         CornerRadius="12">
                     <ToggleButton Margin="12,0,12,0"
-                                  Content="Enable Audio Visualizer"
+                                  Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Enable Audio Visualizer], Mode=OneWay}"
                                   IsChecked="{Binding EnableAudioVisualizer}"
                                   Style="{DynamicResource RoundToggleButtonStyle}" />
+                </Border>
+
+                <Border Height="48"
+                        Background="{DynamicResource MaskColor}"
+                        CornerRadius="12">
+                    <Grid>
+                        <TextBlock Margin="12,0"
+                                   HorizontalAlignment="Left"
+                                   VerticalAlignment="Center"
+                                   Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Language], Mode=OneWay}" />
+                        <ws:StackPanel Margin="0,0,32,0"
+                                       HorizontalAlignment="Right"
+                                       VerticalAlignment="Center"
+                                       Orientation="Horizontal"
+                                       Spacing="8">
+                            <ws:StackPanel.Resources>
+                                <Style BasedOn="{StaticResource PlainRadioButtonStyle}" TargetType="RadioButton">
+                                    <Setter Property="Padding" Value="8,4" />
+                                </Style>
+                            </ws:StackPanel.Resources>
+                            <RadioButton Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[English], Mode=OneWay}" IsChecked="{Binding IsEnglishLanguage}" />
+                            <RadioButton Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[中文], Mode=OneWay}" IsChecked="{Binding IsChineseLanguage}" />
+                        </ws:StackPanel>
+                    </Grid>
                 </Border>
             </ws:StackPanel>
             <!--  Appearance  -->
             <ws:StackPanel Spacing="8">
                 <TextBlock Margin="0,8"
                            FontSize="22"
-                           Text="Appearance" />
+                           Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Appearance], Mode=OneWay}" />
 
                 <Border Height="48"
                         Background="{DynamicResource MaskColor}"
                         CornerRadius="12">
                     <ToggleButton Margin="12,0,12,0"
-                                  Content="Show in Taskbar When Mini Mode"
+                                  Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Show in Taskbar When Mini Mode], Mode=OneWay}"
                                   IsChecked="{Binding ShowInTaskbarWhenMiniMode}"
                                   Style="{DynamicResource RoundToggleButtonStyle}" />
                 </Border>
@@ -70,7 +95,7 @@
                         <TextBlock Margin="12,0"
                                    HorizontalAlignment="Left"
                                    VerticalAlignment="Center"
-                                   Text="Theme Mode" />
+                                   Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Theme Mode], Mode=OneWay}" />
                         <ws:StackPanel Margin="0,0,32,0"
                                        HorizontalAlignment="Right"
                                        VerticalAlignment="Center"
@@ -81,9 +106,9 @@
                                     <Setter Property="Padding" Value="8,4" />
                                 </Style>
                             </ws:StackPanel.Resources>
-                            <RadioButton Content="Light" IsChecked="{Binding IsLightMode}" />
-                            <RadioButton Content="Dark" IsChecked="{Binding IsDarkMode}" />
-                            <RadioButton Content="System" IsChecked="{Binding IsSystemMode}" />
+                            <RadioButton Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Light], Mode=OneWay}" IsChecked="{Binding IsLightMode}" />
+                            <RadioButton Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Dark], Mode=OneWay}" IsChecked="{Binding IsDarkMode}" />
+                            <RadioButton Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[System], Mode=OneWay}" IsChecked="{Binding IsSystemMode}" />
                         </ws:StackPanel>
                     </Grid>
                 </Border>
@@ -94,7 +119,7 @@
                         <TextBlock Margin="12,0"
                                    HorizontalAlignment="Left"
                                    VerticalAlignment="Center"
-                                   Text="App Font Family" />
+                                   Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[App Font Family], Mode=OneWay}" />
                         <ws:TextBox Height="24"
                                     MinWidth="220"
                                     Margin="0,0,24,0"
@@ -113,7 +138,7 @@
                         <TextBlock Margin="12,0"
                                    HorizontalAlignment="Left"
                                    VerticalAlignment="Center"
-                                   Text="Background Type" />
+                                   Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Background Type], Mode=OneWay}" />
                         <ws:StackPanel Margin="0,0,32,0"
                                        HorizontalAlignment="Right"
                                        VerticalAlignment="Center"
@@ -124,9 +149,9 @@
                                     <Setter Property="Padding" Value="8,4" />
                                 </Style>
                             </ws:StackPanel.Resources>
-                            <RadioButton Content="None" IsChecked="{Binding IsBackgroundNone}" />
-                            <RadioButton Content="Acrylic" IsChecked="{Binding IsBackgroundAcrylic}" />
-                            <RadioButton Content="Image" IsChecked="{Binding IsBackgroundImage}" />
+                            <RadioButton Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[None], Mode=OneWay}" IsChecked="{Binding IsBackgroundNone}" />
+                            <RadioButton Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Acrylic], Mode=OneWay}" IsChecked="{Binding IsBackgroundAcrylic}" />
+                            <RadioButton Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Image], Mode=OneWay}" IsChecked="{Binding IsBackgroundImage}" />
                         </ws:StackPanel>
                     </Grid>
                 </Border>
@@ -139,7 +164,7 @@
                         <TextBlock Margin="12,0"
                                    HorizontalAlignment="Left"
                                    VerticalAlignment="Center"
-                                   Text="Acrylic Opacity" />
+                                   Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Acrylic Opacity], Mode=OneWay}" />
                         <ws:StackPanel Margin="0,0,24,0"
                                        HorizontalAlignment="Right"
                                        VerticalAlignment="Center"
@@ -166,7 +191,7 @@
                         <TextBlock Margin="12,0"
                                    HorizontalAlignment="Left"
                                    VerticalAlignment="Center"
-                                   Text="Background Image" />
+                                   Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Background Image], Mode=OneWay}" />
                         <ws:StackPanel Margin="0,0,24,0"
                                        HorizontalAlignment="Right"
                                        VerticalAlignment="Center"
@@ -182,7 +207,7 @@
                                         Text="{Binding BackgroundImagePath, Mode=OneWay}" />
                             <ws:Button Padding="8,4"
                                        Command="{Binding BrowseBackgroundImageCommand}"
-                                       Content="Browse"
+                                       Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Browse], Mode=OneWay}"
                                        Style="{StaticResource AccentButtonStyleForWs}" />
                         </ws:StackPanel>
                     </Grid>
@@ -196,7 +221,7 @@
                         <TextBlock Margin="12,0"
                                    HorizontalAlignment="Left"
                                    VerticalAlignment="Center"
-                                   Text="Background Opacity" />
+                                   Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Background Opacity], Mode=OneWay}" />
                         <ws:StackPanel Margin="0,0,24,0"
                                        HorizontalAlignment="Right"
                                        VerticalAlignment="Center"

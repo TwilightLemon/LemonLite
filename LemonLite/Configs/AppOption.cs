@@ -1,4 +1,4 @@
-﻿using LemonLite.Sources;
+using LemonLite.Sources;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -19,6 +19,7 @@ public class AppOption
     public bool StartWithMainWindow { get; set; } = true;
     public bool StartWithDesktopLyric{ get; set; } = true;
     public bool EnableAudioVisualizer { get; set; } = false;
+    public string? Language { get; set; } = "en";
 
     public List<SmtcAppConfig> SmtcApps { get; set; } =
     [

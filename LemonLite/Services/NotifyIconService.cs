@@ -1,4 +1,4 @@
-﻿using LemonLite.Utils;
+using LemonLite.Utils;
 using LemonLite.Configs;
 using System.Windows.Controls;
 using System.Windows;
@@ -26,6 +26,13 @@ public class NotifyIconService(AppSettingService appSettingService, UIResourceSe
             : "Lemon Lite");
     }
 
+    private MenuItem? _openLrcWindowMenuItem;
+    private MenuItem? _desktopMenuItem;
+    private MenuItem? _audioVisualizerMenuItem;
+    private MenuItem? _settingsMenuItem;
+    private MenuItem? _refreshMenuItem;
+    private MenuItem? _exitMenuItem;
+
     public void InitNotifyIcon()
     {
         if (_notifyIcon != null) return;
@@ -47,71 +54,93 @@ public class NotifyIconService(AppSettingService appSettingService, UIResourceSe
         // Create context menu
         var contextMenu = new ContextMenu();
 
-        var openLrcWindow = new MenuItem 
-        { 
-            Header = "Lyric Window", 
-            IsCheckable = true, 
-            IsChecked = opt.Data.StartWithMainWindow 
+        _openLrcWindowMenuItem = new MenuItem 
+        {
+            Header = LocalizationService.Instance["Lyric Window"],
+            IsCheckable = true,
+            IsChecked = opt.Data.StartWithMainWindow
         };
-        openLrcWindow.Click += (s, e) =>
+        _openLrcWindowMenuItem.Click += (s, e) =>
         {
             opt.Data.StartWithMainWindow = !opt.Data.StartWithMainWindow;
-            openLrcWindow.IsChecked = opt.Data.StartWithMainWindow;
+            _openLrcWindowMenuItem.IsChecked = opt.Data.StartWithMainWindow;
             App.WindowManager.SetWindowState<MainWindow>(opt.Data.StartWithMainWindow);
         };
 
-        var desktop = new MenuItem 
-        { 
-            Header = "Desktop Lyrics", 
-            IsCheckable = true, 
-            IsChecked = opt.Data.StartWithDesktopLyric 
+        _desktopMenuItem = new MenuItem 
+        {
+            Header = LocalizationService.Instance["Desktop Lyrics"],
+            IsCheckable = true,
+            IsChecked = opt.Data.StartWithDesktopLyric
         };
-        desktop.Click += (s, e) =>
+        _desktopMenuItem.Click += (s, e) =>
         {
             opt.Data.StartWithDesktopLyric = !opt.Data.StartWithDesktopLyric;
-            desktop.IsChecked = opt.Data.StartWithDesktopLyric;
+            _desktopMenuItem.IsChecked = opt.Data.StartWithDesktopLyric;
             App.WindowManager.SetWindowState<DesktopLyricWindow>(opt.Data.StartWithDesktopLyric);
         };
 
-        var audioVisualizer = new MenuItem
+        _audioVisualizerMenuItem = new MenuItem
         {
-            Header = "Audio Visualizer",
+            Header = LocalizationService.Instance["Audio Visualizer"],
             IsCheckable = true,
             IsChecked = opt.Data.EnableAudioVisualizer
         };
-        audioVisualizer.Click += (s, e) =>
+        _audioVisualizerMenuItem.Click += (s, e) =>
         {
             opt.Data.EnableAudioVisualizer = !opt.Data.EnableAudioVisualizer;
-            audioVisualizer.IsChecked = opt.Data.EnableAudioVisualizer;
+            _audioVisualizerMenuItem.IsChecked = opt.Data.EnableAudioVisualizer;
             App.WindowManager.SetWindowState<AudioVisualizerWindow>(opt.Data.EnableAudioVisualizer);
         };
 
-        var settings =new MenuItem { Header = "Settings" };
-        settings.Click += (s, e) => {
+        _settingsMenuItem = new MenuItem { Header = LocalizationService.Instance["Settings"] };
+        _settingsMenuItem.Click += (s, e) => {
             App.Services.GetRequiredService<SettingsWindow>().Show();
         };
 
-        var refresh = new MenuItem { Header = "Refresh Lyrics" };
-        refresh.Click += async (s, e) =>
+        _refreshMenuItem = new MenuItem { Header = LocalizationService.Instance["Refresh Lyrics"] };
+        _refreshMenuItem.Click += async (s, e) =>
         {
             var smtc = App.Services.GetRequiredService<SmtcService>();
             await smtc.StopAsync(default).ContinueWith(_=>smtc.StartAsync(default));
             App.Current.Dispatcher.Invoke(App.ApplyAppOptions);
         };
 
-        var exit = new MenuItem { Header = "Exit" };
-        exit.Click += (s, e) => App.Current.Shutdown();
+        _exitMenuItem = new MenuItem { Header = LocalizationService.Instance["Exit"] };
+        _exitMenuItem.Click += (s, e) => App.Current.Shutdown();
 
-        contextMenu.Items.Add(openLrcWindow);
-        contextMenu.Items.Add(desktop);
-        contextMenu.Items.Add(audioVisualizer);
-        contextMenu.Items.Add(settings);
-        contextMenu.Items.Add(refresh);
-        contextMenu.Items.Add(exit);
+        contextMenu.Items.Add(_openLrcWindowMenuItem);
+        contextMenu.Items.Add(_desktopMenuItem);
+        contextMenu.Items.Add(_audioVisualizerMenuItem);
+        contextMenu.Items.Add(_settingsMenuItem);
+        contextMenu.Items.Add(_refreshMenuItem);
+        contextMenu.Items.Add(_exitMenuItem);
 
         _notifyIcon.ContextMenu = contextMenu;
         //by default, enable efficiency mode as background app
         _notifyIcon.ForceCreate();
+
+        // Listen for language changes
+        LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
+    }
+
+    private void OnLanguageChanged()
+    {
+        App.Current.Dispatcher.Invoke(() =>
+        {
+            if (_openLrcWindowMenuItem != null)
+                _openLrcWindowMenuItem.Header = LocalizationService.Instance["Lyric Window"];
+            if (_desktopMenuItem != null)
+                _desktopMenuItem.Header = LocalizationService.Instance["Desktop Lyrics"];
+            if (_audioVisualizerMenuItem != null)
+                _audioVisualizerMenuItem.Header = LocalizationService.Instance["Audio Visualizer"];
+            if (_settingsMenuItem != null)
+                _settingsMenuItem.Header = LocalizationService.Instance["Settings"];
+            if (_refreshMenuItem != null)
+                _refreshMenuItem.Header = LocalizationService.Instance["Refresh Lyrics"];
+            if (_exitMenuItem != null)
+                _exitMenuItem.Header = LocalizationService.Instance["Exit"];
+        });
     }
 
     public void Dispose()

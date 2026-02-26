@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
@@ -46,6 +46,8 @@
 	<ItemGroup>
 		<Resource Include="Resources\Segoe Fluent Icons.ttf" />
 		<Resource Include="Shaders\TextGlow.ps" />
+		<Resource Include="Properties\Resources.resx" />
+		<Resource Include="Properties\Resources.zh-CN.resx" />
 	</ItemGroup>
 
 </Project>
