@@ -12,16 +12,17 @@ using System;
 
 namespace LemonLite.Services;
 
-public class NotifyIconService(AppSettingService appSettingService, UIResourceService uiResourceService,SmtcService smtc):IDisposable
+public class NotifyIconService(AppSettingService appSettingService, UIResourceService uiResourceService, SmtcService smtc) : IDisposable
 {
     private TaskbarIcon? _notifyIcon;
     private readonly SettingsMgr<AppOption> opt = appSettingService.GetConfigMgr<AppOption>();
     private readonly UIResourceService _uiResourceService = uiResourceService;
     private Window? _messageWindow;
+    private ContextMenu? _contextMenu;
 
     private void UpdateMediaInfo()
     {
-        App.Current.Dispatcher.BeginInvoke(async() => _notifyIcon!.ToolTipText = await smtc.SmtcListener.GetMediaInfoAsync() is { PlaybackType: Windows.Media.MediaPlaybackType.Music } info
+        App.Current.Dispatcher.BeginInvoke(async () => _notifyIcon!.ToolTipText = await smtc.SmtcListener.GetMediaInfoAsync() is { PlaybackType: Windows.Media.MediaPlaybackType.Music } info
             ? $"Lemon Lite \r\nPlaying: {info.Title} - {info.Artist}"
             : "Lemon Lite");
     }
@@ -36,11 +37,9 @@ public class NotifyIconService(AppSettingService appSettingService, UIResourceSe
     public void InitNotifyIcon()
     {
         if (_notifyIcon != null) return;
-        
-        // Create a permanent message-only window for system theme monitoring
+
         CreateMessageWindow();
-        
-        // Create TaskbarIcon with ContextMenu
+
         _notifyIcon = new TaskbarIcon
         {
             ToolTipText = "Lemon Lite",
@@ -51,10 +50,9 @@ public class NotifyIconService(AppSettingService appSettingService, UIResourceSe
         smtc.SmtcListener.MediaPropertiesChanged += (s, e) => UpdateMediaInfo();
         smtc.SmtcListener.SessionChanged += (s, e) => UpdateMediaInfo();
 
-        // Create context menu
-        var contextMenu = new ContextMenu();
+        _contextMenu = new ContextMenu();
 
-        _openLrcWindowMenuItem = new MenuItem 
+        _openLrcWindowMenuItem = new MenuItem
         {
             Header = LocalizationService.Instance["Lyric Window"],
             IsCheckable = true,
@@ -67,7 +65,7 @@ public class NotifyIconService(AppSettingService appSettingService, UIResourceSe
             App.WindowManager.SetWindowState<MainWindow>(opt.Data.StartWithMainWindow);
         };
 
-        _desktopMenuItem = new MenuItem 
+        _desktopMenuItem = new MenuItem
         {
             Header = LocalizationService.Instance["Desktop Lyrics"],
             IsCheckable = true,
@@ -94,7 +92,8 @@ public class NotifyIconService(AppSettingService appSettingService, UIResourceSe
         };
 
         _settingsMenuItem = new MenuItem { Header = LocalizationService.Instance["Settings"] };
-        _settingsMenuItem.Click += (s, e) => {
+        _settingsMenuItem.Click += (s, e) =>
+        {
             App.Services.GetRequiredService<SettingsWindow>().Show();
         };
 
@@ -102,26 +101,61 @@ public class NotifyIconService(AppSettingService appSettingService, UIResourceSe
         _refreshMenuItem.Click += async (s, e) =>
         {
             var smtc = App.Services.GetRequiredService<SmtcService>();
-            await smtc.StopAsync(default).ContinueWith(_=>smtc.StartAsync(default));
+            await smtc.StopAsync(default).ContinueWith(_ => smtc.StartAsync(default));
             App.Current.Dispatcher.Invoke(App.ApplyAppOptions);
         };
 
         _exitMenuItem = new MenuItem { Header = LocalizationService.Instance["Exit"] };
         _exitMenuItem.Click += (s, e) => App.Current.Shutdown();
 
-        contextMenu.Items.Add(_openLrcWindowMenuItem);
-        contextMenu.Items.Add(_desktopMenuItem);
-        contextMenu.Items.Add(_audioVisualizerMenuItem);
-        contextMenu.Items.Add(_settingsMenuItem);
-        contextMenu.Items.Add(_refreshMenuItem);
-        contextMenu.Items.Add(_exitMenuItem);
+        _contextMenu.Items.Add(_openLrcWindowMenuItem);
+        _contextMenu.Items.Add(_desktopMenuItem);
+        _contextMenu.Items.Add(_audioVisualizerMenuItem);
+        _contextMenu.Items.Add(_settingsMenuItem);
+        _contextMenu.Items.Add(_refreshMenuItem);
+        _contextMenu.Items.Add(_exitMenuItem);
 
-        _notifyIcon.ContextMenu = contextMenu;
-        //by default, enable efficiency mode as background app
+        _notifyIcon.ContextMenu = _contextMenu;
         _notifyIcon.ForceCreate();
 
-        // Listen for language changes
+        // 初始应用当前主题颜色
+        ApplyThemeColors();
+
+        // 订阅主题变更
+        _uiResourceService.OnColorModeChanged += OnColorModeChanged;
+
         LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
+    }
+
+    /// <summary>
+    /// 从 App 全局资源里取颜色，手动刷新 ContextMenu 和所有 MenuItem 的颜色。
+    /// ContextMenu 不在可视树中，DynamicResource 不生效，必须用代码设置。
+    /// </summary>
+    private void ApplyThemeColors()
+    {
+        if (_contextMenu == null) return;
+
+        var bg = App.Current.Resources["BackgroundColor"] as Brush ?? new SolidColorBrush(Colors.White);
+        var fg = App.Current.Resources["ForeColor"] as Brush ?? new SolidColorBrush(Colors.Black);
+        var hover = App.Current.Resources["MaskColor"] as Brush ?? new SolidColorBrush(Color.FromArgb(30, 128, 128, 128));
+
+        _contextMenu.Background = bg;
+        _contextMenu.Foreground = fg;
+        _contextMenu.BorderThickness = new Thickness(0);
+
+        foreach (var item in _contextMenu.Items)
+        {
+            if (item is MenuItem mi)
+            {
+                mi.Background = bg;
+                mi.Foreground = fg;
+            }
+        }
+    }
+
+    private void OnColorModeChanged()
+    {
+        App.Current.Dispatcher.Invoke(ApplyThemeColors);
     }
 
     private void OnLanguageChanged()
@@ -145,13 +179,14 @@ public class NotifyIconService(AppSettingService appSettingService, UIResourceSe
 
     public void Dispose()
     {
+        _uiResourceService.OnColorModeChanged -= OnColorModeChanged;
+        LocalizationService.Instance.LanguageChanged -= OnLanguageChanged;
         _notifyIcon?.Dispose();
         _messageWindow?.Close();
     }
 
     private void CreateMessageWindow()
     {
-        // Create a minimal, invisible window for receiving Windows messages
         _messageWindow = new Window
         {
             WindowStyle = WindowStyle.None,
@@ -161,15 +196,14 @@ public class NotifyIconService(AppSettingService appSettingService, UIResourceSe
             Background = null,
             Width = 0,
             Height = 0,
-            Left = -10000, // Position off-screen
+            Left = -10000,
             Top = -10000,
             ShowActivated = false
         };
 
         _messageWindow.Show();
-        _messageWindow.Hide(); // Immediately hide after showing to get HWND
+        _messageWindow.Hide();
 
-        // Register for system theme changes
         SystemThemeAPI.RegesterOnThemeChanged(_messageWindow, () =>
         {
             App.Current.Dispatcher.Invoke(() =>

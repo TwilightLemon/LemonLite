@@ -1,4 +1,4 @@
-﻿using LemonLite.Configs;
+using LemonLite.Configs;
 using LemonLite.Services;
 using LemonLite.Utils;
 using LemonLite.ViewModels;
@@ -26,8 +26,6 @@ public partial class App : Application
         Settings.LoadPath();
 
         // Handle known WPF VirtualizingStackPanel.OnAnchorOperation bug in all builds.
-        // This deferred dispatcher callback can crash when accessing containers
-        // that have been disconnected from the visual tree during virtualization.
         Current.DispatcherUnhandledException += (_, e) =>
         {
             if (!e.Handled &&
@@ -41,17 +39,25 @@ public partial class App : Application
         AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
         Current.DispatcherUnhandledException += Current_DispatcherUnhandledException;
         TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
-#endif 
-        
+#endif
+
         Host = new HostBuilder().ConfigureServices(BuildHost).Build();
         Startup += App_Startup;
         Exit += App_Exit;
 
-        //override default style for Pages
-        FrameworkElement.StyleProperty.OverrideMetadata(typeof(System.Windows.Controls.Page), new FrameworkPropertyMetadata
+        // Override default style for Pages
+        // 修复：FindResource 可能返回 UnsetValue，必须判空后再设置
+        try
         {
-            DefaultValue = App.Current.FindResource(typeof(System.Windows.Controls.Page))
-        });
+            var pageStyle = App.Current.TryFindResource(typeof(System.Windows.Controls.Page));
+            if (pageStyle != null && pageStyle != DependencyProperty.UnsetValue)
+            {
+                FrameworkElement.StyleProperty.OverrideMetadata(
+                    typeof(System.Windows.Controls.Page),
+                    new FrameworkPropertyMetadata { DefaultValue = pageStyle });
+            }
+        }
+        catch { /* 资源未找到时静默跳过，不影响启动 */ }
     }
 
     public static new App Current => (App)Application.Current;
@@ -69,6 +75,7 @@ public partial class App : Application
             WindowManager.SetWindowState<AudioVisualizerWindow>(opt.Data.EnableAudioVisualizer);
         }
     }
+
     private async void App_Startup(object sender, StartupEventArgs e)
     {
         Host.Start();
@@ -76,10 +83,9 @@ public partial class App : Application
 
         ApplyAppOptions();
 
-        //这行代码有点烫嘴
         SmtcMetadataProcessorPipeline.Register(
             new NameAliaMetadataProcessor(Services.GetRequiredService<AppSettingService>()
-                                                                                .GetConfigMgr<SmtcMetadataAliasConfig>()));
+                                                  .GetConfigMgr<SmtcMetadataAliasConfig>()));
 
         var smtc = Services.GetRequiredService<SmtcService>();
         smtc.SmtcListener.SessionChanged += delegate

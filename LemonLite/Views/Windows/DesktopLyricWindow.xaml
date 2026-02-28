@@ -89,6 +89,33 @@
                                 Content="{Binding LyricControl}" />
             </ScrollViewer>
         </Grid>
+
+        <!--  Island 模式：中间拖拽层（留出左右 14px 给 resize 条）  -->
+        <Border x:Name="IslandDragOverlay"
+                Background="Transparent"
+                Cursor="SizeAll"
+                Margin="14 0"
+                Visibility="Collapsed"
+                MouseLeftButtonDown="IslandDragOverlay_MouseLeftButtonDown" />
+
+        <!--  Island 模式：左边缘调宽条  -->
+        <Border x:Name="IslandResizeLeft"
+                Width="14"
+                HorizontalAlignment="Left"
+                Background="Transparent"
+                Cursor="SizeWE"
+                Visibility="Collapsed"
+                MouseLeftButtonDown="IslandResizeLeft_MouseLeftButtonDown" />
+
+        <!--  Island 模式：右边缘调宽条  -->
+        <Border x:Name="IslandResizeRight"
+                Width="14"
+                HorizontalAlignment="Right"
+                Background="Transparent"
+                Cursor="SizeWE"
+                Visibility="Collapsed"
+                MouseLeftButtonDown="IslandResizeRight_MouseLeftButtonDown" />
+
         <!--  功能区 鼠标进入后显示  -->
         <Grid x:Name="FuncPanel"
               d:Visibility="Visible"

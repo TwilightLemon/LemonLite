@@ -69,6 +69,18 @@ public class LyricService
     /// 当媒体元数据从搜索结果更新时触发
     /// </summary>
     public event Action<MediaMetaDataUpdatedEventArgs>? MediaMetaDataUpdated;
+
+    /// <summary>
+    /// 当前行即将结束时触发（提前 500ms）
+    /// 用于 Island 模式收起动画，严格对齐时间轴
+    /// </summary>
+    public event Action<LrcLine>? CurrentLineEnding;
+
+    /// <summary>
+    /// 下一行到来时触发（与 CurrentLineChanged 同步）
+    /// 用于 Island 模式展开动画，严格对齐时间轴
+    /// </summary>
+    public event Action<LrcLine>? NextLineComing;
     #endregion
 
     #region State
@@ -82,6 +94,10 @@ public class LyricService
     private LrcLine? _currentLine;
     private ILineInfo? _notifiedLine;
     private CancellationTokenSource? _loadingCts;
+
+    // Island 专用，不影响原有逻辑
+    private ILineInfo? _endingNotifiedLine;
+    private const int LineEndingAdvanceMs = 500;
 
     /// <summary>
     /// 当前歌词数据
@@ -103,7 +119,7 @@ public class LyricService
     /// </summary>
     public bool IsPureLrc => _isPureLrc;
 
-    public LrcLine? CurrentLine=>_currentLine;
+    public LrcLine? CurrentLine => _currentLine;
 
     /// <summary>
     /// 当前音乐元数据
@@ -117,7 +133,6 @@ public class LyricService
         await LoadLyricFromCurrentMediaAsync();
     }
 
-    
     /// <summary>
     /// 从当前SMTC媒体加载歌词
     /// </summary>
@@ -140,7 +155,7 @@ public class LyricService
         _loadingCts?.Dispose();
         _loadingCts = new CancellationTokenSource();
         var cancellationToken = _loadingCts.Token;
-        int durationMs=(int)_smtcService.Duration * 1000;
+        int durationMs = (int)_smtcService.Duration * 1000;
         try
         {
             var sources = _appOption.Data.GetSearchSources(mediaId);
@@ -168,7 +183,7 @@ public class LyricService
                 _smtcSource = _smtcSource?.EndsWith(".exe") is true ? mediaId[..^4] : mediaId;
 
                 var source = musicMetaData.Searcher?.Name?.ToLower();
-                await LoadLyricByIdAsync(musicMetaData.Id,source!, cancellationToken);
+                await LoadLyricByIdAsync(musicMetaData.Id, source!, cancellationToken);
             }
         }
         catch (OperationCanceledException) { }
@@ -177,7 +192,7 @@ public class LyricService
     /// <summary>
     /// 通过ID加载歌词
     /// </summary>
-    private async Task LoadLyricByIdAsync(string id,string source, CancellationToken cancellationToken)
+    private async Task LoadLyricByIdAsync(string id, string source, CancellationToken cancellationToken)
     {
         try
         {
@@ -222,6 +237,7 @@ public class LyricService
         _isPureLrc = false;
         _currentLine = null;
         _notifiedLine = null;
+        _endingNotifiedLine = null; // Island 专用状态同步重置
     }
     #endregion
 
@@ -231,14 +247,15 @@ public class LyricService
         int ms = (int)(seconds * 1000);
         TimeUpdated?.Invoke(ms);
         UpdateCurrentLine(ms);
+        CheckCurrentLineEnding(ms); // Island 专用，独立调用不干扰原逻辑
     }
 
     /// <summary>
-    /// 更新当前歌词行
+    /// 更新当前歌词行（原版逻辑完全不变）
     /// </summary>
     private void UpdateCurrentLine(int ms)
     {
-        if (_currentLyric?.Lines == null||ms==0) return;
+        if (_currentLyric?.Lines == null || ms == 0) return;
 
         ILineInfo? target = null;
         ILineInfo? lastItem = null;
@@ -302,6 +319,47 @@ public class LyricService
             }
             _currentLine = new LrcLine(target, trans, romaji);
             CurrentLineChanged?.Invoke(_currentLine);
+            NextLineComing?.Invoke(_currentLine); // 与 CurrentLineChanged 同步，用于 Island 展开
+        }
+    }
+
+    /// <summary>
+    /// Island 专用：提前 500ms 触发 CurrentLineEnding，完全独立不影响原有逻辑
+    /// </summary>
+    private void CheckCurrentLineEnding(int ms)
+    {
+        if (_currentLine == null || CurrentLineEnding == null) return;
+        if (_currentLine.Lrc == _endingNotifiedLine) return; // 同一行只触发一次
+
+        var currentLineInfo = _currentLine.Lrc;
+
+        // 计算结束时间：优先用 EndTime，否则找下一行 StartTime
+        int endTime;
+        if (currentLineInfo.EndTime.HasValue)
+        {
+            endTime = currentLineInfo.EndTime.Value;
+        }
+        else if (_currentLyric?.Lines != null)
+        {
+            bool found = false;
+            endTime = int.MaxValue;
+            foreach (var line in _currentLyric.Lines)
+            {
+                if (found && !string.IsNullOrEmpty(line.Text))
+                {
+                    endTime = line.StartTime ?? int.MaxValue;
+                    break;
+                }
+                if (line == currentLineInfo) found = true;
+            }
+        }
+        else return;
+
+        var remaining = endTime - ms;
+        if (remaining <= LineEndingAdvanceMs && remaining > 0)
+        {
+            _endingNotifiedLine = currentLineInfo;
+            CurrentLineEnding.Invoke(_currentLine);
         }
     }
     #endregion
