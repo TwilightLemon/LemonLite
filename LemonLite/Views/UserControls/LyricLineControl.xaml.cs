@@ -1,4 +1,4 @@
-﻿using Lyricify.Lyrics.Models;
+using Lyricify.Lyrics.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -62,7 +62,11 @@ public partial class LyricLineControl : UserControl
         romajiSyllableLrcs.Clear();
         mainSyllableAnimated.Clear();
         TranslationLrc.Text = string.Empty;
+        // 切歌时重置显隐状态，防止旧 Visibility 在 Island SizeToContent=Height 下残留行高
+        TranslationLrc.Visibility = Visibility.Collapsed;
+        RomajiLrcContainer.Visibility = Visibility.Collapsed;
     }
+
     public void LoadPlainLrc(string lrc, double fontSize = 22)
     {
         MainLrcContainer.Children.Clear();
