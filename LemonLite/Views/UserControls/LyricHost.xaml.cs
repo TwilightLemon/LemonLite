@@ -4,6 +4,7 @@ using Lyricify.Lyrics.Models;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -416,16 +417,15 @@ public partial class LyricHost : UserControl
 
             if (scrollDelta < 1) return;
 
-            // SnapshotAndReplace 会自动捕获当前动画值作为起点，
-            // 新动画无缝衔接，无需手动停止旧动画
+            Debug.WriteLine($"Animate lyricHost scrolling: {targetOffset}");
+
             var animation = new DoubleAnimation
             {
-                From = currentOffset,
                 To = targetOffset,
                 Duration = TimeSpan.FromMilliseconds(500),
                 EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
             };
-            this.BeginAnimation(ScrollAnimationOffsetProperty, animation, HandoffBehavior.SnapshotAndReplace);
+            this.BeginAnimation(ScrollAnimationOffsetProperty, animation);
         }
         catch { }
     }

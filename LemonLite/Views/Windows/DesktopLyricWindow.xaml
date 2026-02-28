@@ -4,30 +4,33 @@
         xmlns:behavior="clr-namespace:LemonLite.Behaviors"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
-        xmlns:local="clr-namespace:LemonLite.Views.Windows"
         xmlns:loc="clr-namespace:LemonLite.Services"
+        xmlns:local="clr-namespace:LemonLite.Views.Windows"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ut="clr-namespace:LemonLite.Utils"
         xmlns:vm="clr-namespace:LemonLite.ViewModels"
         xmlns:ws="https://schemas.elecho.dev/wpfsuite"
-        xmlns:ut="clr-namespace:LemonLite.Utils"
         x:Name="window"
         Title="DesktopLyricWindow"
         Width="720"
         Height="145"
+        MinHeight="36"
         d:DataContext="{d:DesignInstance Type=vm:DesktopLyricWindowViewModel}"
+        AllowsTransparency="True"
         Background="{x:Null}"
         FontFamily="{StaticResource DefaultFontFamily}"
         Foreground="{DynamicResource ForeColor}"
         ResizeMode="NoResize"
         ShowInTaskbar="False"
-        MinHeight="36"
         Topmost="True"
         WindowStyle="None"
-        AllowsTransparency="True"
         mc:Ignorable="d">
     <i:Interaction.Behaviors>
         <behavior:WindowDragMoveBehavior />
     </i:Interaction.Behaviors>
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="0" GlassFrameThickness="-1" />
+    </WindowChrome.WindowChrome>
     <Window.Resources>
         <ws:BindingProxy x:Key="proxy" Data="{Binding}" />
     </Window.Resources>
@@ -41,31 +44,24 @@
                       Icon="{x:Null}" />
         </ContextMenu>
     </Window.ContextMenu>
-    <ws:BoxPanel x:Name="windowRoot">
+    <ws:BoxPanel x:Name="windowRoot" Background="Transparent">
         <ut:TopCutBorder x:Name="IsLandBaseBackground"
-                         Background="Black"
-                         CornerRadius="12"
-                         TopCutRadius="12"
-                         Visibility="Collapsed"/>
+                         Background="{DynamicResource IslandBackgroundColor}"
+                         CornerRadius="24"
+                         TopCutRadius="8"
+                         Visibility="Collapsed" />
         <ut:TopCutBorder x:Name="AnimatedBackgroundBd"
-                Visibility="{Binding BackgroundVisibility}"
-                CornerRadius="12">
+                         CornerRadius="12"
+                         Visibility="{Binding BackgroundVisibility}">
             <ut:TopCutBorder.Background>
-                <ImageBrush ImageSource="{Binding BackgroundImageSource, Mode=OneWay}"
-                            Stretch="UniformToFill">
+                <ImageBrush ImageSource="{Binding BackgroundImageSource, Mode=OneWay}" Stretch="UniformToFill">
                     <ImageBrush.RelativeTransform>
                         <TransformGroup>
                             <TranslateTransform Y="0.5" />
-                            <ScaleTransform CenterX="0.5"
-                                            CenterY="1"
-                                            ScaleX="2.4"
-                                            ScaleY="2.4" />
-                            <RotateTransform Angle="0"
-                                             CenterX="0.5"
-                                             CenterY="1">
+                            <ScaleTransform CenterX="0.5" CenterY="1" ScaleX="2.4" ScaleY="2.4" />
+                            <RotateTransform Angle="0" CenterX="0.5" CenterY="1">
                                 <i:Interaction.Behaviors>
-                                    <behavior:RotateWithPlayingStateBehavior IsEnabled="{Binding IsBackgroundValid}"
-                                                                             IsPlaying="{Binding IsPlaying}" />
+                                    <behavior:RotateWithPlayingStateBehavior IsEnabled="{Binding IsBackgroundValid}" IsPlaying="{Binding IsPlaying}" />
                                 </i:Interaction.Behaviors>
                             </RotateTransform>
                         </TransformGroup>
@@ -73,13 +69,12 @@
                 </ImageBrush>
             </ut:TopCutBorder.Background>
             <i:Interaction.Behaviors>
-                <behavior:FadeBorderBehavior Source="{Binding BackgroundImageSource}"
-                                             Duration="00:00:1.5" />
+                <behavior:FadeBorderBehavior Source="{Binding BackgroundImageSource}" Duration="00:00:1.5" />
             </i:Interaction.Behaviors>
         </ut:TopCutBorder>
-        <Grid x:Name="LrcPanel">
+        <Grid x:Name="LrcPanel" IsHitTestVisible="False">
             <ScrollViewer x:Name="LrcScrollViewer"
-                          Margin="20 0"
+                          Margin="24,8"
                           HorizontalScrollBarVisibility="Hidden"
                           PanningMode="HorizontalOnly"
                           VerticalScrollBarVisibility="Disabled">
@@ -89,32 +84,6 @@
                                 Content="{Binding LyricControl}" />
             </ScrollViewer>
         </Grid>
-
-        <!--  Island 模式：中间拖拽层（留出左右 14px 给 resize 条）  -->
-        <Border x:Name="IslandDragOverlay"
-                Background="Transparent"
-                Cursor="SizeAll"
-                Margin="14 0"
-                Visibility="Collapsed"
-                MouseLeftButtonDown="IslandDragOverlay_MouseLeftButtonDown" />
-
-        <!--  Island 模式：左边缘调宽条  -->
-        <Border x:Name="IslandResizeLeft"
-                Width="14"
-                HorizontalAlignment="Left"
-                Background="Transparent"
-                Cursor="SizeWE"
-                Visibility="Collapsed"
-                MouseLeftButtonDown="IslandResizeLeft_MouseLeftButtonDown" />
-
-        <!--  Island 模式：右边缘调宽条  -->
-        <Border x:Name="IslandResizeRight"
-                Width="14"
-                HorizontalAlignment="Right"
-                Background="Transparent"
-                Cursor="SizeWE"
-                Visibility="Collapsed"
-                MouseLeftButtonDown="IslandResizeRight_MouseLeftButtonDown" />
 
         <!--  功能区 鼠标进入后显示  -->
         <Grid x:Name="FuncPanel"

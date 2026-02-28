@@ -10,12 +10,12 @@
              FontWeight="Bold"
              mc:Ignorable="d">
     <local:LyricItemsControl x:Name="LrcItemsControl"
-                              FocusVisualStyle="{x:Null}"
-                              ScrollViewer.CanContentScroll="True"
-                              VirtualizingPanel.CacheLength="2,3"
-                              VirtualizingPanel.CacheLengthUnit="Item"
-                              VirtualizingPanel.IsVirtualizing="True"
-                              VirtualizingPanel.ScrollUnit="Pixel">
+                             FocusVisualStyle="{x:Null}"
+                             ScrollViewer.CanContentScroll="True"
+                             VirtualizingPanel.CacheLength="4"
+                             VirtualizingPanel.CacheLengthUnit="Item"
+                             VirtualizingPanel.IsVirtualizing="True"
+                             VirtualizingPanel.ScrollUnit="Pixel">
         <ItemsControl.Template>
             <ControlTemplate TargetType="ItemsControl">
                 <base:ScrollViewer x:Name="PART_ScrollViewer"

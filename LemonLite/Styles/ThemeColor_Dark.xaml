@@ -18,6 +18,7 @@
     <SolidColorBrush x:Key="ContentBgColor" Color="#6F000000" />
     <SolidColorBrush x:Key="BorderColor" Color="#3C000000" />
     <!--  纯色背景  -->
+    <SolidColorBrush x:Key="IslandBackgroundColor" Color="#000" />
     <SolidColorBrush x:Key="BackgroundColor" Color="#FF1C1C1C" />
     <SolidColorBrush x:Key="ButtonPureColor" Color="#454545" />
     <!--  LyricPage  -->

@@ -20,32 +20,23 @@ namespace LemonLite.Views.Windows
 {
     public partial class DesktopLyricWindow : Window
     {
-        // ── Win32 平滑 resize ──────────────────────────
-        [DllImport("user32.dll")] static extern bool ReleaseCapture();
-        [DllImport("user32.dll")] static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam);
-        const int WM_SYSCOMMAND = 0x112;
-        const int SC_SIZE_LEFT  = 0xF001; // SC_SIZE + WMSZ_LEFT(1)
-        const int SC_SIZE_RIGHT = 0xF002; // SC_SIZE + WMSZ_RIGHT(2)
         const double IslandMinWidth = 60d;
 
-        // ── 字段 ──────────────────────────────────────
         private readonly DropShadowEffect shadowEffect = new() { BlurRadius = 5, Direction = 0, ShadowDepth = 0 };
         private readonly DesktopLyricWindowViewModel vm;
         private readonly SettingsMgr<DesktopLyricOption> _settingsMgr;
-        private readonly SettingsMgr<LyricOption> _lyricSettingsMgr;
 
         private bool _isIslandMode = false;
-        private double _restoredWidth  = 720d;
+        private bool _isMouseIn = false;
+        private double _restoredWidth = 720d;
         private double _restoredHeight = 145d;
-        private double _restoredLeft   = -1d;
 
         private bool _hasLyricSource = false;
 
-        private const double IslandEmptyWidth  = 170d;
+        private const double IslandEmptyWidth = 170d;
         private const double IslandEmptyHeight = 32d;
-        private const double IslandExitThreshold = 80d;
+        private const double IslandExitThreshold = 40d;
 
-        private CancellationTokenSource? _sizeCts = null;
         private WindowResizeAdorner? _resizeAdorner;
 
         public DesktopLyricWindow(DesktopLyricWindowViewModel vm, AppSettingService appSettingsService)
@@ -54,75 +45,44 @@ namespace LemonLite.Views.Windows
             DataContext = vm;
             this.vm = vm;
 
-            _settingsMgr      = appSettingsService.GetConfigMgr<DesktopLyricOption>();
-            _lyricSettingsMgr = appSettingsService.GetConfigMgr<LyricOption>();
+            _settingsMgr = appSettingsService.GetConfigMgr<DesktopLyricOption>();
+            _settingsMgr.OnDataChanged += SettingsMgr_OnDataChanged;
 
-            vm.UpdateAnimation = ShowLyricAnimation;
-            vm.ScrollLrc       = ScrollLrc;
+            vm.HideLineAnimation = HideLyricAnimation;
+            vm.ShowLineAnimation = ShowLyricAnimation;
+
+            vm.ScrollLrc = ScrollLrc;
             vm.SetWindow(this);
-            vm.PropertyChanged += Vm_PropertyChanged;
 
             var sc = SystemParameters.WorkArea;
-            Top  = sc.Bottom - Height;
+            Top = sc.Bottom - Height;
             Left = (sc.Right - Width) / 2;
 
-            Loaded           += DesktopLyricWindow_Loaded;
-            MouseEnter       += DesktopLyricWindow_MouseEnter;
-            MouseLeave       += DesktopLyricWindow_MouseLeave;
+            Loaded += DesktopLyricWindow_Loaded;
+            MouseEnter += DesktopLyricWindow_MouseEnter;
+            MouseLeave += DesktopLyricWindow_MouseLeave;
             MouseDoubleClick += DesktopLyricWindow_MouseDoubleClick;
-            Closing          += DesktopLyricWindow_Closing;
-            LocationChanged  += DesktopLyricWindow_LocationChanged;
-            SizeChanged      += DesktopLyricWindow_SizeChanged;
+            Closing += DesktopLyricWindow_Closing;
+            LocationChanged += DesktopLyricWindow_LocationChanged;
+            SizeChanged += DesktopLyricWindow_SizeChanged;
         }
 
-        // ───────────────────────────────────────────
-        // Island resize：Win32 syscommand（平滑无抖动）
-        // ───────────────────────────────────────────
-
-        private void IslandResizeLeft_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void SettingsMgr_OnDataChanged()
         {
-            if (!_isIslandMode || !_hasLyricSource) return;
-            e.Handled = true;
-            ReleaseCapture();
-            SendMessage(new WindowInteropHelper(this).Handle, WM_SYSCOMMAND,
-                new IntPtr(SC_SIZE_LEFT), IntPtr.Zero);
+            Dispatcher.BeginInvoke(() =>
+            {
+                ApplyBackground();
+                if (ShouldAddShadowEffect)
+                    LrcPanel.Effect = shadowEffect;
+            });
         }
 
-        private void IslandResizeRight_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            if (!_isIslandMode || !_hasLyricSource) return;
-            e.Handled = true;
-            ReleaseCapture();
-            SendMessage(new WindowInteropHelper(this).Handle, WM_SYSCOMMAND,
-                new IntPtr(SC_SIZE_RIGHT), IntPtr.Zero);
-        }
-
-        // 拖拽完成后把新宽度保存到配置，并强制居中
         private void DesktopLyricWindow_SizeChanged(object? sender, SizeChangedEventArgs e)
         {
             if (!_isIslandMode || !_hasLyricSource) return;
-            // 强制最小宽度
             if (Width < IslandMinWidth)
                 Width = IslandMinWidth;
-            // 保存宽度
-            _settingsMgr.Data.IslandWidth = Width;
-            // 保持水平居中
-            Left = (SystemParameters.PrimaryScreenWidth - Width) / 2;
         }
-
-        // ───────────────────────────────────────────
-        // Island 中间区域：拖动整个窗口
-        // ───────────────────────────────────────────
-
-        private void IslandDragOverlay_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ButtonState == MouseButtonState.Pressed)
-                DragMove();
-        }
-
-        // ───────────────────────────────────────────
-        // Island 进入 / 退出
-        // ───────────────────────────────────────────
 
         private void DesktopLyricWindow_LocationChanged(object? sender, EventArgs e)
         {
@@ -130,6 +90,38 @@ namespace LemonLite.Views.Windows
                 EnterIslandMode();
             else if (_isIslandMode && Top > IslandExitThreshold)
                 ExitIslandMode();
+
+            if (_isIslandMode) Top = 0;
+        }
+
+        private void ApplyBackground()
+        {
+            bool useAnimatedBackground = _settingsMgr.Data.EnableBackground;
+            if (_isIslandMode)
+            {
+                //island模式下，如果启用背景则AnimatedBackgroundBd可见；如果不启用背景则AnimatedBackgroundBd不可见，IsLandBaseBackground可见，提供纯色背景和圆角
+                if (useAnimatedBackground)
+                {
+                    AnimatedBackgroundBd.Visibility = Visibility.Visible;
+                    IsLandBaseBackground.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    AnimatedBackgroundBd.Visibility = Visibility.Collapsed;
+                    IsLandBaseBackground.Visibility = Visibility.Visible;
+                }
+            }
+            else
+            {
+                //桌面歌词模式下，直接选择是否启用AnimatedBackgroundBd
+                AnimatedBackgroundBd.Visibility = useAnimatedBackground ? Visibility.Visible : Visibility.Collapsed;
+                IsLandBaseBackground.Visibility= Visibility.Collapsed;
+            }
+        }
+
+        private bool ShouldAddShadowEffect
+        {
+            get=> !_isIslandMode && !_settingsMgr.Data.EnableBackground;
         }
 
         private void EnterIslandMode()
@@ -137,38 +129,27 @@ namespace LemonLite.Views.Windows
             if (_isIslandMode) return;
             _isIslandMode = true;
 
-            _restoredWidth  = Width;
+            _restoredWidth = Width;
             _restoredHeight = Height;
-            _restoredLeft   = Left;
 
-            SyncTranslationSettings();
-            CancelSizeAnim();
+            AnimatedBackgroundBd.TopCutRadius = 8d;
+            AnimatedBackgroundBd.CornerRadius = new CornerRadius(24);
 
-            this.BeginAnimation(WidthProperty,  null);
-            this.BeginAnimation(HeightProperty, null);
-            this.Background = Brushes.Transparent;
+            ApplyBackground();
+            LrcPanel.Effect = null;
 
-            AnimatedBackgroundBd.TopCutRadius = 12d;
-            IsLandBaseBackground.TopCutRadius = 12d;
-            IsLandBaseBackground.Visibility   = Visibility.Visible;
-            IsLandBaseBackground.Width        = double.NaN;
-            IsLandBaseBackground.Height       = double.NaN;
-            IsLandBaseBackground.HorizontalAlignment = HorizontalAlignment.Stretch;
-            IsLandBaseBackground.VerticalAlignment   = VerticalAlignment.Stretch;
-
-            windowRoot.HorizontalAlignment = HorizontalAlignment.Stretch;
-            windowRoot.BeginAnimation(WidthProperty,  null);
+            //windowRoot 自动大小，最大宽度由窗口限制
+            windowRoot.HorizontalAlignment = HorizontalAlignment.Center;
+            windowRoot.BeginAnimation(WidthProperty, null);
             windowRoot.BeginAnimation(HeightProperty, null);
-            windowRoot.Width  = double.NaN;
+            windowRoot.Width = double.NaN;
             windowRoot.Height = double.NaN;
 
-            // Island 模式下 Adorner 完全禁用，由专用 resize 条处理
-            if (_resizeAdorner != null) _resizeAdorner.IsEnabled = false;
-
-            IslandDragOverlay.Visibility  = Visibility.Visible;
-            // resize 条只在有歌词时显示
-            IslandResizeLeft.Visibility  = Visibility.Collapsed;
-            IslandResizeRight.Visibility = Visibility.Collapsed;
+            //island模式下只允许调整宽度和拖动窗口
+            if (_resizeAdorner != null)
+            {
+                _resizeAdorner.IslandMode = true;
+            }
 
             ApplyIslandSize();
         }
@@ -178,34 +159,29 @@ namespace LemonLite.Views.Windows
             if (!_isIslandMode) return;
             _isIslandMode = false;
 
-            SyncTranslationSettings();
-            CancelSizeAnim();
-
-            this.Background    = null;
             this.SizeToContent = SizeToContent.Manual;
 
-            AnimatedBackgroundBd.TopCutRadius  = 0d;
-            IsLandBaseBackground.Visibility    = Visibility.Collapsed;
-            IslandDragOverlay.Visibility        = Visibility.Collapsed;
-            IslandResizeLeft.Visibility         = Visibility.Collapsed;
-            IslandResizeRight.Visibility        = Visibility.Collapsed;
-            LrcHost.Visibility                  = Visibility.Visible;
+            AnimatedBackgroundBd.TopCutRadius = 0d;
+            AnimatedBackgroundBd.CornerRadius = new CornerRadius(12);
+            ApplyBackground();
+
+            LrcHost.Visibility = Visibility.Visible;
+            if (ShouldAddShadowEffect)
+                LrcPanel.Effect = shadowEffect;
 
             windowRoot.HorizontalAlignment = HorizontalAlignment.Stretch;
-            windowRoot.BeginAnimation(WidthProperty,  null);
+            windowRoot.BeginAnimation(WidthProperty, null);
             windowRoot.BeginAnimation(HeightProperty, null);
-            windowRoot.Width  = double.NaN;
+            windowRoot.Width = double.NaN;
             windowRoot.Height = double.NaN;
 
-            this.BeginAnimation(WidthProperty,  null);
-            this.BeginAnimation(HeightProperty, null);
-            this.Width  = _restoredWidth  > 0 ? _restoredWidth  : 720;
+            this.Width = _restoredWidth > 0 ? _restoredWidth : 720;
             this.Height = _restoredHeight > 0 ? _restoredHeight : 145;
-            this.Left   = _restoredLeft >= 0
-                ? _restoredLeft
-                : (SystemParameters.WorkArea.Right - this.Width) / 2;
 
-            if (_resizeAdorner != null) _resizeAdorner.IsEnabled = true;
+            if (_resizeAdorner != null)
+            {
+                _resizeAdorner.IslandMode = false;
+            }
         }
 
         // 根据有无歌词切换 Island 的两种形态
@@ -215,172 +191,155 @@ namespace LemonLite.Views.Windows
 
             if (!_hasLyricSource)
             {
-                // 无歌词：固定小胶囊，resize 条隐藏
+                // 无歌词：固定小胶囊
                 this.SizeToContent = SizeToContent.Manual;
                 LrcHost.Visibility = Visibility.Collapsed;
-                IslandResizeLeft.Visibility  = Visibility.Collapsed;
-                IslandResizeRight.Visibility = Visibility.Collapsed;
-                this.Width  = IslandEmptyWidth;
-                this.Height = IslandEmptyHeight;
-                this.Top    = 0;
-                this.Left   = (SystemParameters.PrimaryScreenWidth - IslandEmptyWidth) / 2;
+                windowRoot.Width = IslandEmptyWidth;
+                windowRoot.Height = IslandEmptyHeight;
+                windowRoot.VerticalAlignment = VerticalAlignment.Top;
             }
             else
             {
-                // 有歌词：宽度固定，高度跟随内容，显示 resize 条
-                LrcHost.Visibility = Visibility.Visible;
+                // 有歌词：宽度固定，高度跟随内容
                 this.SizeToContent = SizeToContent.Height;
-                double w = _settingsMgr.Data.IslandWidth > 0 ? _settingsMgr.Data.IslandWidth : 480d;
-                this.Width = w;
-                this.Top   = 0;
-                this.Left  = (SystemParameters.PrimaryScreenWidth - w) / 2;
-                IslandResizeLeft.Visibility  = Visibility.Visible;
-                IslandResizeRight.Visibility = Visibility.Visible;
+                LrcHost.Visibility = Visibility.Visible;
+                windowRoot.Width = double.NaN;
+                windowRoot.Height = double.NaN;
+                windowRoot.VerticalAlignment = VerticalAlignment.Stretch;
+                windowRoot.HorizontalAlignment = HorizontalAlignment.Center;
             }
         }
-
-        private void SyncTranslationSettings()
+        private (ScaleTransform scale, TranslateTransform translate) EnsureWindowRootTransformGroup()
         {
-            vm.ShowTranslation = _lyricSettingsMgr.Data.ShowTranslation;
-            vm.ShowRomaji      = _lyricSettingsMgr.Data.ShowRomaji;
-        }
-
-        // ───────────────────────────────────────────
-        // Island 宽度动画（切歌时）
-        // ───────────────────────────────────────────
-
-        private void AnimateToWidth(double targetW)
-        {
-            if (!_isIslandMode) return;
-            CancelSizeAnim();
-            this.BeginAnimation(WidthProperty,
-                new DoubleAnimation(targetW, TimeSpan.FromMilliseconds(240))
-                { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseInOut } });
-            this.Left = (SystemParameters.PrimaryScreenWidth - targetW) / 2;
-        }
-
-        private void CancelSizeAnim()
-        {
-            _sizeCts?.Cancel();
-            _sizeCts = null;
-        }
-
-        // ───────────────────────────────────────────
-        // 歌词内容切换动画
-        // ───────────────────────────────────────────
-
-        private void ShowLyricAnimation()
-        {
-            if (_isIslandMode)
+            if (windowRoot.RenderTransform is TransformGroup tg && tg.Children.Count >= 2
+                && tg.Children[0] is ScaleTransform st && tg.Children[1] is TranslateTransform tt)
             {
-                const int fadeOutMs = 120;
-                const int waitMs    = 200;
-                const int fadeInMs  = 200;
+                return (st, tt);
+            }
 
-                var easeIn  = new CubicEase { EasingMode = EasingMode.EaseIn  };
-                var easeOut = new CubicEase { EasingMode = EasingMode.EaseOut };
-
-                LrcHost.BeginAnimation(OpacityProperty,
-                    new DoubleAnimation(1d, 0d, TimeSpan.FromMilliseconds(fadeOutMs))
-                    { EasingFunction = easeIn });
-
-                _ = Task.Run(async () =>
+            var scale = new ScaleTransform(1, 1);
+            var translate = new TranslateTransform(0, 0);
+            tg = new TransformGroup();
+            tg.Children.Add(scale);
+            tg.Children.Add(translate);
+            windowRoot.RenderTransform = tg;
+            windowRoot.RenderTransformOrigin = new Point(0.5, 0);
+            return (scale, translate);
+        }
+        private void HideLyricAnimation(Action callback)
+        {
+            if(_isIslandMode)
+            {
+                if (_isMouseIn)
                 {
-                    await Task.Delay(waitMs);
-                    await Dispatcher.InvokeAsync(() =>
-                    {
-                        LrcHost.BeginAnimation(OpacityProperty,
-                            new DoubleAnimation(0d, 1d, TimeSpan.FromMilliseconds(fadeInMs))
-                            { EasingFunction = easeOut });
-                        LrcScrollViewer.BeginAnimation(ScrollViewerUtils.HorizontalOffsetProperty, null);
-                        ScrollViewerUtils.SetHorizontalOffset(LrcScrollViewer, 0);
-                    });
-                });
-                return;
-            }
+                    callback();
+                    return;
+                }
+                //收回隐藏
+                Storyboard sb = new();
+                EnsureWindowRootTransformGroup();
 
-            var blur = new BlurEffect() { Radius = 0 };
-            LrcHost.Effect = blur;
-            LrcHost.BeginAnimation(OpacityProperty, new DoubleAnimationUsingKeyFrames()
-            {
-                KeyFrames =
-                [
-                    new LinearDoubleKeyFrame(0, TimeSpan.FromMilliseconds(200)),
-                    new LinearDoubleKeyFrame(0, TimeSpan.FromMilliseconds(300)),
-                    new LinearDoubleKeyFrame(1, TimeSpan.FromMilliseconds(500))
-                ]
-            });
-            blur.BeginAnimation(BlurEffect.RadiusProperty, new DoubleAnimationUsingKeyFrames()
-            {
-                KeyFrames =
-                [
-                    new LinearDoubleKeyFrame(20, TimeSpan.FromMilliseconds(200)),
-                    new LinearDoubleKeyFrame(20, TimeSpan.FromMilliseconds(300)),
-                    new LinearDoubleKeyFrame(0,  TimeSpan.FromMilliseconds(500))
-                ]
-            });
-            _ = Task.Run(async () =>
-            {
-                await Task.Delay(200);
-                await Dispatcher.InvokeAsync(() =>
+                DoubleAnimation scaleAni = new(1, 0, TimeSpan.FromMilliseconds(300))
+                {
+                    EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseIn }
+                };
+                Storyboard.SetTarget(scaleAni, windowRoot);
+                Storyboard.SetTargetProperty(scaleAni, new PropertyPath("(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"));
+
+                DoubleAnimation yAni = new(0, -windowRoot.ActualHeight, TimeSpan.FromMilliseconds(300))
+                {
+                    EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseIn }
+                };
+                Storyboard.SetTarget(yAni, windowRoot);
+                Storyboard.SetTargetProperty(yAni, new PropertyPath("(UIElement.RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.Y)"));
+
+                sb.Children.Add(scaleAni);
+                sb.Children.Add(yAni);
+                sb.Completed += delegate 
                 {
                     LrcScrollViewer.BeginAnimation(ScrollViewerUtils.HorizontalOffsetProperty, null);
                     ScrollViewerUtils.SetHorizontalOffset(LrcScrollViewer, 0);
-                });
-            });
+                    callback?.Invoke();
+                };
+                sb.Begin();
+            }
+            else
+            {
+                var blur = new BlurEffect() { Radius = 0 };
+                LrcHost.Effect = blur;
+                LrcHost.BeginAnimation(OpacityProperty, new DoubleAnimation(0, TimeSpan.FromMilliseconds(300)));
+                var anim = new DoubleAnimation(20, TimeSpan.FromMilliseconds(300));
+                anim.Completed += delegate
+                {
+                    LrcScrollViewer.BeginAnimation(ScrollViewerUtils.HorizontalOffsetProperty, null);
+                    ScrollViewerUtils.SetHorizontalOffset(LrcScrollViewer, 0);
+                    callback?.Invoke();
+                };
+                blur.BeginAnimation(BlurEffect.RadiusProperty, anim);
+            }
         }
 
-        // ───────────────────────────────────────────
-        // SetHasLyricSource
-        // ───────────────────────────────────────────
+        private async void ShowLyricAnimation(int gap)
+        {
+            if (_isIslandMode)
+            {
+                if (_isMouseIn)
+                {
+                    return;
+                }
+                Storyboard sb = new();
+                var (scale, translate) = EnsureWindowRootTransformGroup();
+                scale.BeginAnimation(ScaleTransform.ScaleXProperty, null);
+                translate.BeginAnimation(TranslateTransform.YProperty, null);
+                LrcHost.BeginAnimation(OpacityProperty, null);
+                LrcHost.Effect = null;
+
+                DoubleAnimation scaleAni = new(0, 1, TimeSpan.FromMilliseconds(300))
+                {
+                    EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseOut }
+                };
+                Storyboard.SetTarget(scaleAni, windowRoot);
+                Storyboard.SetTargetProperty(scaleAni, new PropertyPath("(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"));
+
+                DoubleAnimation yAni = new(-windowRoot.ActualHeight, 0, TimeSpan.FromMilliseconds(300))
+                {
+                    EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseOut }
+                };
+                Storyboard.SetTarget(yAni, windowRoot);
+                Storyboard.SetTargetProperty(yAni, new PropertyPath("(UIElement.RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.Y)"));
+
+                sb.Children.Add(scaleAni);
+                sb.Children.Add(yAni);
+                sb.Completed += delegate
+                {
+                    scale.BeginAnimation(ScaleTransform.ScaleXProperty, null);
+                    translate.BeginAnimation(TranslateTransform.YProperty, null);
+                };
+                sb.Begin();
+            }
+            else
+            {
+                var blur = new BlurEffect() { Radius = 20 };
+                LrcHost.Effect = blur;
+                LrcHost.BeginAnimation(OpacityProperty, new DoubleAnimation(1, TimeSpan.FromMilliseconds(200)));
+                var anim = new DoubleAnimation(0, TimeSpan.FromMilliseconds(200));
+                blur.BeginAnimation(BlurEffect.RadiusProperty, anim);
+                anim.Completed += delegate
+                {
+                    LrcHost.BeginAnimation(OpacityProperty, null);
+                    LrcHost.Effect = null;
+                };
+            }
+        }
 
         public void SetHasLyricSource(bool hasLyric)
         {
             if (_hasLyricSource == hasLyric) return;
             _hasLyricSource = hasLyric;
 
-            if (!_isIslandMode) return;
-
-            if (!hasLyric)
-            {
-                IslandResizeLeft.Visibility  = Visibility.Collapsed;
-                IslandResizeRight.Visibility = Visibility.Collapsed;
-                LrcHost.BeginAnimation(OpacityProperty,
-                    new DoubleAnimation(1d, 0d, TimeSpan.FromMilliseconds(150)));
-                _ = Task.Delay(160).ContinueWith(_ => Dispatcher.BeginInvoke(() =>
-                {
-                    this.SizeToContent = SizeToContent.Manual;
-                    LrcHost.Visibility = Visibility.Collapsed;
-                    AnimateToWidth(IslandEmptyWidth);
-                    this.BeginAnimation(HeightProperty,
-                        new DoubleAnimation(IslandEmptyHeight, TimeSpan.FromMilliseconds(240))
-                        { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseInOut } });
-                }));
-            }
-            else
-            {
-                double w = _settingsMgr.Data.IslandWidth > 0 ? _settingsMgr.Data.IslandWidth : 480d;
-                LrcHost.Opacity    = 0;
-                LrcHost.Visibility = Visibility.Visible;
-                this.SizeToContent = SizeToContent.Height;
-                AnimateToWidth(w);
-                IslandResizeLeft.Visibility  = Visibility.Visible;
-                IslandResizeRight.Visibility = Visibility.Visible;
-                _ = Task.Delay(200).ContinueWith(_ =>
-                    Dispatcher.BeginInvoke(() =>
-                        LrcHost.BeginAnimation(OpacityProperty,
-                            new DoubleAnimation(0d, 1d, TimeSpan.FromMilliseconds(200)))));
-            }
+            ApplyIslandSize();
         }
 
-        private void Vm_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            // SizeToContent=Height 时翻译行 Visibility 变化自动触发高度更新
-        }
-
-        // ───────────────────────────────────────────
-        // 水平滚动
-        // ───────────────────────────────────────────
 
         private FrameworkElement? currentBlock = null;
 
@@ -400,38 +359,41 @@ namespace LemonLite.Views.Windows
             catch { }
         }
 
-        // ───────────────────────────────────────────
-        // 其他事件
-        // ───────────────────────────────────────────
 
         private void DesktopLyricWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
         {
-            CancelSizeAnim();
-            vm.UpdateAnimation = null;
-            vm.PropertyChanged -= Vm_PropertyChanged;
+            vm.HideLineAnimation = null;
+            vm.ShowLineAnimation = null;
             vm.SetWindow(null!);
+            _settingsMgr.OnDataChanged -= SettingsMgr_OnDataChanged;
             _settingsMgr.Data.WindowSize = new Size(
-                _isIslandMode ? _restoredWidth  : Width,
+                _isIslandMode ? _restoredWidth : Width,
                 _isIslandMode ? _restoredHeight : Height);
-            _settingsMgr.Data.IsIslandMode = false;
+            _settingsMgr.Data.IsIslandMode = _isIslandMode;
+            if(_isIslandMode ) 
+                _settingsMgr.Data.IslandWindowLeft = Left;
             vm.Dispose();
         }
 
         private void DesktopLyricWindow_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            if (!_isIslandMode)
-            {
-                var sc = SystemParameters.WorkArea;
-                Left = (sc.Right - Width) / 2;
-            }
+            var sc = SystemParameters.WorkArea;
+            Left = (sc.Right - Width) / 2;
         }
 
         private void DesktopLyricWindow_MouseLeave(object sender, MouseEventArgs e)
         {
+            _isMouseIn = false;
+            if (_isIslandMode)
+            {
+                ApplyIslandSize();
+            }
             cancelShowFunc?.Cancel();
             cancelShowFunc = null;
             preShowFunc = false;
-            LrcPanel.Effect = shadowEffect;
+            if (ShouldAddShadowEffect)
+                LrcPanel.Effect = shadowEffect;
+            else LrcPanel.Effect = null;
             LrcPanel.BeginAnimation(OpacityProperty, null);
             FuncPanel.Visibility = Visibility.Collapsed;
             FuncPanel.BeginAnimation(OpacityProperty, null);
@@ -442,7 +404,17 @@ namespace LemonLite.Views.Windows
 
         private async void DesktopLyricWindow_MouseEnter(object sender, MouseEventArgs e)
         {
-            if (_isIslandMode) return;
+            _isMouseIn = true;
+            if (_isIslandMode)
+            {
+                //展开为完整长度
+                windowRoot.HorizontalAlignment = HorizontalAlignment.Stretch;
+                windowRoot.BeginAnimation(WidthProperty, null);
+                windowRoot.BeginAnimation(HeightProperty, null);
+                windowRoot.Width = double.NaN;
+                windowRoot.Height = double.NaN;
+                return;
+            }
 
             preShowFunc = true;
             cancelShowFunc ??= new();
@@ -463,20 +435,26 @@ namespace LemonLite.Views.Windows
         private void DesktopLyricWindow_Loaded(object sender, RoutedEventArgs e)
         {
             WindowFlagsHelper.SetToolWindow(this);
-            var c     = this.Content as UIElement;
+            var c = this.Content as UIElement;
             var layer = AdornerLayer.GetAdornerLayer(c);
             _resizeAdorner = new WindowResizeAdorner(c!);
             layer?.Add(_resizeAdorner);
 
-            LrcPanel.Effect = shadowEffect;
-
             if (_settingsMgr.Data.WindowSize is { Width: > 0, Height: > 0 } size)
             {
-                _restoredWidth  = size.Width;
+                _restoredWidth = size.Width;
                 _restoredHeight = size.Height;
-                Width  = size.Width;
+                Width = size.Width;
                 Height = size.Height;
             }
+            if (_settingsMgr.Data.IsIslandMode)
+            {
+                Top = 0;
+                if(_settingsMgr.Data.IslandWindowLeft is double left && left > 0) 
+                    Left = left;
+            }
+            if (ShouldAddShadowEffect)
+                LrcPanel.Effect = shadowEffect;
         }
 
         private void CloseBtn_Click(object sender, RoutedEventArgs e) => Close();

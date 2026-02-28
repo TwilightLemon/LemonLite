@@ -5,6 +5,7 @@ using LemonLite.Services;
 using LemonLite.Utils;
 using LemonLite.Views.UserControls;
 using LemonLite.Views.Windows;
+using Lyricify.Lyrics.Helpers.Types;
 using Lyricify.Lyrics.Models;
 using System;
 using System.Linq;
@@ -31,27 +32,20 @@ public partial class DesktopLyricWindowViewModel : ObservableObject
         IsPlaying = _smtcService.IsPlaying;
         _settingsMgr = appSettingsService.GetConfigMgr<DesktopLyricOption>();
         _settingsMgr.OnDataChanged += _settingsMgr_OnDataChanged;
-        _lyricSettingsMgr = appSettingsService.GetConfigMgr<LyricOption>();
-        _lyricSettingsMgr.OnDataChanged += _lyricSettingsMgr_OnDataChanged;
-
-        ShowTranslation = _lyricSettingsMgr.Data.ShowTranslation;
-        ShowRomaji      = _lyricSettingsMgr.Data.ShowRomaji;
-        _settingsMgr.Data.ShowTranslation = ShowTranslation;
-        _settingsMgr.Data.ShowRomaji      = ShowRomaji;
 
         _smtcService.PlayingStateChanged += _smtcService_PlayingStateChanged;
-        _lyricService.CurrentLineChanged += OnCurrentLineChanged;
-        _lyricService.TimeUpdated        += OnTimeUpdated;
-        _lyricService.MediaChanged       += OnMediaChanged;
+        _lyricService.CurrentLineEnded += OnCurrentLineChanged;
+        _lyricService.TimeUpdated += OnTimeUpdated;
+        _lyricService.MediaChanged += OnMediaChanged;
         smtcService.SmtcListener.SessionExited += SmtcListener_SessionExited;
 
-        _smtcService.CoverUpdated        += Smtc_CoverUpdated;
-        _smtcService.UpdateCoverFailed   += Smtc_UpdateCoverFailed;
+        _smtcService.CoverUpdated += Smtc_CoverUpdated;
+        _smtcService.UpdateCoverFailed += Smtc_UpdateCoverFailed;
         _uiResourceService.OnColorModeChanged += OnColorModeChanged;
 
         ApplySettings();
         Smtc_CoverUpdated();
-        LyricControl.Dispatcher.Invoke(() => Update(_lyricService.CurrentLine));
+        LyricControl.Dispatcher.BeginInvoke(()=> UpdateLrc(0));
     }
 
     private DesktopLyricWindow? _window;
@@ -64,15 +58,14 @@ public partial class DesktopLyricWindowViewModel : ObservableObject
 
     public void Dispose()
     {
-        _settingsMgr.OnDataChanged           -= _settingsMgr_OnDataChanged;
-        _lyricSettingsMgr.OnDataChanged      -= _lyricSettingsMgr_OnDataChanged;
-        _smtcService.PlayingStateChanged     -= _smtcService_PlayingStateChanged;
+        _settingsMgr.OnDataChanged -= _settingsMgr_OnDataChanged;
+        _smtcService.PlayingStateChanged -= _smtcService_PlayingStateChanged;
         _smtcService.SmtcListener.SessionExited -= SmtcListener_SessionExited;
-        _lyricService.CurrentLineChanged     -= OnCurrentLineChanged;
-        _lyricService.TimeUpdated            -= OnTimeUpdated;
-        _lyricService.MediaChanged           -= OnMediaChanged;
-        _smtcService.CoverUpdated            -= Smtc_CoverUpdated;
-        _smtcService.UpdateCoverFailed       -= Smtc_UpdateCoverFailed;
+        _lyricService.CurrentLineEnded -= OnCurrentLineChanged;
+        _lyricService.TimeUpdated -= OnTimeUpdated;
+        _lyricService.MediaChanged -= OnMediaChanged;
+        _smtcService.CoverUpdated -= Smtc_CoverUpdated;
+        _smtcService.UpdateCoverFailed -= Smtc_UpdateCoverFailed;
         _uiResourceService.OnColorModeChanged -= OnColorModeChanged;
         _window = null;
     }
@@ -104,9 +97,9 @@ public partial class DesktopLyricWindowViewModel : ObservableObject
         }
     }
 
-    private void OnCurrentLineChanged(LrcLine lrc)
+    private void OnCurrentLineChanged(LrcLine lrc,int gap)
     {
-        LyricControl.Dispatcher.Invoke(() => Update(lrc));
+        LyricControl.Dispatcher.BeginInvoke(()=> UpdateLrc(gap));
     }
 
     private void _smtcService_PlayingStateChanged(bool isPlaying)
@@ -119,7 +112,8 @@ public partial class DesktopLyricWindowViewModel : ObservableObject
         LyricControl.Dispatcher.Invoke(ApplySettings);
     }
 
-    public Action? UpdateAnimation { get; set; }
+    public Action<Action>? HideLineAnimation { get; set; }
+    public Action<int>? ShowLineAnimation { get; set; }
     public Action<FrameworkElement>? ScrollLrc { get; set; }
 
     private void ApplySettings()
@@ -129,8 +123,9 @@ public partial class DesktopLyricWindowViewModel : ObservableObject
         {
             CustomLyricControlStyle();
             ShowTranslation = _settingsMgr.Data.ShowTranslation;
+            ShowRomaji = _settingsMgr.Data.ShowRomaji;
             _lyricControl.FontFamily = new FontFamily(_settingsMgr.Data.FontFamily);
-            _lyricControl.FontSize   = _settingsMgr.Data.LrcFontSize * 0.6;
+            _lyricControl.FontSize = _settingsMgr.Data.LrcFontSize * 0.6;
 
             foreach (var block in _lyricControl.MainSyllableLrcs)
                 block.Value.FontSize = _settingsMgr.Data.LrcFontSize;
@@ -153,14 +148,14 @@ public partial class DesktopLyricWindowViewModel : ObservableObject
         return true;
     }
 
-    private static readonly SolidColorBrush NormalLrcColor      = new(Color.FromRgb(0xEF, 0xEF, 0xEF));
+    private static readonly SolidColorBrush NormalLrcColor = new(Color.FromRgb(0xEF, 0xEF, 0xEF));
     private static readonly SolidColorBrush NormalLrcColorLight = new(Color.FromArgb(0x5E, 0x1B, 0x19, 0x34));
 
     private void CustomLyricControlStyle()
     {
 #pragma warning disable MVVMTK0034
-        _lyricControl.TranslationLrc.TextAlignment           = TextAlignment.Center;
-        _lyricControl.MainLrcContainer.HorizontalAlignment   = HorizontalAlignment.Center;
+        _lyricControl.TranslationLrc.TextAlignment = TextAlignment.Center;
+        _lyricControl.MainLrcContainer.HorizontalAlignment = HorizontalAlignment.Center;
         _lyricControl.RomajiLrcContainer.HorizontalAlignment = HorizontalAlignment.Center;
         BackgroundVisibility = _settingsMgr.Data.EnableBackground
             ? Visibility.Visible : Visibility.Collapsed;
@@ -187,7 +182,6 @@ public partial class DesktopLyricWindowViewModel : ObservableObject
     private readonly LyricService _lyricService;
     private readonly UIResourceService _uiResourceService;
     private readonly SettingsMgr<DesktopLyricOption> _settingsMgr;
-    private readonly SettingsMgr<LyricOption> _lyricSettingsMgr;
 
     [ObservableProperty] private bool _isPlaying = false;
     [ObservableProperty] private bool _showTranslation = true;
@@ -198,29 +192,16 @@ public partial class DesktopLyricWindowViewModel : ObservableObject
     [ObservableProperty] private Visibility _backgroundVisibility = Visibility.Visible;
     [ObservableProperty] private bool _isBackgroundValid = false;
 
-    private void _lyricSettingsMgr_OnDataChanged()
-    {
-        LyricControl.Dispatcher.Invoke(() =>
-        {
-            ShowTranslation = _lyricSettingsMgr.Data.ShowTranslation;
-            ShowRomaji      = _lyricSettingsMgr.Data.ShowRomaji;
-            _settingsMgr.Data.ShowTranslation = ShowTranslation;
-            _settingsMgr.Data.ShowRomaji      = ShowRomaji;
-        });
-    }
-
     partial void OnShowTranslationChanged(bool value)
     {
-        _settingsMgr.Data.ShowTranslation      = value;
-        _lyricSettingsMgr.Data.ShowTranslation = value;
+        _settingsMgr.Data.ShowTranslation = value;
         if (LyricControl != null)
             LyricControl.TranslationLrc.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
     }
 
     partial void OnShowRomajiChanged(bool value)
     {
-        _settingsMgr.Data.ShowRomaji      = value;
-        _lyricSettingsMgr.Data.ShowRomaji = value;
+        _settingsMgr.Data.ShowRomaji = value;
         if (LyricControl != null)
             LyricControl.RomajiLrcContainer.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
     }
@@ -260,9 +241,9 @@ public partial class DesktopLyricWindowViewModel : ObservableObject
         });
     }
 
-    private async void Update(LrcLine? lrc)
+    private void UpdateLrc(int gap)
     {
-        if (lrc == null)
+        if (_lyricService.CurrentLine == null)
         {
             LyricControl.ClearAll();
             return;
@@ -270,10 +251,14 @@ public partial class DesktopLyricWindowViewModel : ObservableObject
 
         _window?.SetHasLyricSource(true);
 
-        UpdateAnimation?.Invoke();
-        double fontSize = _settingsMgr.Data.LrcFontSize;
-        await Task.Delay(200);
+        HideLineAnimation?.Invoke(()=> UpdateLineAfterHideAnimation(gap));
+    }
 
+    private void UpdateLineAfterHideAnimation(int gap)
+    {
+        var lrc = _lyricService.CurrentLine;
+        if (lrc == null) return;
+        double fontSize = _settingsMgr.Data.LrcFontSize;
         if (lrc.Lrc is LineInfo pure)
             LyricControl.LoadPlainLrc(pure.Text, fontSize);
         else if (lrc.Lrc is SyllableLineInfo line)
@@ -281,7 +266,7 @@ public partial class DesktopLyricWindowViewModel : ObservableObject
 
         if (lrc.Romaji is LineInfo pureRomaji)
             LyricControl.LoadPlainRomaji(pureRomaji.Text);
-        else if (lrc.Romaji is SyllableLineInfo romaji)
+        else if (lrc.Romaji is SyllableLineInfo romaji && !string.IsNullOrWhiteSpace(romaji.Text))
             LyricControl.LoadRomajiLrc(romaji ?? new SyllableLineInfo([]));
         else
             LyricControl.LoadRomajiLrc(new([]));
@@ -302,6 +287,8 @@ public partial class DesktopLyricWindowViewModel : ObservableObject
         LyricControl.RomajiLrcContainer.Visibility =
             (ShowRomaji && hasRomaji)
                 ? Visibility.Visible : Visibility.Collapsed;
+
+        ShowLineAnimation?.Invoke(gap);
     }
 
     [RelayCommand]

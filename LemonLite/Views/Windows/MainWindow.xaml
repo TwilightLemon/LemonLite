@@ -6,12 +6,12 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:fluent="https://github.com/TwilightLemon/FluentWpfCore"
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
-        xmlns:local="clr-namespace:LemonLite.Views.Windows"
         xmlns:loc="clr-namespace:LemonLite.Services"
+        xmlns:local="clr-namespace:LemonLite.Views.Windows"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:uc="clr-namespace:LemonLite.Views.UserControls"
         xmlns:vm="clr-namespace:LemonLite.ViewModels"
         xmlns:ws="https://schemas.elecho.dev/wpfsuite"
-        xmlns:uc="clr-namespace:LemonLite.Views.UserControls"
         x:Name="window"
         Title="Lemon Lite"
         Width="874"
@@ -41,25 +41,16 @@
     <ws:BoxPanel>
         <!--  Image Background  -->
         <Border x:Name="ImageBackground" />
-        <Border x:Name="AnimatedBackgroundBd"
-                Opacity="0.86">
+        <Border x:Name="AnimatedBackgroundBd" Opacity="0.86">
             <Border.Background>
-                <ImageBrush ImageSource="{Binding BackgroundImageSource, Mode=OneWay}"
-                            Stretch="UniformToFill">
+                <ImageBrush ImageSource="{Binding BackgroundImageSource, Mode=OneWay}" Stretch="UniformToFill">
                     <ImageBrush.RelativeTransform>
                         <TransformGroup>
                             <TranslateTransform Y="0.5" />
-                            <ScaleTransform CenterX="0.5"
-                                            CenterY="1"
-                                            ScaleX="2.4"
-                                            ScaleY="2.4" />
-                            <RotateTransform Angle="0"
-                                             CenterX="0.5"
-                                             CenterY="1">
+                            <ScaleTransform CenterX="0.5" CenterY="1" ScaleX="2.4" ScaleY="2.4" />
+                            <RotateTransform Angle="0" CenterX="0.5" CenterY="1">
                                 <i:Interaction.Behaviors>
-                                    <behavior:RotateWithPlayingStateBehavior
-                                        IsEnabled="{Binding IsBackgroundValid}"
-                                        IsPlaying="{Binding IsPlaying}" />
+                                    <behavior:RotateWithPlayingStateBehavior IsEnabled="{Binding IsBackgroundValid}" IsPlaying="{Binding IsPlaying}" />
                                 </i:Interaction.Behaviors>
                             </RotateTransform>
                         </TransformGroup>
@@ -67,31 +58,24 @@
                 </ImageBrush>
             </Border.Background>
             <i:Interaction.Behaviors>
-                <behavior:FadeBorderBehavior Source="{Binding BackgroundImageSource}"
-                                             Duration="00:00:1.5" />
+                <behavior:FadeBorderBehavior Source="{Binding BackgroundImageSource}" Duration="00:00:1.5" />
             </i:Interaction.Behaviors>
         </Border>
 
         <Grid x:Name="RootGrid">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition x:Name="LeftColumn"
-                                  Width="6*" />
-                <ColumnDefinition x:Name="RightColumn"
-                                  Width="7*" />
+                <ColumnDefinition x:Name="LeftColumn" Width="6*" />
+                <ColumnDefinition x:Name="RightColumn" Width="7*" />
             </Grid.ColumnDefinitions>
             <!--  歌曲信息容器  -->
             <Grid x:Name="SongInfoPanel">
                 <Grid.RowDefinitions>
-                    <RowDefinition x:Name="CoverRow"
-                                   Height="3*" />
-                    <RowDefinition x:Name="InfoRow"
-                                   Height="2*" />
+                    <RowDefinition x:Name="CoverRow" Height="3*" />
+                    <RowDefinition x:Name="InfoRow" Height="2*" />
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition x:Name="CoverCol"
-                                      Width="*" />
-                    <ColumnDefinition x:Name="InfoCol"
-                                      Width="0" />
+                    <ColumnDefinition x:Name="CoverCol" Width="*" />
+                    <ColumnDefinition x:Name="InfoCol" Width="0" />
                 </Grid.ColumnDefinitions>
 
                 <!--  封面区域  -->
@@ -109,15 +93,12 @@
                             CornerRadius="12"
                             RenderOptions.BitmapScalingMode="HighQuality">
                         <i:Interaction.Behaviors>
-                            <behavior:FadeBorderBehavior Brush="{Binding CoverImage, TargetNullValue={StaticResource HighlightThemeColor}}"
-                                                         Duration="00:00:1" />
+                            <behavior:FadeBorderBehavior Brush="{Binding CoverImage, TargetNullValue={StaticResource HighlightThemeColor}}" Duration="00:00:1" />
                         </i:Interaction.Behaviors>
                         <Border.Width>
                             <MultiBinding Converter="{x:Static converters:MinValueConverter.Instance}">
-                                <Binding ElementName="LyricPage_ImgEdge"
-                                         Path="ActualWidth" />
-                                <Binding ElementName="LyricPage_ImgEdge"
-                                         Path="ActualHeight" />
+                                <Binding ElementName="LyricPage_ImgEdge" Path="ActualWidth" />
+                                <Binding ElementName="LyricPage_ImgEdge" Path="ActualHeight" />
                             </MultiBinding>
                         </Border.Width>
                         <Border.Effect>
@@ -142,12 +123,12 @@
                                            HorizontalAlignment="Stretch"
                                            VerticalAlignment="Top"
                                            d:Text="Dancing With Our Hands Tied"
-                                           FontSize="22"
-                                           HighlightPos="1"
                                            uc:HighlightTextBlock.HighlightIntensity="1"
+                                           FontSize="22"
                                            FontWeight="Bold"
                                            Foreground="{DynamicResource InActiveLrcForeground}"
                                            HighlightColor="{DynamicResource ActiveLrcForegroundColor}"
+                                           HighlightPos="1"
                                            Text="{Binding Title, Mode=OneWay}"
                                            TextAlignment="Center"
                                            TextTrimming="None"
@@ -155,20 +136,20 @@
                     <uc:HighlightTextBlock x:Name="SongArtistBlock"
                                            MinWidth="150"
                                            Margin="48,0"
-                                           FontSize="14"
                                            HorizontalAlignment="Stretch"
                                            VerticalAlignment="Top"
                                            d:Text="Taylor Swift"
-                                           HighlightPos="1"
                                            uc:HighlightTextBlock.HighlightIntensity="0.8"
+                                           FontSize="14"
                                            Foreground="{DynamicResource InActiveLrcForeground}"
                                            HighlightColor="{DynamicResource ActiveLrcForegroundColor}"
+                                           HighlightPos="1"
                                            TextAlignment="Center"
                                            TextWrapping="Wrap">
                         <uc:HighlightTextBlock.Text>
                             <MultiBinding StringFormat="{}{0} · {1}">
-                                <Binding Path="Artist" Mode="OneWay"/>
-                                <Binding Path="Album" Mode="OneWay"/>
+                                <Binding Mode="OneWay" Path="Artist" />
+                                <Binding Mode="OneWay" Path="Album" />
                             </MultiBinding>
                         </uc:HighlightTextBlock.Text>
                     </uc:HighlightTextBlock>
@@ -245,15 +226,11 @@
                     Margin="10,20,80,20"
                     d:Background="White">
                 <Border.OpacityMask>
-                    <LinearGradientBrush StartPoint="0.5,0"
-                                         EndPoint="0.5,1">
+                    <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
                         <GradientStop Color="Transparent" />
-                        <GradientStop Offset="1"
-                                      Color="Transparent" />
-                        <GradientStop Offset="0.2"
-                                      Color="Black" />
-                        <GradientStop Offset="0.8"
-                                      Color="Black" />
+                        <GradientStop Offset="1" Color="Transparent" />
+                        <GradientStop Offset="0.2" Color="Black" />
+                        <GradientStop Offset="0.8" Color="Black" />
                     </LinearGradientBrush>
                 </Border.OpacityMask>
             </Border>
@@ -306,12 +283,12 @@
                                   Tag="{StaticResource Icon_Trans}"
                                   Visibility="{Binding LyricView.IsTranslationAvailable, Converter={StaticResource BoolToVisibility}}" />
                     <ToggleButton Width="36"
-                                   Height="36"
-                                   Padding="10"
-                                   IsChecked="{Binding LyricView.IsShowRomaji}"
-                                   Style="{StaticResource IconToggleButton}"
-                                   Tag="{StaticResource Icon_Romaji}"
-                                   Visibility="{Binding LyricView.IsRomajiAvailable, Converter={StaticResource BoolToVisibility}}" />
+                                  Height="36"
+                                  Padding="10"
+                                  IsChecked="{Binding LyricView.IsShowRomaji}"
+                                  Style="{StaticResource IconToggleButton}"
+                                  Tag="{StaticResource Icon_Romaji}"
+                                  Visibility="{Binding LyricView.IsRomajiAvailable, Converter={StaticResource BoolToVisibility}}" />
                     <ws:Button Width="36"
                                Height="36"
                                Padding="10"

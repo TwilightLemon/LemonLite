@@ -44,7 +44,7 @@ namespace LemonLite.Views.UserControls
         private void UiResourceService_OnColorModeChanged()
         {
             bool isdark = uiResourceService.GetIsDarkMode();
-            Dispatcher.Invoke(() =>LrcHost.SetValue(HighlightTextBlock.UseAdditiveProperty, isdark));
+            Dispatcher.Invoke(() => LrcHost.SetValue(HighlightTextBlock.UseAdditiveProperty, isdark));
         }
 
 
@@ -74,13 +74,10 @@ namespace LemonLite.Views.UserControls
         {
             this.Dispatcher.Invoke(() =>
             {
-                // 防止 ApplySettings → IsShowTranslation setter → SetShowTranslation → TriggerDataChanged 无限循环
-                _applyingSettings = true;
                 IsShowTranslation = _settings?.Data?.ShowTranslation is true;
                 IsShowRomaji = _settings?.Data?.ShowRomaji is true;
-                _applyingSettings = false;
-                SetFontSize((_isMiniMode? _settings?.Data?.FontSizeMiniMode : _settings?.Data?.FontSize) ?? (int)LyricFontSize);
-                this.FontFamily = new FontFamily(_settings?.Data?.FontFamily ?? "Segoe UI");
+                SetFontSize((_isMiniMode ? _settings?.Data?.FontSizeMiniMode : _settings?.Data?.FontSize) ?? (int)LyricFontSize);
+                this.FontFamily = new FontFamily(_settings?.Data?.FontFamily ?? "Segou UI");
                 LrcHost.SetValue(HighlightTextBlock.UseAdditiveProperty, uiResourceService.GetIsDarkMode());
             });
         }
@@ -90,9 +87,7 @@ namespace LemonLite.Views.UserControls
         #region Apperance
         public double LyricFontSize = 24;
         public const double LyricFontSizeScale = 0.6;
-        private bool _isMiniMode= false;
-        private bool _applyingSettings = false; // 防止循环触发
-
+        private bool _isMiniMode = false;
         public bool IsMiniMode
         {
             get => _isMiniMode;
@@ -105,7 +100,7 @@ namespace LemonLite.Views.UserControls
         #endregion
 
         [RelayCommand]
-        public void FontSizeUp() => SetFontSize((int)LyricFontSize +2);
+        public void FontSizeUp() => SetFontSize((int)LyricFontSize + 2);
         [RelayCommand]
         public void FontSizeDown() => SetFontSize((int)LyricFontSize - 2);
         public void SetFontSize(int size)
@@ -114,7 +109,7 @@ namespace LemonLite.Views.UserControls
             if (_isMiniMode)
                 _settings.Data.FontSizeMiniMode = size;
             else _settings.Data.FontSize = size;
-            LrcHost.ApplyFontSize(size,LyricFontSizeScale);
+            LrcHost.ApplyFontSize(size, LyricFontSizeScale);
         }
 
 
@@ -171,33 +166,15 @@ namespace LemonLite.Views.UserControls
             }
         }
 
-        /// <summary>
-        /// 设置翻译可见性。
-        /// 修复：调用 TriggerDataChanged() 以通知所有订阅方（包括 DesktopLyricWindowViewModel），
-        /// 解决从主窗口工具栏切换翻译时桌面歌词不响应的问题。
-        /// </summary>
         public void SetShowTranslation(bool show)
         {
             _settings.Data.ShowTranslation = show;
             LrcHost.SetShowTranslation(show);
-
-            // 关键修复：通知所有订阅 LyricOption.OnDataChanged 的消费者（如 DesktopLyricWindowViewModel）
-            // _applyingSettings 防止 Settings_OnDataChanged → ApplySettings → SetShowTranslation 的无限循环
-            if (!_applyingSettings)
-                _settings.TriggerDataChanged();
         }
-
-        /// <summary>
-        /// 设置罗马音可见性。
-        /// 同上，调用 TriggerDataChanged() 通知所有订阅方。
-        /// </summary>
         public void SetShowRomaji(bool show)
         {
             _settings.Data.ShowRomaji = show;
             LrcHost.SetShowRomaji(show);
-
-            if (!_applyingSettings)
-                _settings.TriggerDataChanged();
         }
 
         #region LyricService Event Handlers
@@ -217,7 +194,7 @@ namespace LemonLite.Views.UserControls
 
         private void OnLyricLoaded(LyricLoadedEventArgs? args)
         {
-            if(args == null)
+            if (args == null)
             {
                 Dispatcher.Invoke(() =>
                 {

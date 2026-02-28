@@ -26,6 +26,7 @@ namespace LemonLite.Views.Pages
         private void DesktopLyricSettingsPage_Loaded(object sender, RoutedEventArgs e)
         {
             ShowTranslation = settings.Data.ShowTranslation;
+            ShowRomaji = settings.Data.ShowRomaji;
             LrcFontSize = settings.Data.LrcFontSize;
             LyricFontFamily = settings.Data.FontFamily;
             EnableBackground = settings.Data.EnableBackground;
@@ -34,6 +35,9 @@ namespace LemonLite.Views.Pages
 
         [ObservableProperty]
         private bool _showTranslation;
+
+        [ObservableProperty]
+        private bool _showRomaji;
 
         [ObservableProperty]
         private double _lrcFontSize;
@@ -62,6 +66,12 @@ namespace LemonLite.Views.Pages
         partial void OnShowTranslationChanged(bool value)
         {
             settings.Data.ShowTranslation = value;
+            settings.TriggerDataChanged();
+        }
+
+        partial void OnShowRomajiChanged(bool value)
+        {
+            settings.Data.ShowRomaji = value;
             settings.TriggerDataChanged();
         }
 

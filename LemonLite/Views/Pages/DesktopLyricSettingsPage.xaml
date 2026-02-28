@@ -3,8 +3,8 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:base="clr-namespace:LemonLite.Utils"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-      xmlns:local="clr-namespace:LemonLite.Views.Pages"
       xmlns:loc="clr-namespace:LemonLite.Services"
+      xmlns:local="clr-namespace:LemonLite.Views.Pages"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:ws="https://schemas.elecho.dev/wpfsuite"
       Title="DesktopLyricSettingsPage"
@@ -26,6 +26,15 @@
                 <ToggleButton Margin="12,0,12,0"
                               Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Show Translation], Mode=OneWay}"
                               IsChecked="{Binding ShowTranslation}"
+                              Style="{DynamicResource RoundToggleButtonStyle}" />
+            </Border>
+
+            <Border Height="48"
+                    Background="{DynamicResource MaskColor}"
+                    CornerRadius="12">
+                <ToggleButton Margin="12,0,12,0"
+                              Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Show Romaji], Mode=OneWay}"
+                              IsChecked="{Binding ShowRomaji}"
                               Style="{DynamicResource RoundToggleButtonStyle}" />
             </Border>
 

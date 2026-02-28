@@ -33,14 +33,14 @@ public class WindowResizeAdorner : Adorner
         _adornedElement = adornedElement;
         _window = Window.GetWindow(_adornedElement);
 
-        _leftThumb        = new Thumb { HorizontalAlignment = HorizontalAlignment.Left,  VerticalAlignment = VerticalAlignment.Stretch, Cursor = Cursors.SizeWE };
-        _topThumb         = new Thumb { HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Top,    Cursor = Cursors.SizeNS };
-        _rightThumb       = new Thumb { HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Stretch, Cursor = Cursors.SizeWE };
-        _bottomThumb      = new Thumb { HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Bottom, Cursor = Cursors.SizeNS };
-        _lefTopThumb      = new Thumb { HorizontalAlignment = HorizontalAlignment.Left,  VerticalAlignment = VerticalAlignment.Top,    Cursor = Cursors.SizeNWSE };
-        _rightTopThumb    = new Thumb { HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Top,    Cursor = Cursors.SizeNESW };
+        _leftThumb = new Thumb { HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Stretch, Cursor = Cursors.SizeWE };
+        _topThumb = new Thumb { HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Top, Cursor = Cursors.SizeNS };
+        _rightThumb = new Thumb { HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Stretch, Cursor = Cursors.SizeWE };
+        _bottomThumb = new Thumb { HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Bottom, Cursor = Cursors.SizeNS };
+        _lefTopThumb = new Thumb { HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top, Cursor = Cursors.SizeNWSE };
+        _rightTopThumb = new Thumb { HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Top, Cursor = Cursors.SizeNESW };
         _rightBottomThumb = new Thumb { HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Bottom, Cursor = Cursors.SizeNWSE };
-        _leftbottomThumb  = new Thumb { HorizontalAlignment = HorizontalAlignment.Left,  VerticalAlignment = VerticalAlignment.Bottom, Cursor = Cursors.SizeNESW };
+        _leftbottomThumb = new Thumb { HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Bottom, Cursor = Cursors.SizeNESW };
 
         _grid = new Grid();
         _grid.Children.Add(_leftThumb);
@@ -58,7 +58,7 @@ public class WindowResizeAdorner : Adorner
             const int thumbSize = 12;
             if (thumb.HorizontalAlignment == HorizontalAlignment.Stretch)
             {
-                thumb.Width  = double.NaN;
+                thumb.Width = double.NaN;
                 thumb.Margin = new Thickness(thumbSize, 0, thumbSize, 0);
             }
             else
@@ -74,7 +74,7 @@ public class WindowResizeAdorner : Adorner
             {
                 thumb.Height = thumbSize;
             }
-            thumb.Background = System.Windows.Media.Brushes.Green;
+            thumb.Background = Brushes.Green;
             thumb.Template = new ControlTemplate(typeof(Thumb))
             {
                 VisualTree = GetFactory(new SolidColorBrush(Colors.Transparent))
@@ -90,7 +90,7 @@ public class WindowResizeAdorner : Adorner
     {
         _grid.Arrange(new Rect(
             new Point(
-                -(_window.RenderSize.Width  - finalSize.Width)  / 2,
+                -(_window.RenderSize.Width - finalSize.Width) / 2,
                 -(_window.RenderSize.Height - finalSize.Height) / 2),
             _window.RenderSize));
         return finalSize;
@@ -108,30 +108,27 @@ public class WindowResizeAdorner : Adorner
         if (IslandMode)
         {
             bool isHorizontalOnly =
-                thumb!.VerticalAlignment   == VerticalAlignment.Stretch &&
-                thumb.HorizontalAlignment  != HorizontalAlignment.Stretch;
+                thumb!.VerticalAlignment == VerticalAlignment.Stretch &&
+                thumb.HorizontalAlignment != HorizontalAlignment.Stretch;
 
             if (!isHorizontalOnly) return;
 
             double left, width;
             if (thumb.HorizontalAlignment == HorizontalAlignment.Left)
             {
-                left  = c.Left + e.HorizontalChange;
+                left = c.Left + e.HorizontalChange;
                 width = c.Width - e.HorizontalChange;
             }
             else
             {
-                left  = c.Left;
+                left = c.Left;
                 width = c.Width + e.HorizontalChange;
             }
 
-            // ★ 最小宽度阈值 60px
             if (width >= IslandMinWidth)
             {
-                c.Left  = left;
+                c.Left = left;
                 c.Width = width;
-                // 同步保存到配置，方便下次记忆
-                // （_settingsMgr 不在这里，改宽度后由 ViewModel 监听 SizeChanged 处理即可）
             }
             return;
         }

@@ -15,7 +15,8 @@ public class DesktopLyricOption
     public bool IsIslandMode { get; set; } = false;
 
     /// <summary>
-    /// Island 模式固定宽度（0 = 使用默认 480）
+    /// Island 模式最大宽度（0 = 使用默认 480）
     /// </summary>
-    public double IslandWidth { get; set; } = 480d;
+    public double IslandMaxWidth { get; set; } = 480d;
+    public double IslandWindowLeft { get; set; } = -1d;
 }
