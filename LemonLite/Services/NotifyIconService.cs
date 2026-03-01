@@ -54,7 +54,7 @@ public class NotifyIconService(AppSettingService appSettingService, UIResourceSe
 
         _openLrcWindowMenuItem = new MenuItem
         {
-            Header = LocalizationService.Instance["Lyric Window"],
+            Header = LocalizationService.Instance["LyricWindow"],
             IsCheckable = true,
             IsChecked = opt.Data.StartWithMainWindow
         };
@@ -67,7 +67,7 @@ public class NotifyIconService(AppSettingService appSettingService, UIResourceSe
 
         _desktopMenuItem = new MenuItem
         {
-            Header = LocalizationService.Instance["Desktop Lyrics"],
+            Header = LocalizationService.Instance["DesktopLyrics"],
             IsCheckable = true,
             IsChecked = opt.Data.StartWithDesktopLyric
         };
@@ -80,7 +80,7 @@ public class NotifyIconService(AppSettingService appSettingService, UIResourceSe
 
         _audioVisualizerMenuItem = new MenuItem
         {
-            Header = LocalizationService.Instance["Audio Visualizer"],
+            Header = LocalizationService.Instance["AudioVisualizer"],
             IsCheckable = true,
             IsChecked = opt.Data.EnableAudioVisualizer
         };
@@ -97,7 +97,7 @@ public class NotifyIconService(AppSettingService appSettingService, UIResourceSe
             App.Services.GetRequiredService<SettingsWindow>().Show();
         };
 
-        _refreshMenuItem = new MenuItem { Header = LocalizationService.Instance["Refresh Lyrics"] };
+        _refreshMenuItem = new MenuItem { Header = LocalizationService.Instance["RefreshLyrics"] };
         _refreshMenuItem.Click += async (s, e) =>
         {
             var smtc = App.Services.GetRequiredService<SmtcService>();
@@ -163,15 +163,15 @@ public class NotifyIconService(AppSettingService appSettingService, UIResourceSe
         App.Current.Dispatcher.Invoke(() =>
         {
             if (_openLrcWindowMenuItem != null)
-                _openLrcWindowMenuItem.Header = LocalizationService.Instance["Lyric Window"];
+                _openLrcWindowMenuItem.Header = LocalizationService.Instance["LyricWindow"];
             if (_desktopMenuItem != null)
-                _desktopMenuItem.Header = LocalizationService.Instance["Desktop Lyrics"];
+                _desktopMenuItem.Header = LocalizationService.Instance["DesktopLyrics"];
             if (_audioVisualizerMenuItem != null)
-                _audioVisualizerMenuItem.Header = LocalizationService.Instance["Audio Visualizer"];
+                _audioVisualizerMenuItem.Header = LocalizationService.Instance["AudioVisualizer"];
             if (_settingsMenuItem != null)
                 _settingsMenuItem.Header = LocalizationService.Instance["Settings"];
             if (_refreshMenuItem != null)
-                _refreshMenuItem.Header = LocalizationService.Instance["Refresh Lyrics"];
+                _refreshMenuItem.Header = LocalizationService.Instance["RefreshLyrics"];
             if (_exitMenuItem != null)
                 _exitMenuItem.Header = LocalizationService.Instance["Exit"];
         });

@@ -186,7 +186,7 @@
                                Height="42"
                                Command="{Binding PlayLastCommand}"
                                Style="{StaticResource SimpleIconButtonStyleForWs}"
-                               ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Play the last one], Mode=OneWay}">
+                               ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[PlayTheLastOne], Mode=OneWay}">
                         <Path Height="18"
                               Data="{DynamicResource PlayIcon_Last}"
                               Fill="{DynamicResource ForeColor}"
@@ -196,7 +196,7 @@
                                Height="40"
                                Command="{Binding PlayPauseCommand}"
                                Style="{StaticResource SimpleIconButtonStyleForWs}"
-                               ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Play or Pause], Mode=OneWay}">
+                               ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[PlayOrPause], Mode=OneWay}">
                         <ws:ConditionalControl Condition="{Binding IsPlaying}">
                             <ws:ConditionalControl.ContentWhenFalse>
                                 <Path Data="{DynamicResource PlayIcon_Play}"
@@ -212,7 +212,7 @@
                                Height="42"
                                Command="{Binding PlayNextCommand}"
                                Style="{StaticResource SimpleIconButtonStyleForWs}"
-                               ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Play the next one], Mode=OneWay}">
+                               ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[PlayTheNextOne], Mode=OneWay}">
                         <Path Height="18"
                               Data="{DynamicResource PlayIcon_Next}"
                               Fill="{DynamicResource ForeColor}"
@@ -256,12 +256,14 @@
                                      Click="SwitchTopMostBtn_Click"
                                      IsChecked="{Binding Topmost, ElementName=window}"
                                      Style="{StaticResource IconToggleButton}"
-                                     Tag="{DynamicResource Icon_Topmost}" />
+                                     Tag="{DynamicResource Icon_Topmost}"
+                                     ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[TopMost], Mode=OneWay}" />
                     <ws:Button Width="36"
                                Height="36"
                                Padding="10"
                                Command="{Binding LyricView.FontSizeUpCommand}"
-                               Style="{StaticResource SimpleIconButtonStyleForWs}">
+                               Style="{StaticResource SimpleIconButtonStyleForWs}"
+                               ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[FontSizeUp], Mode=OneWay}">
                         <Path Data="{StaticResource Icon_FontUp}"
                               Fill="{DynamicResource ForeColor}"
                               Stretch="Uniform" />
@@ -270,7 +272,8 @@
                                Height="36"
                                Padding="10"
                                Command="{Binding LyricView.FontSizeDownCommand}"
-                               Style="{StaticResource SimpleIconButtonStyleForWs}">
+                               Style="{StaticResource SimpleIconButtonStyleForWs}"
+                               ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[FontSizeDown], Mode=OneWay}">
                         <Path Data="{StaticResource Icon_FontDown}"
                               Fill="{DynamicResource ForeColor}"
                               Stretch="Uniform" />
@@ -281,6 +284,7 @@
                                   IsChecked="{Binding LyricView.IsShowTranslation}"
                                   Style="{StaticResource IconToggleButton}"
                                   Tag="{StaticResource Icon_Trans}"
+                                  ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[ShowTranslation], Mode=OneWay}"
                                   Visibility="{Binding LyricView.IsTranslationAvailable, Converter={StaticResource BoolToVisibility}}" />
                     <ToggleButton Width="36"
                                   Height="36"
@@ -288,13 +292,14 @@
                                   IsChecked="{Binding LyricView.IsShowRomaji}"
                                   Style="{StaticResource IconToggleButton}"
                                   Tag="{StaticResource Icon_Romaji}"
+                                  ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[ShowRomaji], Mode=OneWay}"
                                   Visibility="{Binding LyricView.IsRomajiAvailable, Converter={StaticResource BoolToVisibility}}" />
                     <ws:Button Width="36"
                                Height="36"
                                Padding="10"
                                Click="OpenAliasCreator_Click"
                                Style="{StaticResource SimpleIconButtonStyleForWs}"
-                               ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Create Metadata Alias], Mode=OneWay}">
+                               ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[CreateMetadataAlias], Mode=OneWay}">
                         <TextBlock FontFamily="{StaticResource SegoeFluentIcon}"
                                    FontSize="14"
                                    Text="&#xe8ac;" />

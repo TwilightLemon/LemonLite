@@ -31,6 +31,7 @@ namespace LemonLite.Views.Pages
             LyricFontFamily = settings.Data.FontFamily;
             EnableBackground = settings.Data.EnableBackground;
             UseHighlightLyricEffect = settings.Data.UseHighlightLyricEffect;
+            UsePopupAnimation = settings.Data.UsePopupAnimation;
         }
 
         [ObservableProperty]
@@ -50,6 +51,15 @@ namespace LemonLite.Views.Pages
 
         [ObservableProperty]
         private bool _useHighlightLyricEffect = false;
+
+        [ObservableProperty]
+        private bool _usePopupAnimation = false;
+
+        partial void OnUsePopupAnimationChanged(bool value)
+        {
+            settings.Data.UsePopupAnimation = value;
+            settings.TriggerDataChanged();
+        }
 
         partial void OnUseHighlightLyricEffectChanged(bool value)
         {

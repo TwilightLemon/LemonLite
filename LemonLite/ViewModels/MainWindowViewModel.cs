@@ -182,7 +182,7 @@ public partial class MainWindowViewModel : ObservableObject
         // clean up previous info
         App.Current.Dispatcher.Invoke(() =>
         {
-            Title = LemonLite.Services.LocalizationService.Instance["Welcome~"];
+            Title = LemonLite.Services.LocalizationService.Instance["Welcome"];
             Artist = string.Empty;
             Album = string.Empty;
         });
@@ -191,7 +191,7 @@ public partial class MainWindowViewModel : ObservableObject
         {
             App.Current.Dispatcher.Invoke(() =>
             {
-                Title = info.Title ?? LemonLite.Services.LocalizationService.Instance["Welcome~"];
+                Title = info.Title ?? LemonLite.Services.LocalizationService.Instance["Welcome"];
                 Artist = info.Artist ?? string.Empty;
                 Album = info.Album ?? string.Empty;
             });

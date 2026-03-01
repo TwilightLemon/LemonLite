@@ -13,10 +13,10 @@ public partial class SettingsWindowViewModel:ObservableObject
     public record class SettingsMenuItem(string Title, Geometry Icon, Type PageType);
     public ObservableCollection<SettingsMenuItem> SettingsMenus{ get; set; } = [
         new SettingsMenuItem(LocalizationService.Instance["General"],(Geometry)App.Current.FindResource("Icon_Settings"),typeof(AppSettingsPage)),
-        new SettingsMenuItem(LocalizationService.Instance["SMTC Apps"],null!,typeof(SmtcAppsPage)),
-        new SettingsMenuItem(LocalizationService.Instance["Lyric View"],null!,typeof(LyricSettingsPage)),
-        new SettingsMenuItem(LocalizationService.Instance["Desktop Lyrics"],null!,typeof(DesktopLyricSettingsPage)),
-        new SettingsMenuItem(LocalizationService.Instance["Audio Visualizer"],null!,typeof(AudioVisualizerSettingsPage)),
+        new SettingsMenuItem(LocalizationService.Instance["SmtcApps"],null!,typeof(SmtcAppsPage)),
+        new SettingsMenuItem(LocalizationService.Instance["LyricView"],null!,typeof(LyricSettingsPage)),
+        new SettingsMenuItem(LocalizationService.Instance["DesktopLyrics"],null!,typeof(DesktopLyricSettingsPage)),
+        new SettingsMenuItem(LocalizationService.Instance["AudioVisualizer"],null!,typeof(AudioVisualizerSettingsPage)),
         new SettingsMenuItem(LocalizationService.Instance["About"],null!,typeof(AboutPage))
         ];
 
@@ -29,10 +29,10 @@ public partial class SettingsWindowViewModel:ObservableObject
     {
         SettingsMenus.Clear();
         SettingsMenus.Add(new SettingsMenuItem(LocalizationService.Instance["General"],(Geometry)App.Current.FindResource("Icon_Settings"),typeof(AppSettingsPage)));
-        SettingsMenus.Add(new SettingsMenuItem(LocalizationService.Instance["SMTC Apps"],null!,typeof(SmtcAppsPage)));
-        SettingsMenus.Add(new SettingsMenuItem(LocalizationService.Instance["Lyric View"],null!,typeof(LyricSettingsPage)));
-        SettingsMenus.Add(new SettingsMenuItem(LocalizationService.Instance["Desktop Lyrics"],null!,typeof(DesktopLyricSettingsPage)));
-        SettingsMenus.Add(new SettingsMenuItem(LocalizationService.Instance["Audio Visualizer"],null!,typeof(AudioVisualizerSettingsPage)));
+        SettingsMenus.Add(new SettingsMenuItem(LocalizationService.Instance["SmtcApps"],null!,typeof(SmtcAppsPage)));
+        SettingsMenus.Add(new SettingsMenuItem(LocalizationService.Instance["LyricView"],null!,typeof(LyricSettingsPage)));
+        SettingsMenus.Add(new SettingsMenuItem(LocalizationService.Instance["DesktopLyrics"],null!,typeof(DesktopLyricSettingsPage)));
+        SettingsMenus.Add(new SettingsMenuItem(LocalizationService.Instance["AudioVisualizer"],null!,typeof(AudioVisualizerSettingsPage)));
         SettingsMenus.Add(new SettingsMenuItem(LocalizationService.Instance["About"],null!,typeof(AboutPage)));
     }
 

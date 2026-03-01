@@ -18,13 +18,13 @@
         <ws:StackPanel x:Name="SettingsList" Spacing="8">
             <TextBlock Margin="0,8"
                        FontSize="22"
-                       Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Audio Visualizer Settings], Mode=OneWay}" />
+                       Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[AudioVisualizerSettings], Mode=OneWay}" />
 
             <Border Height="48"
                     Background="{DynamicResource MaskColor}"
                     CornerRadius="12">
                 <ToggleButton Margin="12,0,12,0"
-                              Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Enable Border Rendering], Mode=OneWay}"
+                              Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[EnableBorderRendering], Mode=OneWay}"
                               IsChecked="{Binding EnableBorderRendering}"
                               Style="{DynamicResource RoundToggleButtonStyle}" />
             </Border>
@@ -33,7 +33,7 @@
                     Background="{DynamicResource MaskColor}"
                     CornerRadius="12">
                 <ToggleButton Margin="12,0,12,0"
-                              Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Enable Strips Rendering], Mode=OneWay}"
+                              Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[EnableStripsRendering], Mode=OneWay}"
                               IsChecked="{Binding EnableStripsRendering}"
                               Style="{DynamicResource RoundToggleButtonStyle}" />
             </Border>

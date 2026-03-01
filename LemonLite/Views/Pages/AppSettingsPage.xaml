@@ -20,13 +20,13 @@
             <ws:StackPanel Spacing="8">
                 <TextBlock Margin="0,8"
                            FontSize="22"
-                           Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[App Settings], Mode=OneWay}" />
+                           Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[AppSettings], Mode=OneWay}" />
 
                 <Border Height="48"
                         Background="{DynamicResource MaskColor}"
                         CornerRadius="12">
                     <ToggleButton Margin="12,0,12,0"
-                                  Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Enable Main Window], Mode=OneWay}"
+                                  Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[EnableMainWindow], Mode=OneWay}"
                                   IsChecked="{Binding EnableMainWindow}"
                                   Style="{DynamicResource RoundToggleButtonStyle}" />
                 </Border>
@@ -35,7 +35,7 @@
                         Background="{DynamicResource MaskColor}"
                         CornerRadius="12">
                     <ToggleButton Margin="12,0,12,0"
-                                  Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Enable Desktop Lyric], Mode=OneWay}"
+                                  Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[EnableDesktopLyric], Mode=OneWay}"
                                   IsChecked="{Binding EnableDesktopLyricWindow}"
                                   Style="{DynamicResource RoundToggleButtonStyle}" />
                 </Border>
@@ -44,7 +44,7 @@
                         Background="{DynamicResource MaskColor}"
                         CornerRadius="12">
                     <ToggleButton Margin="12,0,12,0"
-                                  Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Enable Audio Visualizer], Mode=OneWay}"
+                                  Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[EnableAudioVisualizer], Mode=OneWay}"
                                   IsChecked="{Binding EnableAudioVisualizer}"
                                   Style="{DynamicResource RoundToggleButtonStyle}" />
                 </Border>
@@ -68,7 +68,7 @@
                                 </Style>
                             </ws:StackPanel.Resources>
                             <RadioButton Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[English], Mode=OneWay}" IsChecked="{Binding IsEnglishLanguage}" />
-                            <RadioButton Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[中文], Mode=OneWay}" IsChecked="{Binding IsChineseLanguage}" />
+                            <RadioButton Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Chinese], Mode=OneWay}" IsChecked="{Binding IsChineseLanguage}" />
                         </ws:StackPanel>
                     </Grid>
                 </Border>
@@ -83,7 +83,7 @@
                         Background="{DynamicResource MaskColor}"
                         CornerRadius="12">
                     <ToggleButton Margin="12,0,12,0"
-                                  Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Show in Taskbar When Mini Mode], Mode=OneWay}"
+                                  Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[ShowInTaskbarWhenMiniMode], Mode=OneWay}"
                                   IsChecked="{Binding ShowInTaskbarWhenMiniMode}"
                                   Style="{DynamicResource RoundToggleButtonStyle}" />
                 </Border>
@@ -95,7 +95,7 @@
                         <TextBlock Margin="12,0"
                                    HorizontalAlignment="Left"
                                    VerticalAlignment="Center"
-                                   Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Theme Mode], Mode=OneWay}" />
+                                   Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[ThemeMode], Mode=OneWay}" />
                         <ws:StackPanel Margin="0,0,32,0"
                                        HorizontalAlignment="Right"
                                        VerticalAlignment="Center"
@@ -119,7 +119,7 @@
                         <TextBlock Margin="12,0"
                                    HorizontalAlignment="Left"
                                    VerticalAlignment="Center"
-                                   Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[App Font Family], Mode=OneWay}" />
+                                   Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[AppFontFamily], Mode=OneWay}" />
                         <ws:TextBox Height="24"
                                     MinWidth="220"
                                     Margin="0,0,24,0"
@@ -138,7 +138,7 @@
                         <TextBlock Margin="12,0"
                                    HorizontalAlignment="Left"
                                    VerticalAlignment="Center"
-                                   Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Background Type], Mode=OneWay}" />
+                                   Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[BackgroundType], Mode=OneWay}" />
                         <ws:StackPanel Margin="0,0,32,0"
                                        HorizontalAlignment="Right"
                                        VerticalAlignment="Center"
@@ -164,7 +164,7 @@
                         <TextBlock Margin="12,0"
                                    HorizontalAlignment="Left"
                                    VerticalAlignment="Center"
-                                   Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Acrylic Opacity], Mode=OneWay}" />
+                                   Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[AcrylicOpacity], Mode=OneWay}" />
                         <ws:StackPanel Margin="0,0,24,0"
                                        HorizontalAlignment="Right"
                                        VerticalAlignment="Center"
@@ -191,7 +191,7 @@
                         <TextBlock Margin="12,0"
                                    HorizontalAlignment="Left"
                                    VerticalAlignment="Center"
-                                   Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Background Image], Mode=OneWay}" />
+                                   Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[BackgroundImage], Mode=OneWay}" />
                         <ws:StackPanel Margin="0,0,24,0"
                                        HorizontalAlignment="Right"
                                        VerticalAlignment="Center"
@@ -221,7 +221,7 @@
                         <TextBlock Margin="12,0"
                                    HorizontalAlignment="Left"
                                    VerticalAlignment="Center"
-                                   Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Background Opacity], Mode=OneWay}" />
+                                   Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[BackgroundOpacity], Mode=OneWay}" />
                         <ws:StackPanel Margin="0,0,24,0"
                                        HorizontalAlignment="Right"
                                        VerticalAlignment="Center"

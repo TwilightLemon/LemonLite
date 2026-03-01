@@ -11,6 +11,7 @@ public class DesktopLyricOption
     public string FontFamily { get; set; } = "Segoe UI";
     public bool EnableBackground { get; set; } = true;
     public bool UseHighlightLyricEffect { get; set; } = true;
+    public bool UsePopupAnimation { get; set; } = true;
 
     public bool IsIslandMode { get; set; } = false;
 

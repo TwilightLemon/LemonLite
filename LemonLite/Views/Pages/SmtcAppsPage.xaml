@@ -3,8 +3,8 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:base="clr-namespace:LemonLite.Utils"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-      xmlns:local="clr-namespace:LemonLite.Views.Pages"
       xmlns:loc="clr-namespace:LemonLite.Services"
+      xmlns:local="clr-namespace:LemonLite.Views.Pages"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:ws="https://schemas.elecho.dev/wpfsuite"
       Title="SmtcAppsPage"
@@ -18,17 +18,17 @@
         <ws:StackPanel Spacing="8">
             <TextBlock Margin="0,8"
                        FontSize="22"
-                       Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[SMTC Apps], Mode=OneWay}" />
+                       Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[SmtcApps], Mode=OneWay}" />
             <TextBlock Margin="0,0,0,4"
                        Foreground="{DynamicResource HintForeColor}"
-                       Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Configure which apps are monitored. Click an app to configure its sources and aliases.], Mode=OneWay}" />
+                       Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[SmtcAppsDescription], Mode=OneWay}" />
 
             <Border Background="{DynamicResource MaskColor}" CornerRadius="12">
                 <ws:StackPanel Margin="12" Spacing="8">
                     <Grid>
-                        <TextBlock HorizontalAlignment="Left"
+                        <TextBlock Margin="4,0,0,0"
+                                   HorizontalAlignment="Left"
                                    VerticalAlignment="Center"
-                                   Margin="4 0 0 0"
                                    Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Whitelist], Mode=OneWay}" />
                         <ws:StackPanel Margin="0,0,6,0"
                                        HorizontalAlignment="Right"
@@ -38,19 +38,23 @@
                                        Padding="8"
                                        Command="{Binding AddCurrentAppCommand}"
                                        Style="{StaticResource AccentButtonStyleForWs}">
-                                <ws:StackPanel Orientation="Horizontal" VerticalAlignment="Center" Spacing="4">
-                                    <TextBlock FontFamily="{StaticResource SegoeFluentIcon}" Text="&#xe710;" />
-                                    <TextBlock Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Add Current], Mode=OneWay}" />
-                                </ws:StackPanel>
+                                <TextBlock>
+                                        <Run FontFamily="{StaticResource SegoeFluentIcon}"
+                                             Text="&#xe710;"
+                                             BaselineAlignment="Center" />
+                                        <Run Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[AddCurrent], Mode=OneWay}" />
+                                </TextBlock>
                             </ws:Button>
                             <ws:Button Height="32"
                                        Padding="8"
                                        Command="{Binding AddAppCommand}"
                                        Style="{StaticResource SimpleButtonStyleForWs}">
-                                <ws:StackPanel Orientation="Horizontal" VerticalAlignment="Center" Spacing="4">
-                                    <TextBlock FontFamily="{StaticResource SegoeFluentIcon}" Text="&#xec50;" />
-                                    <TextBlock Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Select File], Mode=OneWay}" />
-                                </ws:StackPanel>
+                                <TextBlock>
+                                        <Run FontFamily="{StaticResource SegoeFluentIcon}"
+                                             Text="&#xec50;"
+                                             BaselineAlignment="Center" />
+                                        <Run Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[SelectFile], Mode=OneWay}" />
+                                </TextBlock>
                             </ws:Button>
                         </ws:StackPanel>
                     </Grid>

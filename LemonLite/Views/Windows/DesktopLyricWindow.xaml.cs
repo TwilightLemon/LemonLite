@@ -5,6 +5,7 @@ using LemonLite.Services;
 using LemonLite.Utils;
 using LemonLite.ViewModels;
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -74,6 +75,18 @@ namespace LemonLite.Views.Windows
                 ApplyBackground();
                 if (ShouldAddShadowEffect)
                     LrcPanel.Effect = shadowEffect;
+                if (_isIslandMode)
+                {
+                    if (_settingsMgr.Data.UsePopupAnimation)
+                    {
+                        //windowRoot 自动大小，最大宽度由窗口限制
+                        windowRoot.HorizontalAlignment = HorizontalAlignment.Center;
+                    }
+                    else
+                    {
+                        windowRoot.HorizontalAlignment = HorizontalAlignment.Stretch;
+                    }
+                }
             });
         }
 
@@ -131,6 +144,7 @@ namespace LemonLite.Views.Windows
 
             _restoredWidth = Width;
             _restoredHeight = Height;
+            Debug.WriteLine("Enter and recorded./");
 
             AnimatedBackgroundBd.TopCutRadius = 8d;
             AnimatedBackgroundBd.CornerRadius = new CornerRadius(24);
@@ -138,8 +152,15 @@ namespace LemonLite.Views.Windows
             ApplyBackground();
             LrcPanel.Effect = null;
 
-            //windowRoot 自动大小，最大宽度由窗口限制
-            windowRoot.HorizontalAlignment = HorizontalAlignment.Center;
+            if (_settingsMgr.Data.UsePopupAnimation)
+            {
+                //windowRoot 自动大小，最大宽度由窗口限制
+                windowRoot.HorizontalAlignment = HorizontalAlignment.Center;
+            }
+            else
+            {
+                windowRoot.HorizontalAlignment = HorizontalAlignment.Stretch;
+            }
             windowRoot.BeginAnimation(WidthProperty, null);
             windowRoot.BeginAnimation(HeightProperty, null);
             windowRoot.Width = double.NaN;
@@ -175,13 +196,16 @@ namespace LemonLite.Views.Windows
             windowRoot.Width = double.NaN;
             windowRoot.Height = double.NaN;
 
-            this.Width = _restoredWidth > 0 ? _restoredWidth : 720;
-            this.Height = _restoredHeight > 0 ? _restoredHeight : 145;
-
             if (_resizeAdorner != null)
             {
                 _resizeAdorner.IslandMode = false;
             }
+
+            Dispatcher.BeginInvoke(async() => {
+                await Task.Delay(300);
+                this.Width = _restoredWidth > 0 ? _restoredWidth : 720;
+                this.Height = _restoredHeight > 0 ? _restoredHeight : 145;
+            }, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
         }
 
         // 根据有无歌词切换 Island 的两种形态
@@ -206,7 +230,15 @@ namespace LemonLite.Views.Windows
                 windowRoot.Width = double.NaN;
                 windowRoot.Height = double.NaN;
                 windowRoot.VerticalAlignment = VerticalAlignment.Stretch;
-                windowRoot.HorizontalAlignment = HorizontalAlignment.Center;
+                if (_settingsMgr.Data.UsePopupAnimation)
+                {
+                    //windowRoot 自动大小，最大宽度由窗口限制
+                    windowRoot.HorizontalAlignment = HorizontalAlignment.Center;
+                }
+                else
+                {
+                    windowRoot.HorizontalAlignment = HorizontalAlignment.Stretch;
+                }
             }
         }
         private (ScaleTransform scale, TranslateTransform translate) EnsureWindowRootTransformGroup()
@@ -230,7 +262,7 @@ namespace LemonLite.Views.Windows
         {
             if(_isIslandMode)
             {
-                if (_isMouseIn)
+                if (_isMouseIn || !_settingsMgr.Data.UsePopupAnimation)
                 {
                     callback();
                     return;
@@ -283,7 +315,7 @@ namespace LemonLite.Views.Windows
         {
             if (_isIslandMode)
             {
-                if (_isMouseIn)
+                if (_isMouseIn || !_settingsMgr.Data.UsePopupAnimation)
                 {
                     return;
                 }

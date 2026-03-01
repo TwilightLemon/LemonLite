@@ -18,13 +18,13 @@
         <ws:StackPanel x:Name="SettingsList" Spacing="8">
             <TextBlock Margin="0,8"
                        FontSize="22"
-                       Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Lyric View Settings], Mode=OneWay}" />
+                       Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[LyricViewSettings], Mode=OneWay}" />
 
             <Border Height="48"
                     Background="{DynamicResource MaskColor}"
                     CornerRadius="12">
                 <ToggleButton Margin="12,0,12,0"
-                              Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Show Translation], Mode=OneWay}"
+                              Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[ShowTranslation], Mode=OneWay}"
                               IsChecked="{Binding ShowTranslation}"
                               Style="{DynamicResource RoundToggleButtonStyle}" />
             </Border>
@@ -33,7 +33,7 @@
                     Background="{DynamicResource MaskColor}"
                     CornerRadius="12">
                 <ToggleButton Margin="12,0,12,0"
-                              Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Show Romaji], Mode=OneWay}"
+                              Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[ShowRomaji], Mode=OneWay}"
                               IsChecked="{Binding ShowRomaji}"
                               Style="{DynamicResource RoundToggleButtonStyle}" />
             </Border>
@@ -45,7 +45,7 @@
                     <TextBlock Margin="12,0"
                                HorizontalAlignment="Left"
                                VerticalAlignment="Center"
-                               Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Font Size], Mode=OneWay}" />
+                               Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[FontSize], Mode=OneWay}" />
                     <ws:TextBox Height="24"
                                 MinWidth="100"
                                 Margin="0,0,24,0"
@@ -64,7 +64,7 @@
                     <TextBlock Margin="12,0"
                                HorizontalAlignment="Left"
                                VerticalAlignment="Center"
-                               Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Font Size When Mini Mode], Mode=OneWay}" />
+                               Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[FontSizeWhenMiniMode], Mode=OneWay}" />
                     <ws:TextBox Height="24"
                                 MinWidth="100"
                                 Margin="0,0,24,0"
@@ -83,7 +83,7 @@
                     <TextBlock Margin="12,0"
                                HorizontalAlignment="Left"
                                VerticalAlignment="Center"
-                               Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Font Family], Mode=OneWay}" />
+                               Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[FontFamily], Mode=OneWay}" />
                     <ws:TextBox Height="24"
                                 MinWidth="220"
                                 Margin="0,0,24,0"

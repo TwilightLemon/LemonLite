@@ -14,7 +14,7 @@
         Title="DesktopLyricWindow"
         Width="720"
         Height="145"
-        MinHeight="36"
+        MinHeight="32"
         d:DataContext="{d:DesignInstance Type=vm:DesktopLyricWindowViewModel}"
         AllowsTransparency="True"
         Background="{x:Null}"
@@ -37,14 +37,14 @@
     <Window.ContextMenu>
         <ContextMenu>
             <MenuItem Command="{Binding Data.FontSizeUpCommand, Source={StaticResource proxy}}"
-                      Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Font size ++], Mode=OneWay}"
+                      Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[FontSizeUp], Mode=OneWay}"
                       Icon="{x:Null}" />
             <MenuItem Command="{Binding Data.FontSizeDownCommand, Source={StaticResource proxy}}"
-                      Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Font size --], Mode=OneWay}"
+                      Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[FontSizeDown], Mode=OneWay}"
                       Icon="{x:Null}" />
         </ContextMenu>
     </Window.ContextMenu>
-    <ws:BoxPanel x:Name="windowRoot" Background="Transparent">
+    <ws:BoxPanel x:Name="windowRoot" Background="#01000000">
         <ut:TopCutBorder x:Name="IsLandBaseBackground"
                          Background="{DynamicResource IslandBackgroundColor}"
                          CornerRadius="24"
@@ -102,14 +102,14 @@
                               IsChecked="{Binding ShowTranslation}"
                               Style="{StaticResource IconToggleButton}"
                               Tag="{StaticResource Icon_Trans}"
-                              ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Show Translation and Romaji], Mode=OneWay}" />
+                              ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[ShowTranslationAndRomaji], Mode=OneWay}" />
                 <ws:Button x:Name="PlayLastBtn"
                            Width="48"
                            Height="48"
                            HorizontalAlignment="Left"
                            Command="{Binding PlayLastCommand}"
                            Style="{StaticResource SimpleIconButtonStyleForWs}"
-                           ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Play the last one], Mode=OneWay}">
+                           ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[PlayTheLastOne], Mode=OneWay}">
                     <Path Height="22"
                           Data="{DynamicResource PlayIcon_Last}"
                           Fill="{DynamicResource ForeColor}"
@@ -120,7 +120,7 @@
                            Height="54"
                            Command="{Binding PlayOrPauseCommand}"
                            Style="{StaticResource SimpleIconButtonStyleForWs}"
-                           ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Play or Pause], Mode=OneWay}">
+                           ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[PlayOrPause], Mode=OneWay}">
                     <ws:ConditionalControl Condition="{Binding IsPlaying}">
                         <ws:ConditionalControl.ContentWhenFalse>
                             <Path Data="{DynamicResource PlayIcon_Play}"
@@ -140,7 +140,7 @@
                            HorizontalAlignment="Right"
                            Command="{Binding PlayNextCommand}"
                            Style="{StaticResource SimpleIconButtonStyleForWs}"
-                           ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Play the next one], Mode=OneWay}">
+                           ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[PlayTheNextOne], Mode=OneWay}">
                     <Path Height="22"
                           Data="{DynamicResource PlayIcon_Next}"
                           Fill="{DynamicResource ForeColor}"
@@ -151,7 +151,7 @@
                            Padding="12"
                            Command="{Binding ShowMainWindowCommand}"
                            Style="{StaticResource SimpleIconButtonStyleForWs}"
-                           ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Show Main Window], Mode=OneWay}">
+                           ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[ShowMainWindow], Mode=OneWay}">
                     <Path Height="22"
                           Data="{StaticResource Icon_Show}"
                           Fill="{DynamicResource ForeColor}"
@@ -169,7 +169,7 @@
                        FontFamily="{StaticResource SegoeFluentIcon}"
                        FontSize="10"
                        Style="{StaticResource SimpleIconButtonStyleForWs}"
-                       ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Close desktop lyric viewer], Mode=OneWay}" />
+                       ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[CloseDesktopLyricViewer], Mode=OneWay}" />
         </Grid>
     </ws:BoxPanel>
 </Window>

@@ -44,7 +44,6 @@ public partial class DesktopLyricWindowViewModel : ObservableObject
         _uiResourceService.OnColorModeChanged += OnColorModeChanged;
 
         ApplySettings();
-        Smtc_CoverUpdated();
         LyricControl.Dispatcher.BeginInvoke(()=> UpdateLrc(0));
     }
 
@@ -122,6 +121,7 @@ public partial class DesktopLyricWindowViewModel : ObservableObject
         if (_lyricControl != null)
         {
             CustomLyricControlStyle();
+            Smtc_CoverUpdated();
             ShowTranslation = _settingsMgr.Data.ShowTranslation;
             ShowRomaji = _settingsMgr.Data.ShowRomaji;
             _lyricControl.FontFamily = new FontFamily(_settingsMgr.Data.FontFamily);

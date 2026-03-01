@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Resources;
-using System.IO;
 using System.Runtime.CompilerServices;
 
 namespace LemonLite.Services
@@ -63,8 +62,6 @@ namespace LemonLite.Services
             {
                 try
                 {
-                    // 转换键名，将空格替换为驼峰命名
-                    var resourceKey = ConvertToResourceKey(key);
                     // 获取当前语言对应的CultureInfo
                     CultureInfo culture;
                     if (_currentLanguage == "zh")
@@ -76,7 +73,7 @@ namespace LemonLite.Services
                         culture = new CultureInfo("en-US");
                     }
                     // 指定CultureInfo获取资源字符串
-                    var value = _resourceManager.GetString(resourceKey, culture);
+                    var value = _resourceManager.GetString(key, culture);
                     return value ?? key;
                 }
                 catch
@@ -84,52 +81,6 @@ namespace LemonLite.Services
                     return key;
                 }
             }
-        }
-
-        private string ConvertToResourceKey(string key)
-        {
-            // 将空格替换为驼峰命名，并移除特殊字符
-            var parts = key.Split(' ');
-            var result = parts[0];
-            for (int i = 1; i < parts.Length; i++)
-            {
-                if (parts[i].Length > 0)
-                {
-                    result += char.ToUpper(parts[i][0]) + parts[i].Substring(1);
-                }
-            }
-            // 特殊处理
-            if (key == "Welcome~")
-                return "Welcome";
-            if (key == "SMTC Apps")
-                return "SmtcApps";
-            if (key == "Configure which apps are monitored. Click an app to configure its sources and aliases.")
-                return "SmtcAppsDescription";
-            if (key == "Play the last one")
-                return "PlayTheLastOne";
-            if (key == "Play or Pause")
-                return "PlayOrPause";
-            if (key == "Play the next one")
-                return "PlayTheNextOne";
-            if (key == "Create Metadata Alias")
-                return "CreateMetadataAlias";
-            if (key == "Show Translation and Romaji")
-                return "ShowTranslationAndRomaji";
-            if (key == "Show Main Window")
-                return "ShowMainWindow";
-            if (key == "Close desktop lyric viewer")
-                return "CloseDesktopLyricViewer";
-            if (key == "Language")
-                return "Language";
-            if (key == "English")
-                return "English";
-            if (key == "中文")
-                return "Chinese";
-            if (key == "Font size ++")
-                return "FontSizeUp";
-            if (key == "Font size --")
-                return "FontSizeDown";
-            return result;
         }
 
         public void SetLanguage(string language)
