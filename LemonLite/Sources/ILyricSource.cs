@@ -1,4 +1,5 @@
 using LemonLite.Entities;
+using Lyricify.Lyrics.Models;
 using Lyricify.Lyrics.Searchers;
 using System.Threading;
 using System.Threading.Tasks;

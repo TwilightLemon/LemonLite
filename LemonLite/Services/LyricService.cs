@@ -140,11 +140,18 @@ public class LyricService
         _loadingCts?.Dispose();
         _loadingCts = new CancellationTokenSource();
         var cancellationToken = _loadingCts.Token;
-        int durationMs = (int)_smtcService.Duration * 1000;
+        var timeline = _smtcService.SmtcListener.GetTimeline();
+        int? durationMs = null;
+        if ( timeline != null && timeline.EndTime > timeline.StartTime)
+        {
+            //valid timeline
+            durationMs = (int)timeline.EndTime.TotalMilliseconds;
+        }
+        
         try
         {
             var sources = _appOption.Data.GetSearchSources(mediaId);
-            if (await LyricHelper.SearchMusicAsync(info.Title, info.Artist, info.Album, durationMs, sources, cancellationToken) is { Id: not null } musicMetaData)
+            if (await LyricHelper.SearchMusicAsync(info.Title, info.Artist, info.Album, durationMs, sources) is { Id: not null } musicMetaData)
             {
                 if (cancellationToken.IsCancellationRequested) return;
 

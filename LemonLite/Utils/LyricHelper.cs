@@ -18,7 +18,7 @@ public static class LyricHelper
         return src.GetLyricAsync(id, cancellationToken);
     }
 
-    public static async Task<MusicMetaData?> SearchMusicAsync(string title, string artist, string album, int durationMs, IReadOnlyList<string>? sources = null, CancellationToken cancellationToken = default)
+    public static async Task<MusicMetaData?> SearchMusicAsync(string title, string artist, string? album, int? durationMs, IReadOnlyList<string>? sources = null)
     {
         try
         {
@@ -35,7 +35,7 @@ public static class LyricHelper
                 if (src is null) continue;
 
                 var result = await src.CreateSearcher().SearchForResult(metadata);
-                if (result is not null && result.MatchType >= CompareHelper.MatchType.Medium)
+                if (result is not null && result.MatchType >= CompareHelper.MatchType.PrettyHigh)
                 {
                     var mapped = src.MapSearchResult(result);
                     if (mapped is not null) return mapped;
@@ -43,7 +43,10 @@ public static class LyricHelper
             }
         }
         catch { throw; }
-        return null;
+        if (durationMs == null)
+            return null;
+        //retry without durationMs
+        return await SearchMusicAsync(title, artist, album, null, sources);
     }
 
     public static async Task<LyricData?> GetLyricById(string id, string source, CancellationToken cancellationToken = default)

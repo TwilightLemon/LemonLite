@@ -28,7 +28,7 @@ public partial class LyricLineControl : UserControl
     public ILineInfo? MainLineInfo { get; private set; }
     public Dictionary<ISyllableInfo, HighlightTextBlock> MainSyllableLrcs => mainSyllableLrcs;
 
-    private readonly bool _isPlainLrc = false;
+    private bool _isPlainLrc = false;
 
     //reserved for desktop lyric view
     public LyricLineControl()
@@ -50,7 +50,6 @@ public partial class LyricLineControl : UserControl
         InitializeComponent();
         MainLineInfo = info;
         Effect = new BlurEffect() { Radius = InActiveLrcBlurRadius };
-        _isPlainLrc = true;
         LoadPlainLrc(info.Text,fontsize);
     }
 
@@ -76,6 +75,7 @@ public partial class LyricLineControl : UserControl
         };
         //tb.SetResourceReference(ForegroundProperty, "InActiveLrcForeground");
         MainLrcContainer.Children.Add(tb);
+        _isPlainLrc = true;
     }
 
     public void LoadPlainRomaji(string? romaji)
@@ -91,6 +91,7 @@ public partial class LyricLineControl : UserControl
 
     public void LoadMainLrc(List<ISyllableInfo> words, double fontSize = 22)
     {
+        _isPlainLrc = false;
         MainLrcContainer.Children.Clear();
         mainSyllableLrcs.Clear();
         ClearHighlighter();

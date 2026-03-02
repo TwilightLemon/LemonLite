@@ -144,7 +144,6 @@ namespace LemonLite.Views.Windows
 
             _restoredWidth = Width;
             _restoredHeight = Height;
-            Debug.WriteLine("Enter and recorded./");
 
             AnimatedBackgroundBd.TopCutRadius = 8d;
             AnimatedBackgroundBd.CornerRadius = new CornerRadius(24);
@@ -445,6 +444,16 @@ namespace LemonLite.Views.Windows
                 windowRoot.BeginAnimation(HeightProperty, null);
                 windowRoot.Width = double.NaN;
                 windowRoot.Height = double.NaN;
+
+                if (!_hasLyricSource)
+                {
+                    // 无歌词：固定小胶囊
+                    this.SizeToContent = SizeToContent.Manual;
+                    LrcHost.Visibility = Visibility.Collapsed;
+                    windowRoot.Width = IslandEmptyWidth;
+                    windowRoot.Height = IslandEmptyHeight;
+                    windowRoot.VerticalAlignment = VerticalAlignment.Top;
+                }
                 return;
             }
 

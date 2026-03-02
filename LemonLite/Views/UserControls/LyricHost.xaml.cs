@@ -30,7 +30,6 @@ public class LyricItemsControl : ItemsControl
     public ScrollViewer? InternalScrollViewer { get; private set; }
 
     public double MainLrcFontSize { get; set; } = 24;
-    public double TransLrcFontSize { get; set; } = 18;
     public bool ShowTranslation { get; set; } = true;
     public bool ShowRomaji { get; set; } = true;
     public LyricLineData? CurrentItem { get; set; }
@@ -58,7 +57,7 @@ public class LyricItemsControl : ItemsControl
         if (element is SelectiveLyricLine container && item is LyricLineData data)
         {
             container.Margin = LyricSpacing;
-            container.LoadData(data, MainLrcFontSize, TransLrcFontSize, ShowTranslation, ShowRomaji);
+            container.LoadData(data, MainLrcFontSize, ShowTranslation, ShowRomaji);
             if (data == CurrentItem && container.LyricLine != null)
             {
                 container.LyricLine.IsCurrent = true;
@@ -90,7 +89,7 @@ public sealed class SelectiveLyricLine : Border
         MouseDown += SelectiveLyricLine_MouseDown;
     }
 
-    public void LoadData(LyricLineData data, double mainFontSize, double transFontSize, bool showTranslation, bool showRomaji)
+    public void LoadData(LyricLineData data, double mainFontSize, bool showTranslation, bool showRomaji)
     {
         LyricLineControl lrc;
         if (data.LineInfo is SyllableLineInfo syllable)
@@ -100,7 +99,6 @@ public sealed class SelectiveLyricLine : Border
         else if (data.LineInfo is LineInfo pure)
         {
             lrc = new LyricLineControl(pure, mainFontSize);
-            lrc.FontSize = transFontSize;
         }
         else return;
 
@@ -219,18 +217,17 @@ public partial class LyricHost : UserControl
     public void ApplyFontSize(double size, double scale)
     {
         mainLrcFontSize = size;
-        transLrcFontSize = scale;
-        this.FontSize = size * scale;
+        this.FontSize = transLrcFontSize = size * scale;
         LrcItemsControl.MainLrcFontSize = size;
-        LrcItemsControl.TransLrcFontSize = scale;
         ForEachRealizedContainer(line =>
         {
             if (line.LyricLine != null)
             {
-                foreach (HighlightTextBlock tb in line.LyricLine.MainLrcContainer.Children)
+                foreach (Control tb in line.LyricLine.MainLrcContainer.Children)
                 {
                     tb.FontSize = size;
                 }
+                line.LyricLine.FontSize = transLrcFontSize;
             }
         });
         _ = WaitToScroll();
@@ -282,7 +279,6 @@ public partial class LyricHost : UserControl
         Clear();
 
         LrcItemsControl.MainLrcFontSize = mainLrcFontSize;
-        LrcItemsControl.TransLrcFontSize = transLrcFontSize;
         LrcItemsControl.ShowTranslation = isShowTranslation;
         LrcItemsControl.ShowRomaji = isShowRomaji;
         LrcItemsControl.LyricSpacing = lyricSpacing;
@@ -416,8 +412,6 @@ public partial class LyricHost : UserControl
             double scrollDelta = Math.Abs(targetOffset - currentOffset);
 
             if (scrollDelta < 1) return;
-
-            Debug.WriteLine($"Animate lyricHost scrolling: {targetOffset}");
 
             var animation = new DoubleAnimation
             {

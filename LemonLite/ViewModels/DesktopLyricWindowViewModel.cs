@@ -11,6 +11,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 
 namespace LemonLite.ViewModels;
@@ -127,25 +128,10 @@ public partial class DesktopLyricWindowViewModel : ObservableObject
             _lyricControl.FontFamily = new FontFamily(_settingsMgr.Data.FontFamily);
             _lyricControl.FontSize = _settingsMgr.Data.LrcFontSize * 0.6;
 
-            foreach (var block in _lyricControl.MainSyllableLrcs)
-                block.Value.FontSize = _settingsMgr.Data.LrcFontSize;
+            foreach (Control block in _lyricControl.MainLrcContainer.Children)
+                block.FontSize = _settingsMgr.Data.LrcFontSize;
         }
 #pragma warning restore MVVMTK0034
-    }
-
-    private static bool IsDarkMode()
-    {
-        try
-        {
-            if (Application.Current.Resources["ForeColor"] is SolidColorBrush brush)
-            {
-                var c = brush.Color;
-                double luminance = 0.2126 * c.R + 0.7152 * c.G + 0.0722 * c.B;
-                return luminance > 128;
-            }
-        }
-        catch { }
-        return true;
     }
 
     private static readonly SolidColorBrush NormalLrcColor = new(Color.FromRgb(0xEF, 0xEF, 0xEF));
@@ -160,7 +146,7 @@ public partial class DesktopLyricWindowViewModel : ObservableObject
         BackgroundVisibility = _settingsMgr.Data.EnableBackground
             ? Visibility.Visible : Visibility.Collapsed;
 
-        bool isDark = IsDarkMode();
+        bool isDark = _uiResourceService.GetIsDarkMode();
         if (_settingsMgr.Data.UseHighlightLyricEffect)
         {
             _lyricControl.FontWeight = FontWeights.Bold;
@@ -272,6 +258,9 @@ public partial class DesktopLyricWindowViewModel : ObservableObject
             LyricControl.LoadRomajiLrc(new([]));
 
         LyricControl.TranslationLrc.Text = lrc.Trans;
+
+        if (_lyricService.IsPureLrc)
+            LyricControl.SetActiveState(true);
 
         // 修复"高一截"bug：
         // 翻译行必须同时满足"开关开启 + 本行有翻译内容"才显示。

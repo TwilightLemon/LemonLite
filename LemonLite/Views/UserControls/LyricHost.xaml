@@ -12,10 +12,11 @@
     <local:LyricItemsControl x:Name="LrcItemsControl"
                              FocusVisualStyle="{x:Null}"
                              ScrollViewer.CanContentScroll="True"
-                             VirtualizingPanel.CacheLength="4"
+                             VirtualizingPanel.CacheLength="8"
                              VirtualizingPanel.CacheLengthUnit="Item"
                              VirtualizingPanel.IsVirtualizing="True"
-                             VirtualizingPanel.ScrollUnit="Pixel">
+                             VirtualizingPanel.ScrollUnit="Pixel"
+                             VirtualizingPanel.VirtualizationMode="Recycling">
         <ItemsControl.Template>
             <ControlTemplate TargetType="ItemsControl">
                 <base:ScrollViewer x:Name="PART_ScrollViewer"

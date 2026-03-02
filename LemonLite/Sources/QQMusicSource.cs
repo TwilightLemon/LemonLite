@@ -1,5 +1,6 @@
 using LemonLite.Entities;
 using LemonLite.Utils;
+using Lyricify.Lyrics.Models;
 using Lyricify.Lyrics.Searchers;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net.Http;
