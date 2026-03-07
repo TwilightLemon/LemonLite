@@ -12,7 +12,7 @@
     <local:LyricItemsControl x:Name="LrcItemsControl"
                              FocusVisualStyle="{x:Null}"
                              ScrollViewer.CanContentScroll="True"
-                             VirtualizingPanel.CacheLength="8"
+                             VirtualizingPanel.CacheLength="4"
                              VirtualizingPanel.CacheLengthUnit="Item"
                              VirtualizingPanel.IsVirtualizing="True"
                              VirtualizingPanel.ScrollUnit="Pixel"

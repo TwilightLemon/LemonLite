@@ -148,9 +148,6 @@ namespace LemonLite.Views.Windows
             AnimatedBackgroundBd.TopCutRadius = 8d;
             AnimatedBackgroundBd.CornerRadius = new CornerRadius(24);
 
-            CoverImgBd.Visibility= Visibility.Visible;
-            AudioBd.Visibility= Visibility.Visible;
-
             ApplyBackground();
             LrcPanel.Effect = null;
 
@@ -197,9 +194,6 @@ namespace LemonLite.Views.Windows
             windowRoot.BeginAnimation(HeightProperty, null);
             windowRoot.Width = double.NaN;
             windowRoot.Height = double.NaN;
-
-            CoverImgBd.Visibility = Visibility.Collapsed;
-            AudioBd.Visibility = Visibility.Collapsed;
 
             if (_resizeAdorner != null)
             {
@@ -267,106 +261,99 @@ namespace LemonLite.Views.Windows
         {
             if(_isIslandMode)
             {
-                if (_isMouseIn || !_settingsMgr.Data.UsePopupAnimation)
+                if (!_isMouseIn && _settingsMgr.Data.UsePopupAnimation)
                 {
-                    callback();
-                    return;
+                    //收回隐藏
+                    Storyboard sb = new();
+                    EnsureWindowRootTransformGroup();
+
+                    DoubleAnimation scaleAni = new(1, 0, TimeSpan.FromMilliseconds(300))
+                    {
+                        EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseIn }
+                    };
+                    Storyboard.SetTarget(scaleAni, windowRoot);
+                    Storyboard.SetTargetProperty(scaleAni, new PropertyPath("(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"));
+
+                    DoubleAnimation yAni = new(0, -windowRoot.ActualHeight, TimeSpan.FromMilliseconds(300))
+                    {
+                        EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseIn }
+                    };
+                    Storyboard.SetTarget(yAni, windowRoot);
+                    Storyboard.SetTargetProperty(yAni, new PropertyPath("(UIElement.RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.Y)"));
+
+                    sb.Children.Add(scaleAni);
+                    sb.Children.Add(yAni);
+                    sb.Completed += delegate
+                    {
+                        LrcScrollViewer.BeginAnimation(ScrollViewerUtils.HorizontalOffsetProperty, null);
+                        ScrollViewerUtils.SetHorizontalOffset(LrcScrollViewer, 0);
+                        callback?.Invoke();
+                    };
+                    sb.Begin();
                 }
-                //收回隐藏
-                Storyboard sb = new();
-                EnsureWindowRootTransformGroup();
-
-                DoubleAnimation scaleAni = new(1, 0, TimeSpan.FromMilliseconds(300))
-                {
-                    EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseIn }
-                };
-                Storyboard.SetTarget(scaleAni, windowRoot);
-                Storyboard.SetTargetProperty(scaleAni, new PropertyPath("(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"));
-
-                DoubleAnimation yAni = new(0, -windowRoot.ActualHeight, TimeSpan.FromMilliseconds(300))
-                {
-                    EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseIn }
-                };
-                Storyboard.SetTarget(yAni, windowRoot);
-                Storyboard.SetTargetProperty(yAni, new PropertyPath("(UIElement.RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.Y)"));
-
-                sb.Children.Add(scaleAni);
-                sb.Children.Add(yAni);
-                sb.Completed += delegate 
-                {
-                    LrcScrollViewer.BeginAnimation(ScrollViewerUtils.HorizontalOffsetProperty, null);
-                    ScrollViewerUtils.SetHorizontalOffset(LrcScrollViewer, 0);
-                    callback?.Invoke();
-                };
-                sb.Begin();
             }
-            else
+
+            var blur = new BlurEffect() { Radius = 0 };
+            LrcHost.Effect = blur;
+            LrcHost.BeginAnimation(OpacityProperty, new DoubleAnimation(0, TimeSpan.FromMilliseconds(300)));
+            var anim = new DoubleAnimation(20, TimeSpan.FromMilliseconds(300));
+            anim.Completed += delegate
             {
-                var blur = new BlurEffect() { Radius = 0 };
-                LrcHost.Effect = blur;
-                LrcHost.BeginAnimation(OpacityProperty, new DoubleAnimation(0, TimeSpan.FromMilliseconds(300)));
-                var anim = new DoubleAnimation(20, TimeSpan.FromMilliseconds(300));
-                anim.Completed += delegate
-                {
-                    LrcScrollViewer.BeginAnimation(ScrollViewerUtils.HorizontalOffsetProperty, null);
-                    ScrollViewerUtils.SetHorizontalOffset(LrcScrollViewer, 0);
-                    callback?.Invoke();
-                };
-                blur.BeginAnimation(BlurEffect.RadiusProperty, anim);
-            }
+                LrcScrollViewer.BeginAnimation(ScrollViewerUtils.HorizontalOffsetProperty, null);
+                ScrollViewerUtils.SetHorizontalOffset(LrcScrollViewer, 0);
+                callback?.Invoke();
+            };
+            blur.BeginAnimation(BlurEffect.RadiusProperty, anim);
         }
 
         private async void ShowLyricAnimation(int gap)
         {
             if (_isIslandMode)
             {
-                if (_isMouseIn || !_settingsMgr.Data.UsePopupAnimation)
+                if (!_isMouseIn && _settingsMgr.Data.UsePopupAnimation)
                 {
-                    return;
-                }
-                Storyboard sb = new();
-                var (scale, translate) = EnsureWindowRootTransformGroup();
-                scale.BeginAnimation(ScaleTransform.ScaleXProperty, null);
-                translate.BeginAnimation(TranslateTransform.YProperty, null);
-                LrcHost.BeginAnimation(OpacityProperty, null);
-                LrcHost.Effect = null;
-
-                DoubleAnimation scaleAni = new(0, 1, TimeSpan.FromMilliseconds(300))
-                {
-                    EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseOut }
-                };
-                Storyboard.SetTarget(scaleAni, windowRoot);
-                Storyboard.SetTargetProperty(scaleAni, new PropertyPath("(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"));
-
-                DoubleAnimation yAni = new(-windowRoot.ActualHeight, 0, TimeSpan.FromMilliseconds(300))
-                {
-                    EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseOut }
-                };
-                Storyboard.SetTarget(yAni, windowRoot);
-                Storyboard.SetTargetProperty(yAni, new PropertyPath("(UIElement.RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.Y)"));
-
-                sb.Children.Add(scaleAni);
-                sb.Children.Add(yAni);
-                sb.Completed += delegate
-                {
+                    Storyboard sb = new();
+                    var (scale, translate) = EnsureWindowRootTransformGroup();
                     scale.BeginAnimation(ScaleTransform.ScaleXProperty, null);
                     translate.BeginAnimation(TranslateTransform.YProperty, null);
-                };
-                sb.Begin();
-            }
-            else
-            {
-                var blur = new BlurEffect() { Radius = 20 };
-                LrcHost.Effect = blur;
-                LrcHost.BeginAnimation(OpacityProperty, new DoubleAnimation(1, TimeSpan.FromMilliseconds(200)));
-                var anim = new DoubleAnimation(0, TimeSpan.FromMilliseconds(200));
-                blur.BeginAnimation(BlurEffect.RadiusProperty, anim);
-                anim.Completed += delegate
-                {
                     LrcHost.BeginAnimation(OpacityProperty, null);
                     LrcHost.Effect = null;
-                };
+
+                    DoubleAnimation scaleAni = new(0, 1, TimeSpan.FromMilliseconds(300))
+                    {
+                        EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseOut }
+                    };
+                    Storyboard.SetTarget(scaleAni, windowRoot);
+                    Storyboard.SetTargetProperty(scaleAni, new PropertyPath("(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"));
+
+                    DoubleAnimation yAni = new(-windowRoot.ActualHeight, 0, TimeSpan.FromMilliseconds(300))
+                    {
+                        EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseOut }
+                    };
+                    Storyboard.SetTarget(yAni, windowRoot);
+                    Storyboard.SetTargetProperty(yAni, new PropertyPath("(UIElement.RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.Y)"));
+
+                    sb.Children.Add(scaleAni);
+                    sb.Children.Add(yAni);
+                    sb.Completed += delegate
+                    {
+                        scale.BeginAnimation(ScaleTransform.ScaleXProperty, null);
+                        translate.BeginAnimation(TranslateTransform.YProperty, null);
+                    };
+                    sb.Begin();
+                }
             }
+
+            var blur = new BlurEffect() { Radius = 20 };
+            LrcHost.Effect = blur;
+            LrcHost.BeginAnimation(OpacityProperty, new DoubleAnimation(1, TimeSpan.FromMilliseconds(200)));
+            var anim = new DoubleAnimation(0, TimeSpan.FromMilliseconds(200));
+            blur.BeginAnimation(BlurEffect.RadiusProperty, anim);
+            anim.Completed += delegate
+            {
+                LrcHost.BeginAnimation(OpacityProperty, null);
+                LrcHost.Effect = null;
+            };
         }
 
         public void SetHasLyricSource(bool hasLyric)
@@ -407,8 +394,10 @@ namespace LemonLite.Views.Windows
                 _isIslandMode ? _restoredWidth : Width,
                 _isIslandMode ? _restoredHeight : Height);
             _settingsMgr.Data.IsIslandMode = _isIslandMode;
-            if(_isIslandMode ) 
+            if(_isIslandMode ) {
                 _settingsMgr.Data.IslandWindowLeft = Left;
+                _settingsMgr.Data.IslandMaxWidth = Width;
+            }
             vm.Dispose();
         }
 
@@ -499,6 +488,8 @@ namespace LemonLite.Views.Windows
                 Top = 0;
                 if(_settingsMgr.Data.IslandWindowLeft is double left && left > 0) 
                     Left = left;
+                if (_settingsMgr.Data.IslandMaxWidth is double width)
+                    Width = width;
             }
             if (ShouldAddShadowEffect)
                 LrcPanel.Effect = shadowEffect;

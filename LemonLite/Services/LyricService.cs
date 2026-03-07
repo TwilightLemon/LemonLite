@@ -151,7 +151,14 @@ public class LyricService
         try
         {
             var sources = _appOption.Data.GetSearchSources(mediaId);
-            if (await LyricHelper.SearchMusicAsync(info.Title, info.Artist, info.Album, durationMs, sources) is { Id: not null } musicMetaData)
+
+            //retry with or without Album or duration metadata.
+            var searchResult = await LyricHelper.SearchMusicAsync(info.Title, info.Artist, info.Album, durationMs, sources)
+                ?? await LyricHelper.SearchMusicAsync(info.Title, info.Artist, info.Album, null, sources)
+                ?? await LyricHelper.SearchMusicAsync(info.Title, info.Artist, null, durationMs, sources)
+                ?? await LyricHelper.SearchMusicAsync(info.Title, info.Artist, null, null, sources);
+
+            if (searchResult is { Id: not null } musicMetaData)
             {
                 if (cancellationToken.IsCancellationRequested) return;
 

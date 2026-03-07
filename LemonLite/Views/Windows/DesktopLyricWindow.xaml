@@ -58,7 +58,7 @@
                     <ImageBrush.RelativeTransform>
                         <TransformGroup>
                             <TranslateTransform Y="0.5" />
-                            <ScaleTransform CenterX="0.5" CenterY="1" ScaleX="2.4" ScaleY="2.4" />
+                            <ScaleTransform CenterX="0.5" CenterY="1" ScaleX="6" ScaleY="2.4" />
                             <RotateTransform Angle="0" CenterX="0.5" CenterY="1">
                                 <i:Interaction.Behaviors>
                                     <behavior:RotateWithPlayingStateBehavior IsEnabled="{Binding IsBackgroundValid}" IsPlaying="{Binding IsPlaying}" />
@@ -73,22 +73,9 @@
             </i:Interaction.Behaviors>
         </ut:TopCutBorder>
         <Grid x:Name="LrcPanel" IsHitTestVisible="False">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="1*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <Border x:Name="CoverImgBd"
-                    Visibility="Collapsed"
-                    Width="32"
-                    Height="32"
-                    CornerRadius="16"
-                    Margin="18 4 4 4"
-                    Background="{Binding CoverImage}"
-                    RenderOptions.BitmapScalingMode="HighQuality"/>
             <ScrollViewer x:Name="LrcScrollViewer"
-                          Margin="0,8"
                           Grid.Column="1"
+                          Margin="24,8"
                           HorizontalScrollBarVisibility="Hidden"
                           PanningMode="HorizontalOnly"
                           VerticalScrollBarVisibility="Disabled">
@@ -97,21 +84,13 @@
                                 VerticalAlignment="Center"
                                 Content="{Binding LyricControl}" />
             </ScrollViewer>
-            <Border Visibility="Collapsed"
-                    Grid.Column="2"
-                    x:Name="AudioBd"
-                    Width="32"
-                    Height="32"
-                    CornerRadius="16"
-                    Margin="4 4 18 4"
-                    Background="#0CFFFFFF" />
         </Grid>
 
         <!--  功能区 鼠标进入后显示  -->
         <Grid x:Name="FuncPanel"
+              d:IsHidden="True"
               d:Visibility="Visible"
-              Visibility="Collapsed"
-              d:IsHidden="True">
+              Visibility="Collapsed">
             <Border Background="{DynamicResource WindowBackgroundColor}"
                     BorderBrush="{DynamicResource BorderColor}"
                     BorderThickness="1"

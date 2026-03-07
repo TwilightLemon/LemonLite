@@ -42,11 +42,9 @@ public static class LyricHelper
                 }
             }
         }
-        catch { throw; }
-        if (durationMs == null)
-            return null;
-        //retry without durationMs
-        return await SearchMusicAsync(title, artist, album, null, sources);
+        catch {
+        }
+        return null;
     }
 
     public static async Task<LyricData?> GetLyricById(string id, string source, CancellationToken cancellationToken = default)

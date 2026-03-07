@@ -1,6 +1,7 @@
 using LemonLite.Configs;
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace LemonLite.Utils;
 
@@ -26,6 +27,7 @@ public static class SmtcMetadataProcessorPipeline
     private static readonly List<ISmtcMetadataProcessor> _processors =
     [
         new AppleMusicMetadataProcessor(),
+        new CommonArtistMetadataProcessor()
     ];
 
     /// <summary>Appends a processor to the pipeline.</summary>
@@ -47,6 +49,8 @@ internal sealed class AppleMusicMetadataProcessor : ISmtcMetadataProcessor
     {
         if (string.IsNullOrEmpty(info.Artist)) return;
 
+        info.Artist = info.Artist.Replace(" & ", " / ");
+
         var parts = info.Artist.Split('—', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length > 1)
         {
@@ -55,6 +59,28 @@ internal sealed class AppleMusicMetadataProcessor : ISmtcMetadataProcessor
         }
     }
 }
+
+internal sealed partial class CommonArtistMetadataProcessor : ISmtcMetadataProcessor
+{
+    public bool CanProcess(string appId) => true;
+
+    public void Process(SmtcMediaInfo info, string appId)
+    {
+        var artists =info.Artist.Split([',', '&', '/','\\'], StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        var artistList = new List<string>(artists.Length);
+        //移除可能包含的括号及其内容
+        foreach (var artist in artists)
+        {
+            var cleanedArtist = BracketRegex().Replace(artist, "").Trim();
+            artistList.Add(cleanedArtist);
+        }
+        info.Artist = string.Join(" / ", artistList);
+    }
+
+    [GeneratedRegex(@"\s*[\(\[【].*?[\)\]】]\s*")]
+    private static partial Regex BracketRegex();
+}
+
 internal sealed class NameAliaMetadataProcessor(SettingsMgr<SmtcMetadataAliasConfig> aliases) : ISmtcMetadataProcessor
 {
     public bool CanProcess(string appId)

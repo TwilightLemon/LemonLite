@@ -417,9 +417,9 @@ public partial class LyricHost : UserControl
             {
                 To = targetOffset,
                 Duration = TimeSpan.FromMilliseconds(500),
-                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+                EasingFunction = new ExponentialEase() { Exponent = 4, EasingMode=EasingMode.EaseOut}
             };
-            this.BeginAnimation(ScrollAnimationOffsetProperty, animation);
+            this.BeginAnimation(ScrollAnimationOffsetProperty, animation,HandoffBehavior.SnapshotAndReplace);
         }
         catch { }
     }
