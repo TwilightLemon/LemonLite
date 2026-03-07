@@ -257,7 +257,6 @@ public partial class LyricHost : UserControl
     }
     public void Clear()
     {
-        StopScrollAnimation();
         _currentItem = null;
         LrcItemsControl.CurrentItem = null;
 
@@ -413,26 +412,14 @@ public partial class LyricHost : UserControl
 
             if (scrollDelta < 1) return;
 
-            var animation = new DoubleAnimation
-            {
-                To = targetOffset,
-                Duration = TimeSpan.FromMilliseconds(500),
-                EasingFunction = new ExponentialEase() { Exponent = 4, EasingMode=EasingMode.EaseOut}
-            };
-            this.BeginAnimation(ScrollAnimationOffsetProperty, animation,HandoffBehavior.SnapshotAndReplace);
+            _scrollViewer.AnimatedScrollToVerticalOffset(targetOffset);
         }
         catch { }
-    }
-
-    private void StopScrollAnimation()
-    {
-        this.BeginAnimation(ScrollAnimationOffsetProperty, null);
     }
 
     private void ScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
     {
         _interruptedTime = DateTime.Now;
-        StopScrollAnimation();
     }
     private void SimpleLyricView_SizeChanged(object sender, SizeChangedEventArgs e)
     {
