@@ -148,6 +148,9 @@ namespace LemonLite.Views.Windows
             AnimatedBackgroundBd.TopCutRadius = 8d;
             AnimatedBackgroundBd.CornerRadius = new CornerRadius(24);
 
+            CoverImgBd.Visibility= Visibility.Visible;
+            AudioBd.Visibility= Visibility.Visible;
+
             ApplyBackground();
             LrcPanel.Effect = null;
 
@@ -194,6 +197,9 @@ namespace LemonLite.Views.Windows
             windowRoot.BeginAnimation(HeightProperty, null);
             windowRoot.Width = double.NaN;
             windowRoot.Height = double.NaN;
+
+            CoverImgBd.Visibility = Visibility.Collapsed;
+            AudioBd.Visibility = Visibility.Collapsed;
 
             if (_resizeAdorner != null)
             {

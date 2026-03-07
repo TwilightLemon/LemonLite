@@ -73,8 +73,22 @@
             </i:Interaction.Behaviors>
         </ut:TopCutBorder>
         <Grid x:Name="LrcPanel" IsHitTestVisible="False">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Border x:Name="CoverImgBd"
+                    Visibility="Collapsed"
+                    Width="32"
+                    Height="32"
+                    CornerRadius="16"
+                    Margin="18 4 4 4"
+                    Background="{Binding CoverImage}"
+                    RenderOptions.BitmapScalingMode="HighQuality"/>
             <ScrollViewer x:Name="LrcScrollViewer"
-                          Margin="24,8"
+                          Margin="0,8"
+                          Grid.Column="1"
                           HorizontalScrollBarVisibility="Hidden"
                           PanningMode="HorizontalOnly"
                           VerticalScrollBarVisibility="Disabled">
@@ -83,12 +97,21 @@
                                 VerticalAlignment="Center"
                                 Content="{Binding LyricControl}" />
             </ScrollViewer>
+            <Border Visibility="Collapsed"
+                    Grid.Column="2"
+                    x:Name="AudioBd"
+                    Width="32"
+                    Height="32"
+                    CornerRadius="16"
+                    Margin="4 4 18 4"
+                    Background="#0CFFFFFF" />
         </Grid>
 
         <!--  功能区 鼠标进入后显示  -->
         <Grid x:Name="FuncPanel"
               d:Visibility="Visible"
-              Visibility="Collapsed">
+              Visibility="Collapsed"
+              d:IsHidden="True">
             <Border Background="{DynamicResource WindowBackgroundColor}"
                     BorderBrush="{DynamicResource BorderColor}"
                     BorderThickness="1"
