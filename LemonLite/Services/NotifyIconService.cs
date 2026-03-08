@@ -27,8 +27,8 @@ public class NotifyIconService(AppSettingService appSettingService, UIResourceSe
             : "Lemon Lite");
     }
 
-    private MenuItem? _openLrcWindowMenuItem;
-    private MenuItem? _desktopMenuItem;
+    private MenuItem? _openMainLrcWindowMenuItem;
+    private MenuItem? _desktopLrcMenuItem;
     private MenuItem? _embeddedWindowMenuItem;
     private MenuItem? _audioVisualizerMenuItem;
 
@@ -54,29 +54,29 @@ public class NotifyIconService(AppSettingService appSettingService, UIResourceSe
 
         _contextMenu = new ContextMenu();
 
-        _openLrcWindowMenuItem = new MenuItem
+        _openMainLrcWindowMenuItem = new MenuItem
         {
             Header = LocalizationService.Instance["LyricWindow"],
             IsCheckable = true,
             IsChecked = opt.Data.StartWithMainWindow
         };
-        _openLrcWindowMenuItem.Click += (s, e) =>
+        _openMainLrcWindowMenuItem.Click += (s, e) =>
         {
             opt.Data.StartWithMainWindow = !opt.Data.StartWithMainWindow;
-            _openLrcWindowMenuItem.IsChecked = opt.Data.StartWithMainWindow;
+            _openMainLrcWindowMenuItem.IsChecked = opt.Data.StartWithMainWindow;
             App.WindowManager.SetWindowState<MainWindow>(opt.Data.StartWithMainWindow);
         };
 
-        _desktopMenuItem = new MenuItem
+        _desktopLrcMenuItem = new MenuItem
         {
             Header = LocalizationService.Instance["DesktopLyrics"],
             IsCheckable = true,
             IsChecked = opt.Data.StartWithDesktopLyric
         };
-        _desktopMenuItem.Click += (s, e) =>
+        _desktopLrcMenuItem.Click += (s, e) =>
         {
             opt.Data.StartWithDesktopLyric = !opt.Data.StartWithDesktopLyric;
-            _desktopMenuItem.IsChecked = opt.Data.StartWithDesktopLyric;
+            _desktopLrcMenuItem.IsChecked = opt.Data.StartWithDesktopLyric;
             App.WindowManager.SetWindowState<DesktopLyricWindow>(opt.Data.StartWithDesktopLyric);
         };
 
@@ -123,8 +123,8 @@ public class NotifyIconService(AppSettingService appSettingService, UIResourceSe
         _exitMenuItem = new MenuItem { Header = LocalizationService.Instance["Exit"] };
         _exitMenuItem.Click += (s, e) => App.Current.Shutdown();
 
-        _contextMenu.Items.Add(_openLrcWindowMenuItem);
-        _contextMenu.Items.Add(_desktopMenuItem);
+        _contextMenu.Items.Add(_openMainLrcWindowMenuItem);
+        _contextMenu.Items.Add(_desktopLrcMenuItem);
         _contextMenu.Items.Add(_embeddedWindowMenuItem);
         _contextMenu.Items.Add(_audioVisualizerMenuItem);
         _contextMenu.Items.Add(_settingsMenuItem);
@@ -132,6 +132,7 @@ public class NotifyIconService(AppSettingService appSettingService, UIResourceSe
         _contextMenu.Items.Add(_exitMenuItem);
 
         _notifyIcon.ContextMenu = _contextMenu;
+        _notifyIcon.ContextMenuOpening += NotifyIcon_ContextMenuOpening;
         _notifyIcon.ForceCreate();
 
         // 初始应用当前主题颜色
@@ -141,6 +142,19 @@ public class NotifyIconService(AppSettingService appSettingService, UIResourceSe
         _uiResourceService.OnColorModeChanged += OnColorModeChanged;
 
         LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
+    }
+
+    private void NotifyIcon_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+    {
+        //update menu items
+        if (_openMainLrcWindowMenuItem != null)
+            _openMainLrcWindowMenuItem.IsChecked = opt.Data.StartWithMainWindow;
+        if(_desktopLrcMenuItem!= null)
+            _desktopLrcMenuItem.IsChecked = opt.Data.StartWithDesktopLyric;
+        if(_embeddedWindowMenuItem != null)
+            _embeddedWindowMenuItem.IsChecked = opt.Data.StartWithEmbeddedWindow;
+        if(_audioVisualizerMenuItem!= null)
+            _audioVisualizerMenuItem.IsChecked = opt.Data.EnableAudioVisualizer;
     }
 
     /// <summary>
@@ -178,10 +192,10 @@ public class NotifyIconService(AppSettingService appSettingService, UIResourceSe
     {
         App.Current.Dispatcher.Invoke(() =>
         {
-            if (_openLrcWindowMenuItem != null)
-                _openLrcWindowMenuItem.Header = LocalizationService.Instance["LyricWindow"];
-            if (_desktopMenuItem != null)
-                _desktopMenuItem.Header = LocalizationService.Instance["DesktopLyrics"];
+            if (_openMainLrcWindowMenuItem != null)
+                _openMainLrcWindowMenuItem.Header = LocalizationService.Instance["LyricWindow"];
+            if (_desktopLrcMenuItem != null)
+                _desktopLrcMenuItem.Header = LocalizationService.Instance["DesktopLyrics"];
             if (_audioVisualizerMenuItem != null)
                 _audioVisualizerMenuItem.Header = LocalizationService.Instance["AudioVisualizer"];
             if (_settingsMenuItem != null)
@@ -197,7 +211,11 @@ public class NotifyIconService(AppSettingService appSettingService, UIResourceSe
     {
         _uiResourceService.OnColorModeChanged -= OnColorModeChanged;
         LocalizationService.Instance.LanguageChanged -= OnLanguageChanged;
-        _notifyIcon?.Dispose();
+        if (_notifyIcon != null)
+        {
+            _notifyIcon.ContextMenuOpening -= NotifyIcon_ContextMenuOpening;
+            _notifyIcon.Dispose();
+        }
         _messageWindow?.Close();
     }
 

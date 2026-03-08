@@ -7,6 +7,7 @@ using LemonLite.Views.UserControls;
 using LemonLite.Views.Windows;
 using Lyricify.Lyrics.Helpers.Types;
 using Lyricify.Lyrics.Models;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -288,7 +289,13 @@ public partial class DesktopLyricWindowViewModel : ObservableObject
     private Task<bool> PlayLast() => _smtcService.SmtcListener.Previous();
 
     [RelayCommand]
-    private void ShowMainWindow() => App.WindowManager.CreateOrActivate<MainWindow>();
+    private void ShowMainWindow()
+    {
+        App.Services.GetRequiredService<AppSettingService>()
+                             .GetConfigMgr<AppOption>()
+                             .Data.StartWithMainWindow = true;
+        App.WindowManager.CreateOrActivate<MainWindow>();
+    }
 
     [RelayCommand]
     private void FontSizeUp()

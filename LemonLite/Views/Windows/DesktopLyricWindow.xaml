@@ -35,13 +35,27 @@
         <ws:BindingProxy x:Key="proxy" Data="{Binding}" />
     </Window.Resources>
     <Window.ContextMenu>
-        <ContextMenu>
+        <ContextMenu >
             <MenuItem Command="{Binding Data.FontSizeUpCommand, Source={StaticResource proxy}}"
                       Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[FontSizeUp], Mode=OneWay}"
                       Icon="{x:Null}" />
             <MenuItem Command="{Binding Data.FontSizeDownCommand, Source={StaticResource proxy}}"
                       Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[FontSizeDown], Mode=OneWay}"
                       Icon="{x:Null}" />
+            <MenuItem Command="{Binding Data.ShowMainWindowCommand, Source={StaticResource proxy}}"
+                      Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[ShowMainWindow], Mode=OneWay}"
+                      Icon="{x:Null}" />
+            <Separator  Opacity="0.2" Margin="0 4 24 4"/>
+            <MenuItem Command="{Binding Data.PlayLastCommand, Source={StaticResource proxy}}"
+                      Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[PlayTheLastOne], Mode=OneWay}"
+                      Icon="{x:Null}" />
+            <MenuItem Command="{Binding Data.PlayOrPauseCommand, Source={StaticResource proxy}}"
+                      Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[PlayOrPause], Mode=OneWay}"
+                      Icon="{x:Null}" />
+            <MenuItem Command="{Binding Data.PlayNextCommand, Source={StaticResource proxy}}"
+                      Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[PlayTheNextOne], Mode=OneWay}"
+                      Icon="{x:Null}" />
+
         </ContextMenu>
     </Window.ContextMenu>
     <ws:BoxPanel x:Name="windowRoot" Background="#01000000">
@@ -88,7 +102,6 @@
 
         <!--  功能区 鼠标进入后显示  -->
         <Grid x:Name="FuncPanel"
-              d:IsHidden="True"
               d:Visibility="Visible"
               Visibility="Collapsed">
             <Border Background="{DynamicResource WindowBackgroundColor}"
@@ -104,7 +117,7 @@
                               IsChecked="{Binding ShowTranslation}"
                               Style="{StaticResource IconToggleButton}"
                               Tag="{StaticResource Icon_Trans}"
-                              ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[ShowTranslationAndRomaji], Mode=OneWay}" />
+                              ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[ShowTranslation], Mode=OneWay}" />
                 <ws:Button x:Name="PlayLastBtn"
                            Width="48"
                            Height="48"
@@ -148,17 +161,13 @@
                           Fill="{DynamicResource ForeColor}"
                           Stretch="Uniform" />
                 </ws:Button>
-                <ws:Button Width="48"
-                           Height="48"
-                           Padding="12"
-                           Command="{Binding ShowMainWindowCommand}"
-                           Style="{StaticResource SimpleIconButtonStyleForWs}"
-                           ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[ShowMainWindow], Mode=OneWay}">
-                    <Path Height="22"
-                          Data="{StaticResource Icon_Show}"
-                          Fill="{DynamicResource ForeColor}"
-                          Stretch="Uniform" />
-                </ws:Button>
+                <ToggleButton Width="48"
+                              Height="48"
+                              Padding="12"
+                              IsChecked="{Binding ShowRomaji}"
+                              Style="{StaticResource IconToggleButton}"
+                              Tag="{StaticResource Icon_Romaji}"
+                              ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[ShowRomaji], Mode=OneWay}" />
             </ws:WrapPanel>
             <ws:Button x:Name="CloseBtn"
                        Width="32"

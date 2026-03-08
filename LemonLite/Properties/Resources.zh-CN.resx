@@ -270,9 +270,6 @@
   <data name="CreateMetadataAlias" xml:space="preserve">
     <value>创建元数据别名</value>
   </data>
-  <data name="ShowTranslationAndRomaji" xml:space="preserve">
-    <value>显示翻译和罗马音</value>
-  </data>
   <data name="ShowMainWindow" xml:space="preserve">
     <value>显示主窗口</value>
   </data>
