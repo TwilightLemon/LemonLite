@@ -22,9 +22,11 @@ namespace LemonLite.Views.Windows;
 /// </summary>
 public partial class MainWindow : Window
 {
+    private const string WindowName = nameof(MainWindow);
     private readonly MainWindowViewModel vm;
     private readonly SmtcService smtcService;
     private readonly UIResourceService ui;
+    private readonly EfficiencyModeService efficiencyModeService;
     private readonly SettingsMgr<Appearance> _mgr;
     private const double MobileLayoutThreshold = 600;
     public bool IsMiniMode { get; private set; }
@@ -37,7 +39,8 @@ public partial class MainWindow : Window
     public MainWindow(MainWindowViewModel vm,
         AppSettingService appSettingService,
         SmtcService smtcService, 
-        UIResourceService uiResourceService)
+        UIResourceService uiResourceService,
+        EfficiencyModeService efficiencyModeService)
     {
         InitializeComponent();
         this.DataContext = vm;
@@ -47,6 +50,7 @@ public partial class MainWindow : Window
         this.vm = vm;
         this.smtcService = smtcService;
         this.ui = uiResourceService;
+        this.efficiencyModeService = efficiencyModeService;
         SizeChanged += MainWindow_SizeChanged;
         Loaded += MainWindow_Loaded;
         Closed += MainWindow_Closed;
@@ -71,11 +75,11 @@ public partial class MainWindow : Window
 
     private void MainWindow_Closed(object? sender, EventArgs e)
     {
+        efficiencyModeService.NotifyWindowClosed(WindowName);
         vm.Dispose();
         _mgr.Data.Window = new Rect(Left, Top, Width, Height);
         _mgr.OnDataChanged -= Appearance_OnDataChanged;
         ui.OnColorModeChanged -= Ui_OnColorModeChanged;
-        H.NotifyIcon.EfficiencyMode.EfficiencyModeUtilities.SetEfficiencyMode(true);
     }
 
     private void ApplySettings(bool isFirstCall = false)
@@ -133,8 +137,7 @@ public partial class MainWindow : Window
 
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
-        //Main Lyric Window runs on high performance mode
-        H.NotifyIcon.EfficiencyMode.EfficiencyModeUtilities.SetEfficiencyMode(false);
+        efficiencyModeService.NotifyWindowOpened(WindowName);
         Ui_OnColorModeChanged();
         UpdateLayout(ActualWidth);
     }

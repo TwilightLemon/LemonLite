@@ -62,6 +62,15 @@ namespace LemonLite.Views.Pages
         private bool _enableDesktopLyricWindow;
         [ObservableProperty]
         private bool _enableAudioVisualizer;
+        [ObservableProperty]
+        private bool _enableEmbeddedWindow;
+
+        partial void OnEnableEmbeddedWindowChanged(bool value)
+        {
+            settings.Data.StartWithEmbeddedWindow = value;
+             if (smtc.IsSessionValid)
+                App.WindowManager.SetWindowState<EmbeddedWindow>(value);
+        }
 
         partial void OnEnableMainWindowChanged(bool value)
         {

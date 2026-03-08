@@ -300,4 +300,10 @@
   <data name="TopMost" xml:space="preserve">
     <value>TopMost</value>
   </data>
+  <data name="EnableEmbeddedWindow" xml:space="preserve">
+    <value>Enable Embeded Lyric</value>
+  </data>
+  <data name="EmbeddedWindow" xml:space="preserve">
+    <value>Embedded Lyric</value>
+  </data>
 </root>

@@ -73,6 +73,7 @@ public partial class App : Application
             WindowManager.SetWindowState<MainWindow>(opt.Data.StartWithMainWindow);
             WindowManager.SetWindowState<DesktopLyricWindow>(opt.Data.StartWithDesktopLyric);
             WindowManager.SetWindowState<AudioVisualizerWindow>(opt.Data.EnableAudioVisualizer);
+            WindowManager.SetWindowState<EmbeddedWindow>(opt.Data.StartWithEmbeddedWindow);
         }
     }
 

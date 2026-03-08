@@ -53,6 +53,7 @@ public partial class App
         services.AddSingleton<SmtcService>();
         services.AddSingleton<LyricService>();
         services.AddSingleton<WindowInstanceManager>();
+        services.AddSingleton<EfficiencyModeService>();
 
         services.AddTransient<MainWindowViewModel>();
         services.AddTransient<MainWindow>();
@@ -62,6 +63,7 @@ public partial class App
         services.AddTransient<DesktopLyricWindowViewModel>();
 
         services.AddTransient<AudioVisualizerWindow>();
+        services.AddTransient<EmbeddedWindow>();
 
         services.AddTransient<MetadataAliasCreatorWindow>();
         services.AddTransient<SettingsWindow>();

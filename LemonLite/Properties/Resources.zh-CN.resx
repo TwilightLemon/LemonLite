@@ -300,4 +300,10 @@
   <data name="TopMost" xml:space="preserve">
     <value>置顶</value>
   </data>
+  <data name="EnableEmbeddedWindow" xml:space="preserve">
+    <value>启用桌面嵌入歌词</value>
+  </data>
+  <data name="EmbeddedWindow" xml:space="preserve">
+    <value>桌面嵌入歌词</value>
+  </data>
 </root>

@@ -29,7 +29,9 @@ public class NotifyIconService(AppSettingService appSettingService, UIResourceSe
 
     private MenuItem? _openLrcWindowMenuItem;
     private MenuItem? _desktopMenuItem;
+    private MenuItem? _embeddedWindowMenuItem;
     private MenuItem? _audioVisualizerMenuItem;
+
     private MenuItem? _settingsMenuItem;
     private MenuItem? _refreshMenuItem;
     private MenuItem? _exitMenuItem;
@@ -78,6 +80,19 @@ public class NotifyIconService(AppSettingService appSettingService, UIResourceSe
             App.WindowManager.SetWindowState<DesktopLyricWindow>(opt.Data.StartWithDesktopLyric);
         };
 
+        _embeddedWindowMenuItem = new MenuItem
+        {
+            Header = LocalizationService.Instance["EmbeddedWindow"],
+            IsCheckable = true,
+            IsChecked = opt.Data.StartWithEmbeddedWindow
+        };
+        _embeddedWindowMenuItem.Click += (s, e) =>
+        {
+            opt.Data.StartWithEmbeddedWindow = !opt.Data.StartWithEmbeddedWindow;
+            _embeddedWindowMenuItem.IsChecked = opt.Data.StartWithEmbeddedWindow;
+            App.WindowManager.SetWindowState<EmbeddedWindow>(opt.Data.StartWithEmbeddedWindow);
+        };
+
         _audioVisualizerMenuItem = new MenuItem
         {
             Header = LocalizationService.Instance["AudioVisualizer"],
@@ -110,6 +125,7 @@ public class NotifyIconService(AppSettingService appSettingService, UIResourceSe
 
         _contextMenu.Items.Add(_openLrcWindowMenuItem);
         _contextMenu.Items.Add(_desktopMenuItem);
+        _contextMenu.Items.Add(_embeddedWindowMenuItem);
         _contextMenu.Items.Add(_audioVisualizerMenuItem);
         _contextMenu.Items.Add(_settingsMenuItem);
         _contextMenu.Items.Add(_refreshMenuItem);

@@ -44,6 +44,15 @@
                         Background="{DynamicResource MaskColor}"
                         CornerRadius="12">
                     <ToggleButton Margin="12,0,12,0"
+                                  Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[EnableEmbeddedWindow], Mode=OneWay}"
+                                  IsChecked="{Binding EnableEmbeddedWindow}"
+                                  Style="{DynamicResource RoundToggleButtonStyle}" />
+                </Border>
+
+                <Border Height="48"
+                        Background="{DynamicResource MaskColor}"
+                        CornerRadius="12">
+                    <ToggleButton Margin="12,0,12,0"
                                   Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[EnableAudioVisualizer], Mode=OneWay}"
                                   IsChecked="{Binding EnableAudioVisualizer}"
                                   Style="{DynamicResource RoundToggleButtonStyle}" />
