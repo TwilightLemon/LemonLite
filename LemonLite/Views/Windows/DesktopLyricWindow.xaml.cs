@@ -110,13 +110,6 @@ namespace LemonLite.Views.Windows
                 Width = IslandMinWidth;
         }
 
-        protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
-        {
-            base.OnRenderSizeChanged(sizeInfo);
-            if (!_isIslandMode)
-                ClampBottomToWorkArea();
-        }
-
         private void DesktopLyricWindow_LocationChanged(object? sender, EventArgs e)
         {
             if (Top <= 1)
@@ -125,10 +118,9 @@ namespace LemonLite.Views.Windows
                 ExitIslandMode();
 
             if (_isIslandMode) Top = 0;
-            else ClampBottomToWorkArea();
         }
 
-        //非 island 模式底边不允许压入任务栏，否则底部拖拽手柄无法命中
+        //仅在程序化恢复尺寸后调用；用户拖拽时不干预，否则底边会被钉住拉不动
         private void ClampBottomToWorkArea()
         {
             var bottom = SystemParameters.WorkArea.Bottom;
@@ -225,6 +217,9 @@ namespace LemonLite.Views.Windows
                 LrcPanel.Effect = shadowEffect;
 
             windowRoot.HorizontalAlignment = HorizontalAlignment.Stretch;
+            //无歌词 island 会把垂直对齐设为 Top，退出时必须复位，
+            //否则窗口不填满、调整手柄网格错位，底边拉不到
+            windowRoot.VerticalAlignment = VerticalAlignment.Stretch;
             windowRoot.BeginAnimation(WidthProperty, null);
             windowRoot.BeginAnimation(HeightProperty, null);
             windowRoot.Width = double.NaN;
@@ -239,6 +234,7 @@ namespace LemonLite.Views.Windows
                 await Task.Delay(300);
                 this.Width = _restoredWidth > 0 ? _restoredWidth : 720;
                 this.Height = _restoredHeight > 0 ? _restoredHeight : 145;
+                ClampBottomToWorkArea();
             }, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
         }
 
