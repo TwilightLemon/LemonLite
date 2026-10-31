@@ -8,7 +8,7 @@ using System.Windows.Media;
 
 namespace LemonLite.ViewModels;
 
-public partial class SettingsWindowViewModel:ObservableObject
+public partial class SettingsWindowViewModel:ObservableObject, IDisposable
 {
     public record class SettingsMenuItem(string Title, Geometry Icon, Type PageType);
     public ObservableCollection<SettingsMenuItem> SettingsMenus{ get; set; } = [
@@ -20,9 +20,18 @@ public partial class SettingsWindowViewModel:ObservableObject
         new SettingsMenuItem(LocalizationService.Instance["About"],null!,typeof(AboutPage))
         ];
 
+    private Microsoft.Extensions.DependencyInjection.IServiceScope? _pageScope;
+
     public SettingsWindowViewModel()
     {
         LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
+    }
+
+    public void Dispose()
+    {
+        LocalizationService.Instance.LanguageChanged -= OnLanguageChanged;
+        _pageScope?.Dispose();
+        _pageScope = null;
     }
 
     private void OnLanguageChanged()
@@ -46,8 +55,10 @@ public partial class SettingsWindowViewModel:ObservableObject
     {
         if (value == null) return;
 
-        var scope = App.Services.CreateScope();
-        var pageContent = scope.ServiceProvider.GetRequiredService(value.PageType);
+        //页面经 DI scope 创建，切换时释放旧 scope，避免 Page 及其依赖滞留
+        _pageScope?.Dispose();
+        _pageScope = App.Services.CreateScope();
+        var pageContent = _pageScope.ServiceProvider.GetRequiredService(value.PageType);
 
         CurrentPageContent = pageContent;
     }

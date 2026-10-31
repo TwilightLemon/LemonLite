@@ -71,7 +71,14 @@ public static class LyricHelper
         {
             if (await GetLyricOnline(id, source, cancellationToken) is { } ly)
             {
-                await Settings.SaveAsJsonAsync(ly, path, false);
+                try
+                {
+                    await Settings.SaveAsJsonAsync(ly, path, false);
+                }
+                catch
+                {
+                    //缓存写盘失败（磁盘/并发等）不影响返回歌词
+                }
                 return ly;
             }
         }

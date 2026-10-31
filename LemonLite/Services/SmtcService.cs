@@ -26,7 +26,7 @@ namespace LemonLite.Services;
 /// </summary>
 public class SmtcService(AppSettingService appSettingService, UIResourceService uiResourceService) : IHostedService
 {
-    private SmtcListener _smtcListener = null!;
+    private SmtcListener? _smtcListener;
     private readonly SettingsMgr<AppOption> appOption = appSettingService.GetConfigMgr<AppOption>();
     private readonly DispatcherTimer _playbackTimer = new()
     {
@@ -51,8 +51,13 @@ public class SmtcService(AppSettingService appSettingService, UIResourceService 
     /// </summary>
     private const double MinSyncIntervalMs = 500;
 
-    public SmtcListener SmtcListener => _smtcListener;
-    public bool IsSessionValid => _smtcListener.HasValidSession;
+    public SmtcListener? SmtcListener => _smtcListener;
+    public bool IsSessionValid => _smtcListener is { HasValidSession: true };
+
+    /// <summary>
+    /// SMTC 异步初始化完成时触发（订阅 SmtcListener 事件请在此之后进行）
+    /// </summary>
+    public event Action? Initialized;
 
     /// <summary>
     /// 当前播放位置（秒)
@@ -111,11 +116,14 @@ public class SmtcService(AppSettingService appSettingService, UIResourceService 
     {
         _playbackTimer.Stop();
         _playbackTimer.Tick -= PlaybackTimer_Tick;
-        _smtcListener.MediaPropertiesChanged -= OnSessionChanged;
-        _smtcListener.PlaybackInfoChanged -= OnPlaybackInfoChanged;
-        _smtcListener.TimelinePropertiesChanged -= OnTimelinePropertiesChanged;
-        _smtcListener.SessionExited -= OnSessionExited;
-        _smtcListener.SessionChanged -= OnSessionChanged;
+        if (_smtcListener != null)
+        {
+            _smtcListener.MediaPropertiesChanged -= OnSessionChanged;
+            _smtcListener.PlaybackInfoChanged -= OnPlaybackInfoChanged;
+            _smtcListener.TimelinePropertiesChanged -= OnTimelinePropertiesChanged;
+            _smtcListener.SessionExited -= OnSessionExited;
+            _smtcListener.SessionChanged -= OnSessionChanged;
+        }
         uiResourceService.OnColorModeChanged -= UiResourceService_OnColorModeChanged;
     }
 
@@ -144,6 +152,7 @@ public class SmtcService(AppSettingService appSettingService, UIResourceService 
 
     private void UpdatePlayingState()
     {
+        if (_smtcListener == null) return;
         var wasPlaying = _isPlaying;
         _isPlaying = _smtcListener.GetPlaybackStatus() == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing;
 
@@ -185,7 +194,7 @@ public class SmtcService(AppSettingService appSettingService, UIResourceService 
     {
         try
         {
-            var timeline = _smtcListener.GetTimeline();
+            var timeline = _smtcListener!.GetTimeline();
             if (timeline == null || timeline.EndTime <= timeline.StartTime)
             {
                 _hasValidTimeline = false;
@@ -318,6 +327,7 @@ public class SmtcService(AppSettingService appSettingService, UIResourceService 
 
     private async void UpdateCover(int retryCount = 0)
     {
+        if (_smtcListener == null) return;
         if (await _smtcListener.GetMediaInfoAsync() is { PlaybackType: Windows.Media.MediaPlaybackType.Music } info)
         {
             try
@@ -342,16 +352,19 @@ public class SmtcService(AppSettingService appSettingService, UIResourceService 
                     CoverImageSource = img;
 
                     var bitmap = img.ToBitmap();
-                    var isDark = uiResourceService.GetIsDarkMode();
-                    var accentColor = bitmap.GetMajorColor().AdjustColor(isDark);
-                    var focusColor = accentColor.ApplyColorMode(isDark);
-                    UIResourceService.UpdateAccentColor(accentColor, focusColor);
+                    using (bitmap)
+                    {
+                        var isDark = uiResourceService.GetIsDarkMode();
+                        var accentColor = bitmap.GetMajorColor().AdjustColor(isDark);
+                        var focusColor = accentColor.ApplyColorMode(isDark);
+                        UIResourceService.UpdateAccentColor(accentColor, focusColor);
 
-                    bitmap.ApplyMicaEffect(isDark);
-                    var background = bitmap.ToBitmapImage();
-                    BackgroundImageSource = background;
+                        bitmap.ApplyMicaEffect(isDark);
+                        var background = bitmap.ToBitmapImage();
+                        BackgroundImageSource = background;
 
-                    CoverUpdated?.Invoke();
+                        CoverUpdated?.Invoke();
+                    }
                 }
             }
             catch
@@ -375,17 +388,34 @@ public class SmtcService(AppSettingService appSettingService, UIResourceService 
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        _smtcListener = SmtcListener.CreateInstance(ValidSmtcSessionChecker).GetAwaiter().GetResult();
         _playbackTimer.Tick += PlaybackTimer_Tick;
-        _smtcListener.MediaPropertiesChanged += OnSessionChanged;
-        _smtcListener.PlaybackInfoChanged += OnPlaybackInfoChanged;
-        _smtcListener.TimelinePropertiesChanged += OnTimelinePropertiesChanged;
-        _smtcListener.SessionExited += OnSessionExited;
-        _smtcListener.SessionChanged += OnSessionChanged;
         uiResourceService.OnColorModeChanged += UiResourceService_OnColorModeChanged;
-        UpdatePlayingState();
-        UpdateCover();
+        //SMTC 初始化是跨进程 RPC，放后台完成，不阻塞启动（托盘/配置先行）
+        _ = InitializeAsync();
         return Task.CompletedTask;
+    }
+
+    private async Task InitializeAsync()
+    {
+        try
+        {
+            var listener = await SmtcListener.CreateInstance(ValidSmtcSessionChecker);
+            listener.MediaPropertiesChanged += OnSessionChanged;
+            listener.PlaybackInfoChanged += OnPlaybackInfoChanged;
+            listener.TimelinePropertiesChanged += OnTimelinePropertiesChanged;
+            listener.SessionExited += OnSessionExited;
+            listener.SessionChanged += OnSessionChanged;
+            _smtcListener = listener;
+
+            //与原同步时序一致：初始状态同步。DispatcherTimer 需在 UI 线程操作
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(UpdatePlayingState);
+            UpdateCover();
+            Initialized?.Invoke();
+        }
+        catch (Exception ex)
+        {
+            Logger.Error("SMTC init failed", ex);
+        }
     }
 
     public Task StopAsync(CancellationToken cancellationToken)

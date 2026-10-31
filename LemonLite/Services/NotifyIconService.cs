@@ -22,9 +22,13 @@ public class NotifyIconService(AppSettingService appSettingService, UIResourceSe
 
     private void UpdateMediaInfo()
     {
-        App.Current.Dispatcher.BeginInvoke(async () => _notifyIcon!.ToolTipText = await smtc.SmtcListener.GetMediaInfoAsync() is { PlaybackType: Windows.Media.MediaPlaybackType.Music } info
-            ? $"Lemon Lite \r\nPlaying: {info.Title} - {info.Artist}"
-            : "Lemon Lite");
+        App.Current.Dispatcher.BeginInvoke(async () =>
+        {
+            var info = smtc.SmtcListener == null ? null : await smtc.SmtcListener.GetMediaInfoAsync();
+            _notifyIcon!.ToolTipText = info is { PlaybackType: Windows.Media.MediaPlaybackType.Music }
+                ? $"Lemon Lite \r\nPlaying: {info.Title} - {info.Artist}"
+                : "Lemon Lite";
+        });
     }
 
     private MenuItem? _openMainLrcWindowMenuItem;
@@ -49,8 +53,13 @@ public class NotifyIconService(AppSettingService appSettingService, UIResourceSe
                 new System.Uri("pack://application:,,,/LemonLite;component/Resources/icon.ico"))
         };
         UpdateMediaInfo();
-        smtc.SmtcListener.MediaPropertiesChanged += (s, e) => UpdateMediaInfo();
-        smtc.SmtcListener.SessionChanged += (s, e) => UpdateMediaInfo();
+        //SMTC 异步初始化完成后才能订阅监听器事件并刷新初始状态
+        smtc.Initialized += () =>
+        {
+            smtc.SmtcListener!.MediaPropertiesChanged += (s, e) => UpdateMediaInfo();
+            smtc.SmtcListener!.SessionChanged += (s, e) => UpdateMediaInfo();
+            UpdateMediaInfo();
+        };
 
         _contextMenu = new ContextMenu();
 

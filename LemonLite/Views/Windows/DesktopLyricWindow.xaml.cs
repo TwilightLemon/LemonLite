@@ -41,6 +41,9 @@ namespace LemonLite.Views.Windows
         private WindowResizeAdorner? _resizeAdorner;
         private readonly GlobalHotkeyService _hotkeyService;
         private CancellationTokenSource? _hotkeyInfoPanelCts;
+        //复用的模糊特效实例，动画前恢复初始半径即可复现原视觉
+        private readonly BlurEffect _lrcHostBlur = new() { Radius = 0 };
+        private BlurEffect? _funcPanelBlur;
 
         public DesktopLyricWindow(DesktopLyricWindowViewModel vm, AppSettingService appSettingsService, GlobalHotkeyService hotkeyService)
         {
@@ -107,6 +110,13 @@ namespace LemonLite.Views.Windows
                 Width = IslandMinWidth;
         }
 
+        protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
+        {
+            base.OnRenderSizeChanged(sizeInfo);
+            if (!_isIslandMode)
+                ClampBottomToWorkArea();
+        }
+
         private void DesktopLyricWindow_LocationChanged(object? sender, EventArgs e)
         {
             if (Top <= 1)
@@ -115,6 +125,18 @@ namespace LemonLite.Views.Windows
                 ExitIslandMode();
 
             if (_isIslandMode) Top = 0;
+            else ClampBottomToWorkArea();
+        }
+
+        //非 island 模式底边不允许压入任务栏，否则底部拖拽手柄无法命中
+        private void ClampBottomToWorkArea()
+        {
+            var bottom = SystemParameters.WorkArea.Bottom;
+            if (Top + Height > bottom)
+            {
+                var newTop = bottom - Height;
+                if (newTop > 0) Top = newTop;
+            }
         }
 
         private void ApplyBackground()
@@ -306,7 +328,8 @@ namespace LemonLite.Views.Windows
                 }
             }
 
-            var blur = new BlurEffect() { Radius = 0 };
+            var blur = _lrcHostBlur;
+            blur.Radius = 0;
             LrcHost.Effect = blur;
             LrcHost.BeginAnimation(OpacityProperty, new DoubleAnimation(0, TimeSpan.FromMilliseconds(300)));
             var anim = new DoubleAnimation(20, TimeSpan.FromMilliseconds(300));
@@ -357,7 +380,8 @@ namespace LemonLite.Views.Windows
                 }
             }
 
-            var blur = new BlurEffect() { Radius = 20 };
+            var blur = _lrcHostBlur;
+            blur.Radius = 20;
             LrcHost.Effect = blur;
             LrcHost.BeginAnimation(OpacityProperty, new DoubleAnimation(1, TimeSpan.FromMilliseconds(200)));
             var anim = new DoubleAnimation(0, TimeSpan.FromMilliseconds(200));
@@ -401,6 +425,8 @@ namespace LemonLite.Views.Windows
         {
             _hotkeyService.HotkeyActionTriggered -= OnHotkeyActionTriggered;
             _hotkeyInfoPanelCts?.Cancel();
+            _hotkeyInfoPanelCts?.Dispose();
+            _hotkeyInfoPanelCts = null;
             vm.HideLineAnimation = null;
             vm.ShowLineAnimation = null;
             vm.SetWindow(null!);
@@ -521,7 +547,8 @@ namespace LemonLite.Views.Windows
                 storyBoard.Children.Add(widthAnim);
                 storyBoard.Children.Add(heightAnim);
 
-                var blur = new BlurEffect() { Radius = 20 };
+                var blur = _lrcHostBlur;
+                blur.Radius = 20;
                 LrcHost.Effect = blur;
                 LrcHost.BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(500)));
                 var anim = new DoubleAnimation(0, TimeSpan.FromMilliseconds(500));
@@ -585,7 +612,7 @@ namespace LemonLite.Views.Windows
                     else
                     {
                         LrcPanel.BeginAnimation(OpacityProperty, new DoubleAnimation(1, 0.6, TimeSpan.FromMilliseconds(100)));
-                        LrcPanel.Effect = new BlurEffect() { Radius = 12 };
+                        LrcPanel.Effect = _funcPanelBlur ??= new BlurEffect() { Radius = 12 };
                         FuncPanel.Visibility = Visibility.Visible;
                         FuncPanel.BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(180)));
                     }
@@ -612,10 +639,16 @@ namespace LemonLite.Views.Windows
             if (_settingsMgr.Data.IsIslandMode)
             {
                 Top = 0;
-                if(_settingsMgr.Data.IslandWindowLeft is double left && left > 0) 
+                if(_settingsMgr.Data.IslandWindowLeft is double left && left > 0)
                     Left = left;
                 if (_settingsMgr.Data.IslandMaxWidth is double width)
                     Width = width;
+            }
+            else
+            {
+                //Top 在构造时按默认高度计算，恢复的尺寸若更高会把底边压进任务栏，
+                //底部拖拽手柄被遮挡；按恢复后的高度重新对齐底边到工作区
+                Top = SystemParameters.WorkArea.Bottom - Height;
             }
             if (ShouldAddShadowEffect)
                 LrcPanel.Effect = shadowEffect;
@@ -627,6 +660,7 @@ namespace LemonLite.Views.Windows
 
             // 取消上一次热键触发的延迟关闭
             _hotkeyInfoPanelCts?.Cancel();
+            _hotkeyInfoPanelCts?.Dispose();
             _hotkeyInfoPanelCts = new CancellationTokenSource();
             var cts = _hotkeyInfoPanelCts;
 

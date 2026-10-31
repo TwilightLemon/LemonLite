@@ -89,8 +89,13 @@ public partial class App : Application
                                                   .GetConfigMgr<SmtcMetadataAliasConfig>()));
 
         var smtc = Services.GetRequiredService<SmtcService>();
-        smtc.SmtcListener.SessionChanged += delegate
+        smtc.Initialized += () =>
         {
+            smtc.SmtcListener!.SessionChanged += delegate
+            {
+                Dispatcher.Invoke(ApplyAppOptions);
+            };
+            //初始会话可能在订阅前已存在，主动应用一次窗口配置
             Dispatcher.Invoke(ApplyAppOptions);
         };
     }

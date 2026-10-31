@@ -97,16 +97,11 @@ public sealed class SelectiveLyricLine : Border
 
     public void LoadData(LyricLineData data, double mainFontSize, bool showTranslation, bool showRomaji)
     {
-        LyricLineControl lrc;
-        if (data.LineInfo is SyllableLineInfo syllable)
-        {
-            lrc = new LyricLineControl(syllable, mainFontSize);
-        }
-        else if (data.LineInfo is LineInfo pure)
-        {
-            lrc = new LyricLineControl(pure, mainFontSize);
-        }
-        else return;
+        //复用实例重填内容，避免快速滚动时逐行重建整个 LyricLineControl 视觉树
+        var lrc = LyricLine ??= new LyricLineControl();
+        lrc.IsCurrent = false; //清掉上一行遗留的激活态，由下方按需重新置位
+        lrc.LoadLine(data.LineInfo, mainFontSize);
+        if (data.LineInfo is not (SyllableLineInfo or LineInfo)) return;
 
         if (data.TranslationText != null)
             lrc.TranslationLrc.Text = data.TranslationText;
@@ -118,25 +113,22 @@ public sealed class SelectiveLyricLine : Border
             lrc.LoadPlainRomaji(data.PlainRomaji);
         lrc.RomajiLrcContainer.Visibility = showRomaji ? Visibility.Visible : Visibility.Collapsed;
 
-        LyricLine = lrc;
-        Child = lrc;
+        if (Child != lrc)
+            Child = lrc;
     }
 
     public void ClearData()
     {
-        if (LyricLine != null)
-        {
-            LyricLine.ClearAll();
-        }
-        LyricLine = null;
+        //保留 LyricLine 实例供下次复用，仅清空内容
+        LyricLine?.ClearAll();
         Child = null;
     }
 
     private async void SelectiveLyricLine_MouseDown(object sender, MouseButtonEventArgs e)
     {
-        if (LyricLine?.MainLineInfo?.StartTime is int startTime)
+        if (LyricLine?.MainLineInfo?.StartTime is int startTime &&
+            App.Services.GetRequiredService<SmtcService>().SmtcListener is { } smtc)
         {
-            var smtc = App.Services.GetRequiredService<SmtcService>().SmtcListener;
             await smtc.SetPosition(TimeSpan.FromMilliseconds(startTime));
             if (smtc.GetPlaybackStatus() != GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
             {
@@ -175,7 +167,17 @@ public partial class LyricHost : UserControl
         InitializeComponent();
         SizeChanged += SimpleLyricView_SizeChanged;
         LrcItemsControl.Loaded += LrcItemsControl_Loaded;
+        _resizeDebounceTimer.Tick += (_, _) =>
+        {
+            _resizeDebounceTimer.Stop();
+            UpdateItemsPresenterMargin();
+            ScrollToCurrent();
+        };
     }
+
+    //连续缩放时防抖，布局稳定后统一重排（最终布局不变）
+    private readonly System.Windows.Threading.DispatcherTimer _resizeDebounceTimer =
+        new() { Interval = TimeSpan.FromMilliseconds(80) };
 
     private void LrcItemsControl_Loaded(object sender, RoutedEventArgs e)
     {
@@ -355,7 +357,15 @@ public partial class LyricHost : UserControl
         }
         else
         {
-            target = _items.LastOrDefault(a => a.LineInfo.StartTime <= ms);
+            //纯歌词模式：最后一个开始时间小于等于当前时间的行
+            for (int i = _items.Count - 1; i >= 0; i--)
+            {
+                if (_items[i].LineInfo.StartTime <= ms)
+                {
+                    target = _items[i];
+                    break;
+                }
+            }
         }
 
         //next found. 对于LyricPage希望准确使用当前时间来定位歌词
@@ -433,8 +443,8 @@ public partial class LyricHost : UserControl
     }
     private void SimpleLyricView_SizeChanged(object sender, SizeChangedEventArgs e)
     {
-        UpdateItemsPresenterMargin();
-        ScrollToCurrent();
+        _resizeDebounceTimer.Stop();
+        _resizeDebounceTimer.Start();
     }
 
     private void ScrollViewer_PreviewMouseDown(object sender, MouseButtonEventArgs e)

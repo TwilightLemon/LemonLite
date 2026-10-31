@@ -52,15 +52,21 @@ namespace LemonLite.Views.UserControls
         /// <summary>
         /// respond to LyricOption changed
         /// </summary>
+        private bool _cleanupHooked;
         private void LyricView_Loaded(object sender, RoutedEventArgs e)
         {
-            Window.GetWindow(this).Closed += delegate {
-                _settings.OnDataChanged -= Settings_OnDataChanged;
-                _lyricService.LyricLoaded -= OnLyricLoaded;
-                _lyricService.TimeUpdated -= OnTimeUpdated;
-                _lyricService.MediaChanged -= OnMediaChanged;
-                uiResourceService.OnColorModeChanged -= UiResourceService_OnColorModeChanged;
-            };
+            //只挂一次窗口关闭清理，避免重复 Loaded 时叠加匿名委托
+            if (!_cleanupHooked && Window.GetWindow(this) is { } host)
+            {
+                _cleanupHooked = true;
+                host.Closed += delegate {
+                    _settings.OnDataChanged -= Settings_OnDataChanged;
+                    _lyricService.LyricLoaded -= OnLyricLoaded;
+                    _lyricService.TimeUpdated -= OnTimeUpdated;
+                    _lyricService.MediaChanged -= OnMediaChanged;
+                    uiResourceService.OnColorModeChanged -= UiResourceService_OnColorModeChanged;
+                };
+            }
             ApplySettings();
             if (_lyricService.CurrentLyric != null)
                 OnLyricLoaded(new(_lyricService.CurrentLyric, _lyricService.CurrentTrans, _lyricService.CurrentRomaji, _lyricService.IsPureLrc));
@@ -216,6 +222,12 @@ namespace LemonLite.Views.UserControls
                 LrcHost.Effect = blurEffect;
                 var aniBlur = new DoubleAnimation(20, 0, TimeSpan.FromMilliseconds(300));
                 var aniOpac = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(300));
+                //动画结束后摘除特效与动画钟，避免歌词区常驻中间位图渲染（结束帧视觉不变）
+                aniBlur.Completed += (_, _) =>
+                {
+                    LrcHost.Effect = null;
+                    LrcHost.BeginAnimation(OpacityProperty, null);
+                };
                 blurEffect.BeginAnimation(BlurEffect.RadiusProperty, aniBlur);
                 LrcHost.BeginAnimation(OpacityProperty, aniOpac);
             });
@@ -223,7 +235,8 @@ namespace LemonLite.Views.UserControls
 
         private void OnTimeUpdated(int ms)
         {
-            Dispatcher.Invoke(() => LrcHost.UpdateTime(ms));
+            //异步封送，避免 WinRT 线程同步等待 UI（死锁窗口）
+            Dispatcher.InvokeAsync(() => LrcHost.UpdateTime(ms));
         }
         #endregion
     }

@@ -9,6 +9,7 @@ namespace LemonLite.Utils;
 public interface ISettingsMgr
 {
     bool Load();
+    Task<bool> LoadAsync();
     void Save();
     event Action? OnDataChanged;
 }
@@ -49,6 +50,17 @@ public class SettingsMgr<T>: ISettingsMgr where T : class
     ~SettingsMgr()
     {
         _watcher?.Dispose();
+    }
+
+    public void Dispose()
+    {
+        if (_watcher != null)
+        {
+            _watcher.Changed -= _watcher_Changed;
+            _watcher.Dispose();
+            _watcher = null;
+        }
+        GC.SuppressFinalize(this);
     }
     public bool Load()
     {
@@ -188,15 +200,45 @@ public static class Settings
     }
     public static void SaveAsJson<T>(T Data, string path, bool useOptions = true) where T : class
     {
-        var fs = File.Create(path);
-        JsonSerializer.Serialize<T>(fs, Data, useOptions ? _options : null);
-        fs.Close();
+        //先写唯一临时文件再替换：原子写 + 并发写同一目标时不互斥碰撞
+        var tmp = path + ".tmp." + Guid.NewGuid().ToString("N")[..8];
+        try
+        {
+            using (var fs = File.Create(tmp))
+            {
+                JsonSerializer.Serialize<T>(fs, Data, useOptions ? _options : null);
+            }
+            if (File.Exists(path)) File.Replace(tmp, path, null);
+            else File.Move(tmp, path);
+        }
+        catch
+        {
+            TryDelete(tmp);
+            throw;
+        }
     }
     public static async Task SaveAsJsonAsync<T>(T Data,string path,bool useOptions=true) where T : class
     {
-        var fs = File.Create(path);
-        await JsonSerializer.SerializeAsync<T>(fs, Data, useOptions?_options:null);
-        fs.Close();
+        var tmp = path + ".tmp." + Guid.NewGuid().ToString("N")[..8];
+        try
+        {
+            using (var fs = File.Create(tmp))
+            {
+                await JsonSerializer.SerializeAsync<T>(fs, Data, useOptions?_options:null);
+            }
+            if (File.Exists(path)) File.Replace(tmp, path, null);
+            else File.Move(tmp, path);
+        }
+        catch
+        {
+            TryDelete(tmp);
+            throw;
+        }
+    }
+
+    private static void TryDelete(string path)
+    {
+        try { File.Delete(path); } catch { }
     }
     public static async Task<T?> LoadAsync<T>(string Sign, sType t) where T : class
     {
@@ -216,21 +258,17 @@ public static class Settings
     {
         if (!File.Exists(path))
             return null;
-        var fs = File.OpenRead(path);
+        using var fs = File.OpenRead(path);
         if (fs.Length == 0) return null;
-        var data = await JsonSerializer.DeserializeAsync<T>(fs, useOptions ? _options : null);
-        fs.Close();
-        return data;
+        return await JsonSerializer.DeserializeAsync<T>(fs, useOptions ? _options : null);
     }
 
     public static T? LoadFromJson<T>(string path, bool useOptions = true) where T : class
     {
         if (!File.Exists(path))
             return null;
-        var fs = File.OpenRead(path);
+        using var fs = File.OpenRead(path);
         if(fs.Length==0) return null;
-        var data = JsonSerializer.Deserialize<T>(fs, useOptions ? _options : null);
-        fs.Close();
-        return data;
+        return JsonSerializer.Deserialize<T>(fs, useOptions ? _options : null);
     }
 }

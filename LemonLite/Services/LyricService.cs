@@ -43,8 +43,8 @@ public class LyricService
         _smtcService = smtcService;
         _appOption = appSettingService.GetConfigMgr<AppOption>();
         _metadataCache= appSettingService.GetConfigMgr<SmtcMetadataCache>();
-        _smtcService.SmtcListener.MediaPropertiesChanged += OnMediaPropertiesChanged;
-        _smtcService.SmtcListener.SessionChanged += OnMediaPropertiesChanged;
+        _smtcService.SmtcListener!.MediaPropertiesChanged += OnMediaPropertiesChanged;
+        _smtcService.SmtcListener!.SessionChanged += OnMediaPropertiesChanged;
         _smtcService.PositionChanged += OnPositionChanged;
         _ = LoadLyricFromCurrentMediaAsync();
     }
@@ -128,10 +128,11 @@ public class LyricService
     /// </summary>
     public async Task LoadLyricFromCurrentMediaAsync()
     {
-        if (await _smtcService.SmtcListener.GetNormalizedMediaInfoAsync() is not { PlaybackType: Windows.Media.MediaPlaybackType.Music } info) return;
+        if (_smtcService.SmtcListener is not { } smtcListener) return;
+        if (await smtcListener.GetNormalizedMediaInfoAsync() is not { PlaybackType: Windows.Media.MediaPlaybackType.Music } info) return;
         if (string.IsNullOrEmpty(info.Title)) return;
 
-        var mediaId = _smtcService.SmtcListener.GetAppMediaId()?.ToLower();
+        var mediaId = smtcListener.GetAppMediaId()?.ToLower();
 
         var newInfo = info.Title + info.Artist;
         if (_currentMusicInfo == newInfo) return;
@@ -145,7 +146,7 @@ public class LyricService
         _loadingCts?.Dispose();
         _loadingCts = new CancellationTokenSource();
         var cancellationToken = _loadingCts.Token;
-        var timeline = _smtcService.SmtcListener.GetTimeline();
+        var timeline = smtcListener.GetTimeline();
         int? durationMs = null;
         if ( timeline != null && timeline.EndTime > timeline.StartTime)
         {
@@ -161,8 +162,14 @@ public class LyricService
 
             //check metadata cache first
             var cacheKey = $"{info.Title}_{info.Artist}_{info.Album}";
-            if (_metadataCache.Data.Cache.TryGetValue(cacheKey, out var cachedMeta) && cachedMeta is { Title: not null, LyricFileIds.Count: > 0 })
+            SmtcMetadataCacheEntry? cachedMeta = null;
+            //缓存异步加载，未就绪时按未命中处理
+            if (_metadataCache.Data is { } cacheData &&
+                cacheData.Cache.TryGetValue(cacheKey, out var cachedEntry) &&
+                cachedEntry is { Title: not null, LyricFileIds.Count: > 0 })
             {
+                cachedMeta = cachedEntry;
+
                 //only the first source preference is checked in cache.
                 var src = sources[0];
                 if (cachedMeta.LyricFileIds.TryGetValue(src, out var lyricId) && !string.IsNullOrEmpty(lyricId))
@@ -204,7 +211,8 @@ public class LyricService
                         LyricFileIds = []
                     };
                     cachedMeta.LyricFileIds[searchResult.Searcher?.Name?.ToLower()??"unknown"] = searchResult.Id;
-                    _metadataCache.Data.Cache[cacheKey] = cachedMeta;
+                    if (_metadataCache.Data is { } cacheDataToWrite)
+                        cacheDataToWrite.Cache[cacheKey] = cachedMeta;
                 }
             }
 
@@ -381,7 +389,11 @@ public class LyricService
     {
         _loadingCts?.Cancel();
         _loadingCts?.Dispose();
-        _smtcService.SmtcListener.MediaPropertiesChanged -= OnMediaPropertiesChanged;
+        if (_smtcService.SmtcListener is { } listener)
+        {
+            listener.MediaPropertiesChanged -= OnMediaPropertiesChanged;
+            listener.SessionChanged -= OnMediaPropertiesChanged;
+        }
         _smtcService.PositionChanged -= OnPositionChanged;
     }
 }

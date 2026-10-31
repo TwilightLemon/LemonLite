@@ -11,7 +11,7 @@
                 <ResourceDictionary Source="/Styles/AccentColor.xaml" />
                 <ResourceDictionary Source="/Styles/IconData.xaml" />
                 <ResourceDictionary Source="/Styles/UITemplate.xaml" />
-                <ResourceDictionary Source="/Styles/ThemeColor_Light.xaml" />
+                <!--  主题色字典由 UIResourceService 按系统深浅色一次性载入，避免启动双载  -->
             </ResourceDictionary.MergedDictionaries>
             <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
             <FontFamily x:Key="SegoeFluentIcon">

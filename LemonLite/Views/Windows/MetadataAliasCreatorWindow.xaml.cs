@@ -15,7 +15,7 @@ public partial class MetadataAliasCreatorWindow : FluentWindowBase
 
     public MetadataAliasCreatorWindow(SmtcService smtcService, AppSettingService appSettingService)
     {
-        _smtcListener = smtcService.SmtcListener;
+        _smtcListener = smtcService.SmtcListener!;
         _aliasMgr = appSettingService.GetConfigMgr<SmtcMetadataAliasConfig>();
         DataContext = this;
         InitializeComponent();

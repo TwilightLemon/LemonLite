@@ -18,6 +18,7 @@ namespace LemonLite.Views.Windows
             InitializeComponent();
             this.DataContext = this.vm = vm;
             Loaded += SettingsWindow_Loaded;
+            Closed += (_, _) => vm.Dispose();
         }
         private void SettingsWindow_Loaded(object sender, RoutedEventArgs e)
         {

@@ -51,8 +51,7 @@ public class GlobalHotkeyService : IHostedService
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        var tcs = new TaskCompletionSource<bool>();
-
+        //热键线程后台自启动，不阻塞 Host.Start；注册完成由 HotkeyRegistrationChanged 通知
         var thread = new Thread(() =>
         {
             _hotkeyDispatcher = Dispatcher.CurrentDispatcher;
@@ -70,8 +69,6 @@ public class GlobalHotkeyService : IHostedService
 
             RegisterAllHotkeysCore();
 
-            tcs.SetResult(true);
-
             Dispatcher.Run();
         })
         {
@@ -81,7 +78,7 @@ public class GlobalHotkeyService : IHostedService
         thread.SetApartmentState(ApartmentState.STA);
         thread.Start();
 
-        return tcs.Task;
+        return Task.CompletedTask;
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
@@ -117,15 +114,15 @@ public class GlobalHotkeyService : IHostedService
                         switch (action)
                         {
                             case HotkeyAction.PlayPause:
-                                _ = _smtcService.SmtcListener.PlayOrPause();
+                                _ = _smtcService.SmtcListener!.PlayOrPause();
                                 HotkeyActionTriggered?.Invoke(HotkeyActionType.PlayPause);
                                 break;
                             case HotkeyAction.PlayNext:
-                                _ = _smtcService.SmtcListener.Next();
+                                _ = _smtcService.SmtcListener!.Next();
                                 HotkeyActionTriggered?.Invoke(HotkeyActionType.PlayNext);
                                 break;
                             case HotkeyAction.PlayPrevious:
-                                _ = _smtcService.SmtcListener.Previous();
+                                _ = _smtcService.SmtcListener!.Previous();
                                 HotkeyActionTriggered?.Invoke(HotkeyActionType.PlayPrevious);
                                 break;
                         }
