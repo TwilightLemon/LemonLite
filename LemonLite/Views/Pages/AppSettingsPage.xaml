@@ -23,23 +23,13 @@
                            FontSize="22"
                            Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[AppSettings], Mode=OneWay}" />
 
-                <!--  Liquid Glass 总开关  -->
-                <Border Height="48"
-                        Background="{DynamicResource MaskColor}"
-                        CornerRadius="12">
-                    <ToggleButton Margin="12,0,12,0"
-                                  Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[LiquidGlassStyle], Mode=OneWay}"
-                                  IsChecked="{Binding EnableLiquidGlass}"
-                                  Style="{Binding Source={x:Static loc:LiquidGlassService.Instance}, Path=CurrentToggleButtonStyle}" />
-                </Border>
-
                 <Border Height="48"
                         Background="{DynamicResource MaskColor}"
                         CornerRadius="12">
                     <ToggleButton Margin="12,0,12,0"
                                   Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[EnableMainWindow], Mode=OneWay}"
                                   IsChecked="{Binding EnableMainWindow}"
-                                  Style="{Binding Source={x:Static loc:LiquidGlassService.Instance}, Path=CurrentToggleButtonStyle}" />
+                                  Style="{DynamicResource RoundToggleButtonStyle}" />
                 </Border>
 
                 <Border Height="48"
@@ -48,7 +38,7 @@
                     <ToggleButton Margin="12,0,12,0"
                                   Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[EnableDesktopLyric], Mode=OneWay}"
                                   IsChecked="{Binding EnableDesktopLyricWindow}"
-                                  Style="{Binding Source={x:Static loc:LiquidGlassService.Instance}, Path=CurrentToggleButtonStyle}" />
+                                  Style="{DynamicResource RoundToggleButtonStyle}" />
                 </Border>
 
                 <Border Height="48"
@@ -57,7 +47,7 @@
                     <ToggleButton Margin="12,0,12,0"
                                   Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[EnableEmbeddedWindow], Mode=OneWay}"
                                   IsChecked="{Binding EnableEmbeddedWindow}"
-                                  Style="{Binding Source={x:Static loc:LiquidGlassService.Instance}, Path=CurrentToggleButtonStyle}" />
+                                  Style="{DynamicResource RoundToggleButtonStyle}" />
                 </Border>
 
                 <Border Height="48"
@@ -66,7 +56,7 @@
                     <ToggleButton Margin="12,0,12,0"
                                   Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[EnableAudioVisualizer], Mode=OneWay}"
                                   IsChecked="{Binding EnableAudioVisualizer}"
-                                  Style="{Binding Source={x:Static loc:LiquidGlassService.Instance}, Path=CurrentToggleButtonStyle}" />
+                                  Style="{DynamicResource RoundToggleButtonStyle}" />
                 </Border>
 
                 <Border Height="48"
@@ -105,7 +95,7 @@
                     <ToggleButton Margin="12,0,12,0"
                                   Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[EnableGlobalHotkeys], Mode=OneWay}"
                                   IsChecked="{Binding EnableGlobalHotkeys}"
-                                  Style="{Binding Source={x:Static loc:LiquidGlassService.Instance}, Path=CurrentToggleButtonStyle}" />
+                                  Style="{DynamicResource RoundToggleButtonStyle}" />
                 </Border>
 
                 <Border MinHeight="48"
@@ -188,7 +178,7 @@
                     <ToggleButton Margin="12,0,12,0"
                                   Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[ShowInTaskbarWhenMiniMode], Mode=OneWay}"
                                   IsChecked="{Binding ShowInTaskbarWhenMiniMode}"
-                                  Style="{Binding Source={x:Static loc:LiquidGlassService.Instance}, Path=CurrentToggleButtonStyle}" />
+                                  Style="{DynamicResource RoundToggleButtonStyle}" />
                 </Border>
 
                 <Border Height="48"

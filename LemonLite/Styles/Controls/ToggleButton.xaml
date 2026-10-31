@@ -1,6 +1,4 @@
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:lg="clr-namespace:LemonLite.LiquidGlass">
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Style x:Key="IconToggleButton" TargetType="ToggleButton">
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="Padding" Value="7" />
@@ -75,6 +73,26 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ToggleButton}">
+                    <ControlTemplate.Resources>
+                        <Storyboard x:Key="OnChecked">
+                            <ThicknessAnimationUsingKeyFrames Storyboard.TargetName="ellipse" Storyboard.TargetProperty="(FrameworkElement.Margin)">
+                                <EasingThicknessKeyFrame KeyTime="0:0:0.3" Value="26,0,0,0">
+                                    <EasingThicknessKeyFrame.EasingFunction>
+                                        <CircleEase EasingMode="EaseOut" />
+                                    </EasingThicknessKeyFrame.EasingFunction>
+                                </EasingThicknessKeyFrame>
+                            </ThicknessAnimationUsingKeyFrames>
+                        </Storyboard>
+                        <Storyboard x:Key="OnUnchecked">
+                            <ThicknessAnimationUsingKeyFrames Storyboard.TargetName="ellipse" Storyboard.TargetProperty="(FrameworkElement.Margin)">
+                                <EasingThicknessKeyFrame KeyTime="0:0:0.3" Value="6,0,0,0">
+                                    <EasingThicknessKeyFrame.EasingFunction>
+                                        <CircleEase EasingMode="EaseOut" />
+                                    </EasingThicknessKeyFrame.EasingFunction>
+                                </EasingThicknessKeyFrame>
+                            </ThicknessAnimationUsingKeyFrames>
+                        </Storyboard>
+                    </ControlTemplate.Resources>
                     <Grid Background="Transparent">
                         <ContentPresenter x:Name="contentPresenter"
                                           Margin="{TemplateBinding Padding}"
@@ -102,73 +120,18 @@
                         </Border>
                     </Grid>
                     <ControlTemplate.Triggers>
+                        <EventTrigger RoutedEvent="ToggleButton.Checked">
+                            <BeginStoryboard Storyboard="{StaticResource OnChecked}" />
+                        </EventTrigger>
+                        <EventTrigger RoutedEvent="ToggleButton.Unchecked">
+                            <BeginStoryboard Storyboard="{StaticResource OnUnchecked}" />
+                        </EventTrigger>
                         <Trigger Property="IsChecked" Value="True">
                             <Setter TargetName="border" Property="Background" Value="{DynamicResource HighlightThemeColor}" />
                             <Setter TargetName="border" Property="BorderThickness" Value="0" />
                             <Setter TargetName="ellipse" Property="Fill" Value="{DynamicResource BackgroundColor}" />
-                            <Trigger.EnterActions>
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <ThicknessAnimation Storyboard.TargetName="ellipse"
-                                                            Storyboard.TargetProperty="Margin"
-                                                            To="26,0,0,0"
-                                                            Duration="0:0:0.18">
-                                            <ThicknessAnimation.EasingFunction>
-                                                <CubicEase EasingMode="EaseOut" />
-                                            </ThicknessAnimation.EasingFunction>
-                                        </ThicknessAnimation>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </Trigger.EnterActions>
-                            <Trigger.ExitActions>
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <ThicknessAnimation Storyboard.TargetName="ellipse"
-                                                            Storyboard.TargetProperty="Margin"
-                                                            To="4,0,0,0"
-                                                            Duration="0:0:0.18">
-                                            <ThicknessAnimation.EasingFunction>
-                                                <CubicEase EasingMode="EaseOut" />
-                                            </ThicknessAnimation.EasingFunction>
-                                        </ThicknessAnimation>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </Trigger.ExitActions>
                         </Trigger>
                     </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <!--  Liquid Glass 风格切换按钮：ControlTemplate 内嵌 LiquidGlassToggle 作为纯显示元素，
-          IsChecked 双向绑定到 LiquidGlassToggle.IsOn，鼠标点击由 ToggleButton 自身处理。
-          LiquidGlassToggle 内部弹簧物理 + 桌面背景折射由控件自身渲染。
-          不设 Width/Height 让 MeasureOverride 返回 DesiredSize，避免 track/thumb 被 ClipToBounds 截断。
-          Margin 0,0,12,0 对齐到右边 12px 内边距（与其他 ToggleButton 一致）。  -->
-    <Style x:Key="LiquidGlassToggleButtonStyle" TargetType="{x:Type ToggleButton}">
-        <Setter Property="Foreground" Value="{DynamicResource ForeColor}" />
-        <Setter Property="Cursor" Value="Hand" />
-        <Setter Property="FocusVisualStyle" Value="{DynamicResource FocusVisual}" />
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="{x:Type ToggleButton}">
-                    <Grid Background="Transparent">
-                        <ContentPresenter x:Name="contentPresenter"
-                                          Margin="{TemplateBinding Padding}"
-                                          HorizontalAlignment="Left"
-                                          VerticalAlignment="Center"
-                                          Focusable="False"
-                                          RecognizesAccessKey="True"
-                                          SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
-                        <lg:LiquidGlassToggle Margin="0,0,12,0"
-                                              HorizontalAlignment="Right"
-                                              VerticalAlignment="Center"
-                                              IsDisplayOnly="True"
-                                              IsPressed="{Binding IsPressed, RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}"
-                                              IsOn="{Binding IsChecked, RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}"
-                                              TrackOnColor="{DynamicResource HighlightThemeColor}" />
-                    </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

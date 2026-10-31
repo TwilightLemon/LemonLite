@@ -22,9 +22,6 @@ public class AppOption
     public bool StartWithEmbeddedWindow { get; set; } = false;
     public string? Language { get; set; } = "en";
 
-    /// <summary>是否启用 Liquid Glass 风格切换按钮（影响设置页内所有 ToggleButton 样式）。</summary>
-    public bool EnableLiquidGlass { get; set; } = false;
-
     public List<SmtcAppConfig> SmtcApps { get; set; } =
     [
         new SmtcAppConfig { AppId = "lemonapp.exe" },

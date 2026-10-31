@@ -327,43 +327,4 @@
   <data name="HotkeyNotSet" xml:space="preserve">
     <value>Not set</value>
   </data>
-  <data name="LiquidGlassStyle" xml:space="preserve">
-    <value>Liquid Glass Style</value>
-  </data>
-  <data name="Sources" xml:space="preserve">
-    <value>Sources</value>
-  </data>
-  <data name="MoveUp" xml:space="preserve">
-    <value>Move Up</value>
-  </data>
-  <data name="MoveDown" xml:space="preserve">
-    <value>Move Down</value>
-  </data>
-  <data name="Remove" xml:space="preserve">
-    <value>Remove</value>
-  </data>
-  <data name="MetadataAlias" xml:space="preserve">
-    <value>Metadata Alias</value>
-  </data>
-  <data name="AddAlias" xml:space="preserve">
-    <value>Add Alias</value>
-  </data>
-  <data name="Field" xml:space="preserve">
-    <value>Field</value>
-  </data>
-  <data name="Target" xml:space="preserve">
-    <value>Target</value>
-  </data>
-  <data name="Alias" xml:space="preserve">
-    <value>Alias</value>
-  </data>
-  <data name="AvailableSources" xml:space="preserve">
-    <value>Available Sources</value>
-  </data>
-  <data name="AddSmtcApp" xml:space="preserve">
-    <value>Add SMTC App</value>
-  </data>
-  <data name="ExecutableFiles" xml:space="preserve">
-    <value>Executable Files (*.exe)|*.exe|All Files (*.*)|*.*</value>
-  </data>
 </root>

@@ -20,7 +20,6 @@
 
 	<ItemGroup>
 	  <None Remove="Shaders\TextGlow.ps" />
-	  <None Remove="LiquidGlass\LiquidGlass.ps" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -48,46 +47,8 @@
 	<ItemGroup>
 		<Resource Include="Resources\Segoe Fluent Icons.ttf" />
 		<Resource Include="Shaders\TextGlow.ps" />
-		<Resource Include="LiquidGlass\LiquidGlass.ps" />
 		<Resource Include="Properties\Resources.resx" />
 		<Resource Include="Properties\Resources.zh-CN.resx" />
 	</ItemGroup>
-
-	<!-- 编译 LiquidGlass.hlsl → LiquidGlass.ps (ps_3_0)。fxc 不存在或失败时跳过，使用已有 .ps。 -->
-	<UsingTask TaskName="FindFxc" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
-		<ParameterGroup>
-			<FxcPath ParameterType="System.String" Output="true" />
-		</ParameterGroup>
-		<Task>
-			<Using Namespace="System.IO" />
-			<Using Namespace="System.Linq" />
-			<Code Type="Fragment" Language="cs">
-<![CDATA[
-var kits = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Windows Kits", "10", "bin");
-FxcPath = null;
-if (Directory.Exists(kits))
-{
-    var fxc = Directory.EnumerateDirectories(kits)
-        .SelectMany(d => Directory.EnumerateFiles(Path.Combine(d, "x64"), "fxc.exe", SearchOption.TopDirectoryOnly))
-        .OrderByDescending(p => p)
-        .FirstOrDefault();
-    if (fxc != null) FxcPath = fxc;
-}
-]]>
-			</Code>
-		</Task>
-	</UsingTask>
-
-	<Target Name="CompileLiquidGlassShader" BeforeTargets="BeforeBuild"
-	        Inputs="$(MSBuildThisFileDirectory)LiquidGlass\LiquidGlass.hlsl"
-	        Outputs="$(MSBuildThisFileDirectory)LiquidGlass\LiquidGlass.ps">
-		<FindFxc>
-			<Output TaskParameter="FxcPath" PropertyName="FxcPath" />
-		</FindFxc>
-		<Exec Command="&quot;$(FxcPath)&quot; /T ps_3_0 /E main /Fo &quot;$(MSBuildThisFileDirectory)LiquidGlass\LiquidGlass.ps&quot; &quot;$(MSBuildThisFileDirectory)LiquidGlass\LiquidGlass.hlsl&quot;"
-		      Condition="'$(FxcPath)' != ''"
-		      ContinueOnError="WarnAndContinue" />
-		<Warning Text="fxc.exe not found; using prebuilt LiquidGlass.ps." Condition="'$(FxcPath)' == ''" />
-	</Target>
 
 </Project>

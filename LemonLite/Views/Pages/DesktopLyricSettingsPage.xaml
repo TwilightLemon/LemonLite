@@ -26,7 +26,7 @@
                 <ToggleButton Margin="12,0,12,0"
                               Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[ShowTranslation], Mode=OneWay}"
                               IsChecked="{Binding ShowTranslation}"
-                              Style="{Binding Source={x:Static loc:LiquidGlassService.Instance}, Path=CurrentToggleButtonStyle}" />
+                              Style="{DynamicResource RoundToggleButtonStyle}" />
             </Border>
 
             <Border Height="48"
@@ -35,7 +35,7 @@
                 <ToggleButton Margin="12,0,12,0"
                               Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[ShowRomaji], Mode=OneWay}"
                               IsChecked="{Binding ShowRomaji}"
-                              Style="{Binding Source={x:Static loc:LiquidGlassService.Instance}, Path=CurrentToggleButtonStyle}" />
+                              Style="{DynamicResource RoundToggleButtonStyle}" />
             </Border>
 
             <Border Height="48"
@@ -44,7 +44,7 @@
                 <ToggleButton Margin="12,0,12,0"
                               Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[EnableBackground], Mode=OneWay}"
                               IsChecked="{Binding EnableBackground}"
-                              Style="{Binding Source={x:Static loc:LiquidGlassService.Instance}, Path=CurrentToggleButtonStyle}" />
+                              Style="{DynamicResource RoundToggleButtonStyle}" />
             </Border>
 
             <Border Height="48"
@@ -53,7 +53,7 @@
                 <ToggleButton Margin="12,0,12,0"
                               Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[UseHighlightLyricEffect], Mode=OneWay}"
                               IsChecked="{Binding UseHighlightLyricEffect}"
-                              Style="{Binding Source={x:Static loc:LiquidGlassService.Instance}, Path=CurrentToggleButtonStyle}" />
+                              Style="{DynamicResource RoundToggleButtonStyle}" />
             </Border>
 
             <Border Height="48"
@@ -62,7 +62,7 @@
                 <ToggleButton Margin="12,0,12,0"
                               Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[UsePopupAnimation], Mode=OneWay}"
                               IsChecked="{Binding UsePopupAnimation}"
-                              Style="{Binding Source={x:Static loc:LiquidGlassService.Instance}, Path=CurrentToggleButtonStyle}" />
+                              Style="{DynamicResource RoundToggleButtonStyle}" />
             </Border>
 
             <Border Height="48"

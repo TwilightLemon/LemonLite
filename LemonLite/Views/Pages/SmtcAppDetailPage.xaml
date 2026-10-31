@@ -5,7 +5,6 @@
       xmlns:configs="clr-namespace:LemonLite.Configs"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:local="clr-namespace:LemonLite.Views.Pages"
-      xmlns:loc="clr-namespace:LemonLite.Services"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:ws="https://schemas.elecho.dev/wpfsuite"
       Title="SmtcAppDetailPage"
@@ -37,7 +36,7 @@
             <!--  Sources Section  -->
             <Border Background="{DynamicResource MaskColor}" CornerRadius="12">
                 <ws:StackPanel Margin="12" Spacing="8">
-                    <TextBlock FontWeight="Bold" Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Sources], Mode=OneWay}" />
+                    <TextBlock FontWeight="Bold" Text="Sources" />
 
                     <ItemsControl ItemsSource="{Binding Sources}">
                         <ItemsControl.ItemTemplate>
@@ -64,7 +63,7 @@
                                                    FontFamily="{StaticResource SegoeFluentIcon}"
                                                    FontSize="11"
                                                    Style="{DynamicResource SimpleIconButtonStyleForWs}"
-                                                   ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[MoveUp], Mode=OneWay}" />
+                                                   ToolTip="Move Up" />
                                         <ws:Button Width="26"
                                                    Height="26"
                                                    Padding="4"
@@ -73,7 +72,7 @@
                                                    FontFamily="{StaticResource SegoeFluentIcon}"
                                                    FontSize="11"
                                                    Style="{DynamicResource SimpleIconButtonStyleForWs}"
-                                                   ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[MoveDown], Mode=OneWay}" />
+                                                   ToolTip="Move Down" />
                                         <ws:Button Width="26"
                                                    Height="26"
                                                    Padding="4"
@@ -82,7 +81,7 @@
                                                    FontFamily="{StaticResource SegoeFluentIcon}"
                                                    FontSize="11"
                                                    Style="{DynamicResource SimpleIconButtonStyleForWs}"
-                                                   ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Remove], Mode=OneWay}" />
+                                                   ToolTip="Remove" />
                                     </ws:StackPanel>
                                 </Grid>
                             </DataTemplate>
@@ -122,7 +121,7 @@
                         <TextBlock HorizontalAlignment="Left"
                                    VerticalAlignment="Center"
                                    FontWeight="Bold"
-                                   Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[MetadataAlias], Mode=OneWay}" />
+                                   Text="Metadata Alias" />
                         <ws:Button Height="32"
                                    Padding="8"
                                    HorizontalAlignment="Right"
@@ -132,8 +131,7 @@
                                 <Run BaselineAlignment="Center"
                                      FontFamily="{StaticResource SegoeFluentIcon}"
                                      Text="&#xe710;" />
-                                <Run BaselineAlignment="Center" Text=" " />
-                                <Run BaselineAlignment="Center" Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[AddAlias], Mode=OneWay}" />
+                                <Run BaselineAlignment="Center" Text=" Add Alias" />
                             </TextBlock>
                         </ws:Button>
                     </Grid>
@@ -148,15 +146,15 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Margin="4,0"
                                    Foreground="{DynamicResource HintForeColor}"
-                                   Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Field], Mode=OneWay}" />
+                                   Text="Field" />
                         <TextBlock Grid.Column="1"
                                    Margin="4,0"
                                    Foreground="{DynamicResource HintForeColor}"
-                                   Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Target], Mode=OneWay}" />
+                                   Text="Target" />
                         <TextBlock Grid.Column="2"
                                    Margin="4,0"
                                    Foreground="{DynamicResource HintForeColor}"
-                                   Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Alias], Mode=OneWay}" />
+                                   Text="Alias" />
                     </Grid>
 
                     <ItemsControl ItemsSource="{Binding Aliases}">
@@ -196,7 +194,7 @@
                                                FontFamily="{StaticResource SegoeFluentIcon}"
                                                FontSize="11"
                                                Style="{DynamicResource SimpleIconButtonStyleForWs}"
-                                               ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Remove], Mode=OneWay}" />
+                                               ToolTip="Remove" />
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
@@ -207,7 +205,7 @@
             <!--  Available Sources reference  -->
             <Border Background="{DynamicResource MaskColor}" CornerRadius="12">
                 <ws:StackPanel Margin="12,10" Spacing="6">
-                    <TextBlock Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[AvailableSources], Mode=OneWay}" />
+                    <TextBlock Text="Available Sources" />
                     <ItemsControl ItemsSource="{Binding DataContext.AvailableSources, RelativeSource={RelativeSource AncestorType=Page}}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>

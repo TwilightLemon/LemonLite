@@ -45,7 +45,6 @@ namespace LemonLite.Views.Pages
             EnableMainWindow = settings.Data.StartWithMainWindow;
             EnableDesktopLyricWindow = settings.Data.StartWithDesktopLyric;
             EnableAudioVisualizer = settings.Data.EnableAudioVisualizer;
-            EnableLiquidGlass = LiquidGlassService.Instance.IsEnabled;
             AppFontFamily = appearanceSettings.Data.DefaultFontFamily;
             BackgroundType = appearanceSettings.Data.Background;
             AcrylicOpacity = appearanceSettings.Data.AcylicOpacity;
@@ -78,16 +77,6 @@ namespace LemonLite.Views.Pages
         private bool _enableAudioVisualizer;
         [ObservableProperty]
         private bool _enableEmbeddedWindow;
-
-        // Liquid Glass 总开关：绑定到 LiquidGlassService.Instance.IsEnabled。
-        // 用局部属性避免 x:Static 在 XAML 解析期立即求值，触发 Checked 事件时模板尚未应用导致 ellipse 找不到。
-        [ObservableProperty]
-        private bool _enableLiquidGlass;
-
-        partial void OnEnableLiquidGlassChanged(bool value)
-        {
-            LiquidGlassService.Instance.IsEnabled = value;
-        }
 
         partial void OnEnableEmbeddedWindowChanged(bool value)
         {

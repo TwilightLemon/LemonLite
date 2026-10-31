@@ -327,43 +327,4 @@
   <data name="HotkeyNotSet" xml:space="preserve">
     <value>未设置</value>
   </data>
-  <data name="LiquidGlassStyle" xml:space="preserve">
-    <value>液态玻璃风格</value>
-  </data>
-  <data name="Sources" xml:space="preserve">
-    <value>歌词源</value>
-  </data>
-  <data name="MoveUp" xml:space="preserve">
-    <value>上移</value>
-  </data>
-  <data name="MoveDown" xml:space="preserve">
-    <value>下移</value>
-  </data>
-  <data name="Remove" xml:space="preserve">
-    <value>移除</value>
-  </data>
-  <data name="MetadataAlias" xml:space="preserve">
-    <value>元数据别名</value>
-  </data>
-  <data name="AddAlias" xml:space="preserve">
-    <value>添加别名</value>
-  </data>
-  <data name="Field" xml:space="preserve">
-    <value>字段</value>
-  </data>
-  <data name="Target" xml:space="preserve">
-    <value>目标</value>
-  </data>
-  <data name="Alias" xml:space="preserve">
-    <value>别名</value>
-  </data>
-  <data name="AvailableSources" xml:space="preserve">
-    <value>可用歌词源</value>
-  </data>
-  <data name="AddSmtcApp" xml:space="preserve">
-    <value>添加 SMTC 应用</value>
-  </data>
-  <data name="ExecutableFiles" xml:space="preserve">
-    <value>可执行文件 (*.exe)|*.exe|所有文件 (*.*)|*.*</value>
-  </data>
 </root>
