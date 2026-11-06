@@ -190,7 +190,7 @@ public partial class SmtcAppsPage : Page
     [RelayCommand]
     private void AddCurrentApp()
     {
-        var cur = _smtc.SmtcListener.SessionManager.GetCurrentSession();
+        var cur = _smtc.SmtcListener!.SessionManager.GetCurrentSession();
         if (cur == null) return;
         var mediaId = cur.SourceAppUserModelId.ToLower();
         AddApp(mediaId);
@@ -208,7 +208,7 @@ public partial class SmtcAppsPage : Page
         };
         _settings.Data.SmtcApps.Add(config);
         SmtcApps.Add(new SmtcAppItemViewModel(config, _aliasSettings.Data));
-        _smtc.SmtcListener.RefreshCurrentSession();
+        _smtc.SmtcListener!.RefreshCurrentSession();
     }
 
     [RelayCommand]
@@ -216,6 +216,6 @@ public partial class SmtcAppsPage : Page
     {
         SmtcApps.Remove(app);
         _settings.Data.SmtcApps.Remove(app.Config);
-        _smtc.SmtcListener.RefreshCurrentSession();
+        _smtc.SmtcListener!.RefreshCurrentSession();
     }
 }

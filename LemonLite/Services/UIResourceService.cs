@@ -41,11 +41,15 @@ public class UIResourceService
         });
     }
 
+    private bool _themeDictLoaded = false;
+
     public void UpdateColorMode()
     {
         bool IsDarkMode = GetIsDarkMode();
-        if(IsDarkMode==_appCurrentDarkMode) return;
+        //首载与主题变化都走这里；App.xaml 不再预载主题字典，由此处一次性载入正确主题
+        if(IsDarkMode==_appCurrentDarkMode && _themeDictLoaded) return;
         _appCurrentDarkMode = IsDarkMode;
+        _themeDictLoaded = true;
 
         string uri = $"pack://application:,,,/LemonLite;component/Styles/ThemeColor_{IsDarkMode switch
         {

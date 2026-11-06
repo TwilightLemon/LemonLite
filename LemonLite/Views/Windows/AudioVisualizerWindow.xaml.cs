@@ -36,9 +36,9 @@ namespace LemonLite.Views.Windows
             settings.OnDataChanged += Settings_OnDataChanged;
             ApplySettings();
             this.smtcService = smtcService;
-            smtcService.SmtcListener.SessionChanged += UpdatePlayingState;
-            smtcService.SmtcListener.SessionExited += UpdatePlayingState;
-            smtcService.SmtcListener.PlaybackInfoChanged += UpdatePlayingState;
+            smtcService.SmtcListener!.SessionChanged += UpdatePlayingState;
+            smtcService.SmtcListener!.SessionExited += UpdatePlayingState;
+            smtcService.SmtcListener!.PlaybackInfoChanged += UpdatePlayingState;
             visualizerControl.RenderEnabled = smtcService.IsSessionValid && smtcService.IsPlaying;
             Closed += AudioVisualizerWindow_Closed;
             SourceInitialized += AudioVisualizerWindow_SourceInitialized;
@@ -57,9 +57,9 @@ namespace LemonLite.Views.Windows
         {
             visualizerControl.RenderEnabled = false;
             settings.OnDataChanged -= Settings_OnDataChanged;
-            smtcService.SmtcListener.SessionChanged -= UpdatePlayingState;
-            smtcService.SmtcListener.SessionExited -= UpdatePlayingState;
-            smtcService.SmtcListener.PlaybackInfoChanged -= UpdatePlayingState;
+            smtcService.SmtcListener!.SessionChanged -= UpdatePlayingState;
+            smtcService.SmtcListener!.SessionExited -= UpdatePlayingState;
+            smtcService.SmtcListener!.PlaybackInfoChanged -= UpdatePlayingState;
         }
 
         private void UpdatePlayingState(object? sender, EventArgs e)

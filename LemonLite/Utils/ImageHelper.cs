@@ -87,44 +87,73 @@ public static class ImageHelper
         Dictionary<int, ColorInfo> colorMap = [];
         int pixelCount = 0;
 
-        for (int h = 0; h < bitmap.Height; h += samplingRate)
+        //常规格式一次 LockBits 批量读像素，避免 GetPixel 的反复锁定开销
+        bool fastPath = bitmap.PixelFormat is PixelFormat.Format24bppRgb
+            or PixelFormat.Format32bppRgb
+            or PixelFormat.Format32bppArgb;
+        BitmapData? data = fastPath
+            ? bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly, bitmap.PixelFormat)
+            : null;
+        try
         {
-            for (int w = 0; w < bitmap.Width; w += samplingRate)
+            int bpp = data != null ? Image.GetPixelFormatSize(bitmap.PixelFormat) / 8 : 0;
+            unsafe
             {
-                Color pixel = bitmap.GetPixel(w, h);
-
-                // 量化颜色 (减少相似颜色的数量)
-                int quantizedR = pixel.R / 16 * 16;
-                int quantizedG = pixel.G / 16 * 16;
-                int quantizedB = pixel.B / 16 * 16;
-
-                // 排除极端黑白色
-                int averange = (pixel.R + pixel.G + pixel.B) / 3;
-                if (averange < 24) continue;
-                if (averange > 230) continue;
-
-                int colorKey = (quantizedR << 16) | (quantizedG << 8) | quantizedB;
-
-                if (colorMap.TryGetValue(colorKey, out ColorInfo info))
+                for (int h = 0; h < bitmap.Height; h += samplingRate)
                 {
-                    info.Count++;
-                    info.SumR += pixel.R;
-                    info.SumG += pixel.G;
-                    info.SumB += pixel.B;
-                }
-                else
-                {
-                    colorMap[colorKey] = new ColorInfo
+                    byte* row = data != null ? (byte*)data.Scan0 + (long)h * data.Stride : null;
+                    for (int w = 0; w < bitmap.Width; w += samplingRate)
                     {
-                        Count = 1,
-                        SumR = pixel.R,
-                        SumG = pixel.G,
-                        SumB = pixel.B
-                    };
-                }
+                        byte pr, pg, pb;
+                        if (row != null)
+                        {
+                            byte* p = row + w * bpp;
+                            pb = p[0]; pg = p[1]; pr = p[2];
+                        }
+                        else
+                        {
+                            Color pixel = bitmap.GetPixel(w, h);
+                            pr = pixel.R; pg = pixel.G; pb = pixel.B;
+                        }
 
-                pixelCount++;
+                        // 量化颜色 (减少相似颜色的数量)
+                        int quantizedR = pr / 16 * 16;
+                        int quantizedG = pg / 16 * 16;
+                        int quantizedB = pb / 16 * 16;
+
+                        // 排除极端黑白色
+                        int averange = (pr + pg + pb) / 3;
+                        if (averange < 24) continue;
+                        if (averange > 230) continue;
+
+                        int colorKey = (quantizedR << 16) | (quantizedG << 8) | quantizedB;
+
+                        if (colorMap.TryGetValue(colorKey, out ColorInfo info))
+                        {
+                            info.Count++;
+                            info.SumR += pr;
+                            info.SumG += pg;
+                            info.SumB += pb;
+                        }
+                        else
+                        {
+                            colorMap[colorKey] = new ColorInfo
+                            {
+                                Count = 1,
+                                SumR = pr,
+                                SumG = pg,
+                                SumB = pb
+                            };
+                        }
+
+                        pixelCount++;
+                    }
+                }
             }
+        }
+        finally
+        {
+            if (data != null) bitmap.UnlockBits(data);
         }
 
         if (pixelCount == 0 || colorMap.Count == 0)
@@ -411,8 +440,9 @@ public static class ImageHelper
 
     public static BitmapImage ToBitmapImage(this Bitmap bitmap)
     {
+        //BMP 无压缩编码，解码结果与 PNG 一致但编解码耗时大幅降低
         using var memory = new MemoryStream();
-        bitmap.Save(memory, ImageFormat.Png);
+        bitmap.Save(memory, ImageFormat.Bmp);
         memory.Position = 0;
 
         var bitmapImage = new BitmapImage();
@@ -424,13 +454,44 @@ public static class ImageHelper
         return bitmapImage;
     }
 
-    public static Bitmap ToBitmap(this BitmapImage img)
+    public static Bitmap ToBitmap(this BitmapSource source)
     {
-        using MemoryStream outStream = new();
-        BitmapEncoder enc = new PngBitmapEncoder();
-        enc.Frames.Add(BitmapFrame.Create(img, null, null, null));
-        enc.Save(outStream);
-        return new Bitmap(outStream);
+        int width = source.PixelWidth;
+        int height = source.PixelHeight;
+        //统一转 Bgr32 后直拷像素，替代 PNG 编解码（24bpp 输出逐像素一致）
+        var src = source.Format == System.Windows.Media.PixelFormats.Bgr32
+            ? source
+            : new FormatConvertedBitmap(source, System.Windows.Media.PixelFormats.Bgr32, null, 0);
+
+        var bmp = new Bitmap(width, height, PixelFormat.Format24bppRgb);
+        var data = bmp.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.WriteOnly, PixelFormat.Format24bppRgb);
+        try
+        {
+            unsafe
+            {
+                byte* dstBase = (byte*)data.Scan0;
+                var rowBuffer = new byte[width * 4];
+                for (int y = 0; y < height; y++)
+                {
+                    src.CopyPixels(new System.Windows.Int32Rect(0, y, width, 1), rowBuffer, width * 4, 0);
+                    byte* dstRow = dstBase + (long)y * data.Stride;
+                    fixed (byte* srcRow = rowBuffer)
+                    {
+                        for (int x = 0; x < width; x++)
+                        {
+                            dstRow[x * 3] = srcRow[x * 4];         // B
+                            dstRow[x * 3 + 1] = srcRow[x * 4 + 1]; // G
+                            dstRow[x * 3 + 2] = srcRow[x * 4 + 2]; // R
+                        }
+                    }
+                }
+            }
+        }
+        finally
+        {
+            bmp.UnlockBits(data);
+        }
+        return bmp;
     }
 
     public static void AddMask(this Bitmap bitmap, bool darkmode)
@@ -489,33 +550,11 @@ public static class ImageHelper
         bitmap.UnlockBits(data);
     }
 
-    public static void ScaleImage(this Bitmap bitmap, int newWidth,int newHeight)
-    {
-        Bitmap newBitmap = new Bitmap(newWidth, newHeight, bitmap.PixelFormat);
-
-        // 设置高质量绘图参数
-        using (Graphics graphics = Graphics.FromImage(newBitmap))
-        {
-            graphics.CompositingQuality = CompositingQuality.HighQuality;
-            graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-            graphics.SmoothingMode = SmoothingMode.HighQuality;
-            graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
-
-            // 绘制缩放后的图像
-            graphics.DrawImage(bitmap,
-                new Rectangle(0, 0, newWidth, newHeight),
-                new Rectangle(0, 0, bitmap.Width, bitmap.Height),
-                GraphicsUnit.Pixel);
-        }
-
-        bitmap = newBitmap;
-    }
-
     public static void ApplyMicaEffect(this Bitmap bitmap, bool isDarkmode)
     {
         bitmap.AdjustContrast(isDarkmode ? -20 : -30);
         bitmap.AddMask(isDarkmode);
-        bitmap.ScaleImage(1440,1440);
+        //原 ScaleImage 结果因值参数赋值从未生效，输出一直是原尺寸模糊；保持原视觉直接省略该缩放
         var rect = new Rectangle(0, 0, bitmap.Width, bitmap.Height);
         bitmap.GaussianBlur(ref rect, 40f, false);
     }

@@ -21,7 +21,7 @@ public partial class MainWindowViewModel : ObservableObject
 
     public MainWindowViewModel(LyricView lyricView, SmtcService playback, LyricService lyricService)
     {
-        _smtcListener = playback.SmtcListener;
+        _smtcListener = playback.SmtcListener!;
         LyricView = lyricView;
         _lyricService = lyricService;
 
@@ -44,7 +44,8 @@ public partial class MainWindowViewModel : ObservableObject
 
     private void SmtcListener_SessionExited(object? sender, EventArgs e)
     {
-        App.Current.Dispatcher.Invoke(App.WindowManager.Destroy<MainWindow>);
+        //异步封送：WinRT 线程同步 Invoke UI 可能在 UI 等待 WinRT API 时互锁
+        App.Current.Dispatcher.InvokeAsync(App.WindowManager.Destroy<MainWindow>);
     }
 
     private void SmtcListener_SessionChanged(object? sender, EventArgs e)
@@ -77,7 +78,7 @@ public partial class MainWindowViewModel : ObservableObject
 
     private void Smtc_UpdateCoverFailed()
     {
-        App.Current.Dispatcher.Invoke(() =>
+        _ = App.Current.Dispatcher.InvokeAsync(() =>
         {
             CoverImage = Brushes.Azure;
             BackgroundImageSource = null;
@@ -87,7 +88,7 @@ public partial class MainWindowViewModel : ObservableObject
 
     private void Smtc_CoverUpdated()
     {
-        App.Current.Dispatcher.Invoke(() =>
+        _ = App.Current.Dispatcher.InvokeAsync(() =>
         {
             if (_smtcService.CoverImageSource != null)
                 CoverImage = new ImageBrush(_smtcService.CoverImageSource);
@@ -139,10 +140,17 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     private bool _isBackgroundValid = false;
 
+    private int _lastPositionSecond = -1;
     private void OnPositionChanged(double position)
     {
         CurrentPlayingPosition = position;
-        CurrentPlayingPositionText = TimeSpan.FromSeconds(position).ToString(@"mm\:ss");
+        //显示文本按秒粒度更新，避免10Hz心跳每次重新格式化字符串
+        var second = (int)position;
+        if (second != _lastPositionSecond)
+        {
+            _lastPositionSecond = second;
+            CurrentPlayingPositionText = TimeSpan.FromSeconds(position).ToString(@"mm\:ss");
+        }
         // 时间同步由LyricService处理
     }
 
@@ -164,7 +172,7 @@ public partial class MainWindowViewModel : ObservableObject
 
     private void OnMediaMetaDataUpdated(MediaMetaDataUpdatedEventArgs args)
     {
-        App.Current.Dispatcher.Invoke(() =>
+        _ = App.Current.Dispatcher.InvokeAsync(() =>
         {
             if (!string.IsNullOrEmpty(args.Title))
                 Title = args.Title;
@@ -180,7 +188,7 @@ public partial class MainWindowViewModel : ObservableObject
     private async void UpdateSmtcInfo()
     {
         // clean up previous info
-        App.Current.Dispatcher.Invoke(() =>
+        _ = App.Current.Dispatcher.InvokeAsync(() =>
         {
             Title = LemonLite.Services.LocalizationService.Instance["Welcome"];
             Artist = string.Empty;
@@ -189,7 +197,7 @@ public partial class MainWindowViewModel : ObservableObject
 
         if (await _smtcListener.GetNormalizedMediaInfoAsync() is { PlaybackType: Windows.Media.MediaPlaybackType.Music } info)
         {
-            App.Current.Dispatcher.Invoke(() =>
+            _ = App.Current.Dispatcher.InvokeAsync(() =>
             {
                 Title = info.Title ?? LemonLite.Services.LocalizationService.Instance["Welcome"];
                 Artist = info.Artist ?? string.Empty;

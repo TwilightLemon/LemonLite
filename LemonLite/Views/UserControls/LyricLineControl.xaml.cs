@@ -30,6 +30,7 @@ public partial class LyricLineControl : UserControl
     public Dictionary<ISyllableInfo, HighlightTextBlock> MainSyllableLrcs => mainSyllableLrcs;
 
     private bool _isPlainLrc = false;
+    private BlurEffect? _blurEffect;
 
     //reserved for desktop lyric view
     public LyricLineControl()
@@ -44,7 +45,8 @@ public partial class LyricLineControl : UserControl
         InitializeComponent();
         Unloaded += LyricLineControl_Unloaded;
         MainLineInfo = info;
-        Effect = new BlurEffect() { Radius = InActiveLrcBlurRadius };
+        _blurEffect = new BlurEffect() { Radius = InActiveLrcBlurRadius };
+        Effect = _blurEffect;
         LoadMainLrc(info.Syllables,fontsize);
     }
 
@@ -53,14 +55,40 @@ public partial class LyricLineControl : UserControl
         InitializeComponent();
         Unloaded += LyricLineControl_Unloaded;
         MainLineInfo = info;
-        Effect = new BlurEffect() { Radius = InActiveLrcBlurRadius };
+        _blurEffect = new BlurEffect() { Radius = InActiveLrcBlurRadius };
+        Effect = _blurEffect;
         LoadPlainLrc(info.Text,fontsize);
     }
 
     private void LyricLineControl_Unloaded(object sender, RoutedEventArgs e)
     {
+        //不退订自身事件：容器回收后控件会重新挂载，需保证再次 Unloaded 时仍能清理
         ClearAll();
-        Unloaded -= LyricLineControl_Unloaded;
+    }
+
+    /// <summary>
+    /// 容器回收复用时加载新行，等价于重新构造一次（避免逐行重建整个控件树）
+    /// </summary>
+    public void LoadLine(ILineInfo info, double fontSize = 22)
+    {
+        ClearAll();
+        MainLineInfo = info;
+        RomajiSyllables = null;
+        if (info is SyllableLineInfo syllable)
+        {
+            //恢复非激活模糊初始态（与新建实例一致）
+            if (_blurEffect == null) _blurEffect = new BlurEffect() { Radius = InActiveLrcBlurRadius };
+            Effect = _blurEffect;
+            _blurEffect.BeginAnimation(BlurEffect.RadiusProperty, null);
+            LoadMainLrc(syllable.Syllables, fontSize);
+        }
+        else if (info is LineInfo pure)
+        {
+            if (_blurEffect == null) _blurEffect = new BlurEffect() { Radius = InActiveLrcBlurRadius };
+            Effect = _blurEffect;
+            _blurEffect.BeginAnimation(BlurEffect.RadiusProperty, null);
+            LoadPlainLrc(pure.Text, fontSize);
+        }
     }
 
     public void ClearAll()
@@ -331,7 +359,7 @@ public partial class LyricLineControl : UserControl
         var control = this;
         if (isActive)
         {   //Active
-            var blur = new BlurEffect() { Radius = InActiveLrcBlurRadius };
+            var blur = _blurEffect ??= new BlurEffect() { Radius = InActiveLrcBlurRadius };
             control.Effect = blur;
             var da = new DoubleAnimation(InActiveLrcBlurRadius, 0, TimeSpan.FromMilliseconds(300));
             blur.BeginAnimation(BlurEffect.RadiusProperty, da);
@@ -356,7 +384,7 @@ public partial class LyricLineControl : UserControl
         }
         else
         {
-            var blur = new BlurEffect() { Radius = 0 };
+            var blur = _blurEffect ??= new BlurEffect() { Radius = 0 };
             control.Effect = blur;
             blur.BeginAnimation(BlurEffect.RadiusProperty, new DoubleAnimation(0, InActiveLrcBlurRadius, TimeSpan.FromMilliseconds(300)));
             if (control._isPlainLrc)

@@ -22,6 +22,7 @@ public class FluentWindowBase : Window
     private readonly BehaviorCollection _behaviors;
     private readonly BlurWindowBehavior _blurBehavior;
     private readonly WindowChrome _windowChrome;
+    private DependencyPropertyDescriptor? _resizeModeDescriptor;
 
     public const int DEFAULT_WINDOW_CAPTION_HEIGHT = 48;
     private Thickness _resizeBorderThickness = new(6);
@@ -66,6 +67,9 @@ public class FluentWindowBase : Window
 
     protected override void OnClosed(EventArgs e)
     {
+        //解除描述符监听，否则其内部强引用会钉死整个窗口
+        _resizeModeDescriptor?.RemoveValueChanged(this, ResizeModeChanged);
+        _resizeModeDescriptor = null;
         _behaviors.Clear();
         base.OnClosed(e);
     }
@@ -95,8 +99,8 @@ public class FluentWindowBase : Window
 
         //接管ResizeMode属性
         ApplyResizeMode();
-        DependencyPropertyDescriptor.FromProperty(ResizeModeProperty, typeof(FluentWindowBase))
-            .AddValueChanged(this, ResizeModeChanged);
+        _resizeModeDescriptor = DependencyPropertyDescriptor.FromProperty(ResizeModeProperty, typeof(FluentWindowBase));
+        _resizeModeDescriptor.AddValueChanged(this, ResizeModeChanged);
     }
     private void ApplyResizeMode()
     {

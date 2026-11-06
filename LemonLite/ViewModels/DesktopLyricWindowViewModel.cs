@@ -40,7 +40,7 @@ public partial class DesktopLyricWindowViewModel : ObservableObject
         _lyricService.TimeUpdated += OnTimeUpdated;
         _lyricService.MediaChanged += OnMediaChanged;
         _lyricService.MediaMetaDataUpdated += LyricService_MediaMetaDataUpdated;
-        smtcService.SmtcListener.SessionExited += SmtcListener_SessionExited;
+        smtcService.SmtcListener!.SessionExited += SmtcListener_SessionExited;
 
         _smtcService.CoverUpdated += Smtc_CoverUpdated;
         _smtcService.UpdateCoverFailed += Smtc_UpdateCoverFailed;
@@ -53,9 +53,10 @@ public partial class DesktopLyricWindowViewModel : ObservableObject
 
     private async void UpdateSmtcInfo()
     {
-        if (await _smtcService.SmtcListener.GetNormalizedMediaInfoAsync() is { PlaybackType: Windows.Media.MediaPlaybackType.Music } info)
+        if (_smtcService.SmtcListener is not { } listener) return;
+        if (await listener.GetNormalizedMediaInfoAsync() is { PlaybackType: Windows.Media.MediaPlaybackType.Music } info)
         {
-            App.Current.Dispatcher.Invoke(() =>
+            _ = App.Current.Dispatcher.InvokeAsync(() =>
             {
                 SongTitle = info.Title ?? LemonLite.Services.LocalizationService.Instance["Welcome"];
                 ArtistName = info.Artist ?? string.Empty;
@@ -66,7 +67,7 @@ public partial class DesktopLyricWindowViewModel : ObservableObject
 
     private void LyricService_MediaMetaDataUpdated(MediaMetaDataUpdatedEventArgs info)
     {
-        App.Current.Dispatcher.Invoke(() =>
+        _ = App.Current.Dispatcher.InvokeAsync(() =>
         {
             if (!string.IsNullOrEmpty(info.Title) && !string.IsNullOrEmpty(info.Artist) && !string.IsNullOrEmpty(info.Album))
             {
@@ -82,14 +83,15 @@ public partial class DesktopLyricWindowViewModel : ObservableObject
 
     private void SmtcListener_SessionExited(object? sender, EventArgs e)
     {
-        App.Current.Dispatcher.Invoke(App.WindowManager.Destroy<DesktopLyricWindow>);
+        App.Current.Dispatcher.InvokeAsync(App.WindowManager.Destroy<DesktopLyricWindow>);
     }
 
     public void Dispose()
     {
         _settingsMgr.OnDataChanged -= _settingsMgr_OnDataChanged;
         _smtcService.PlayingStateChanged -= _smtcService_PlayingStateChanged;
-        _smtcService.SmtcListener.SessionExited -= SmtcListener_SessionExited;
+        if (_smtcService.SmtcListener is { } listener)
+            listener.SessionExited -= SmtcListener_SessionExited;
         _lyricService.CurrentLineEnded -= OnCurrentLineChanged;
         _lyricService.TimeUpdated -= OnTimeUpdated;
         _lyricService.MediaChanged -= OnMediaChanged;
@@ -107,7 +109,7 @@ public partial class DesktopLyricWindowViewModel : ObservableObject
 
     private void OnMediaChanged()
     {
-        LyricControl.Dispatcher.Invoke(() =>
+        LyricControl.Dispatcher.InvokeAsync(() =>
         {
             LyricControl.ClearAll();
             _window?.SetHasLyricSource(false);
@@ -118,11 +120,15 @@ public partial class DesktopLyricWindowViewModel : ObservableObject
     {
         if (LyricControl.IsVisible)
         {
-            LyricControl.Dispatcher.Invoke(() =>
+            LyricControl.Dispatcher.InvokeAsync(() =>
             {
                 LyricControl.UpdateTime(ms);
-                var block = LyricControl.MainSyllableLrcs.FirstOrDefault(x => x.Key.StartTime > ms).Value;
-                ScrollLrc?.Invoke(block);
+                HighlightTextBlock? block = null;
+                foreach (var kvp in LyricControl.MainSyllableLrcs)
+                {
+                    if (kvp.Key.StartTime > ms) { block = kvp.Value; break; }
+                }
+                ScrollLrc?.Invoke(block!);
             });
         }
     }
@@ -139,7 +145,7 @@ public partial class DesktopLyricWindowViewModel : ObservableObject
 
     private void _settingsMgr_OnDataChanged()
     {
-        LyricControl.Dispatcher.Invoke(ApplySettings);
+        LyricControl.Dispatcher.InvokeAsync(ApplySettings);
     }
 
     public Action<Action<bool>>? HideLineAnimation { get; set; }
@@ -228,7 +234,7 @@ public partial class DesktopLyricWindowViewModel : ObservableObject
 
     private void Smtc_UpdateCoverFailed()
     {
-        App.Current.Dispatcher.Invoke(() =>
+        _ = App.Current.Dispatcher.InvokeAsync(() =>
         {
             CoverImage = Brushes.Azure;
             BackgroundImageSource = null;
@@ -238,7 +244,7 @@ public partial class DesktopLyricWindowViewModel : ObservableObject
 
     private void Smtc_CoverUpdated()
     {
-        App.Current.Dispatcher.Invoke(() =>
+        _ = App.Current.Dispatcher.InvokeAsync(() =>
         {
             if (_smtcService.CoverImageSource != null)
                 CoverImage = new ImageBrush(_smtcService.CoverImageSource);
@@ -316,11 +322,11 @@ public partial class DesktopLyricWindowViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private Task<bool> PlayOrPause() => _smtcService.SmtcListener.PlayOrPause();
+    private Task<bool> PlayOrPause() => _smtcService.SmtcListener!.PlayOrPause();
     [RelayCommand]
-    private Task<bool> PlayNext() => _smtcService.SmtcListener.Next();
+    private Task<bool> PlayNext() => _smtcService.SmtcListener!.Next();
     [RelayCommand]
-    private Task<bool> PlayLast() => _smtcService.SmtcListener.Previous();
+    private Task<bool> PlayLast() => _smtcService.SmtcListener!.Previous();
 
     [RelayCommand]
     private void ShowMainWindow()

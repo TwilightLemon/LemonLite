@@ -6,6 +6,7 @@ using LemonLite.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Security.Policy;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -117,7 +118,7 @@ public partial class MainWindow : FluentWindowBase
                 AnimatedBackgroundBd.Visibility = Visibility.Collapsed;
                 SetResourceReference(BackgroundProperty, "BackgroundColor");
                 ImageBackground.Opacity = _mgr.Data.BackgroundOpacity;
-                ImageBackground.Background = new ImageBrush(new BitmapImage(new Uri(_mgr.Data.BackgroundImagePath))) { Stretch = Stretch.UniformToFill };
+                SetBackgroundImageAsync(_mgr.Data.BackgroundImagePath);
             }
         }
         else
@@ -129,6 +130,28 @@ public partial class MainWindow : FluentWindowBase
             ImageBackground.Background = null;
         }
         ShowInTaskbar = !IsMiniMode || _mgr.Data.ShowInTaskbarWhenMiniMode;
+    }
+
+    //后台解码背景图，避免 UI 线程同步解码磁盘图片
+    private async void SetBackgroundImageAsync(string path)
+    {
+        try
+        {
+            var brush = await Task.Run(() =>
+            {
+                var img = new BitmapImage();
+                img.BeginInit();
+                img.CacheOption = BitmapCacheOption.OnLoad;
+                img.UriSource = new Uri(path);
+                img.EndInit();
+                if (img.CanFreeze) img.Freeze();
+                return new ImageBrush(img) { Stretch = Stretch.UniformToFill };
+            });
+            //期间设置可能已切换，避免旧图覆盖新状态
+            if (_mgr.Data.Background == Appearance.BackgroundType.Image && _mgr.Data.BackgroundImagePath == path)
+                ImageBackground.Background = brush;
+        }
+        catch { /* 背景图加载失败时保持原状 */ }
     }
 
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -154,10 +177,11 @@ public partial class MainWindow : FluentWindowBase
 
     private async void PlaySlider_PreviewMouseUp(object sender, MouseButtonEventArgs e)
     {
-        if (_isSliderCtrl && sender is Slider PlaySlider)
+        if (_isSliderCtrl && sender is Slider PlaySlider &&
+            smtcService.SmtcListener is { } listener)
         {
             //提交value
-            await smtcService.SmtcListener.SetPosition(TimeSpan.FromSeconds(PlaySlider.Value));
+            await listener.SetPosition(TimeSpan.FromSeconds(PlaySlider.Value));
             vm.CurrentPlayingPosition = PlaySlider.Value;
             //重新绑定PlaySlider的Value
             var binding = new Binding("CurrentPlayingPosition")

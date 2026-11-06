@@ -43,10 +43,16 @@ public class AppSettingService : IHostedService
     }
     public AppSettingService Init()
     {
-        foreach (var mgr in _settingsMgrs.Values)
+        //除元数据缓存（体积可能较大）外全部同步加载，供热键线程/窗口构造立即消费
+        List<Task> backgroundLoads = [];
+        foreach (var (type, mgr) in _settingsMgrs)
         {
-            mgr.Load();
+            if (type == typeof(Configs.SmtcMetadataCache))
+                backgroundLoads.Add(mgr.LoadAsync());
+            else
+                mgr.Load();
         }
+        _ = Task.WhenAll(backgroundLoads);
         return this;
     }
     private void Save()
@@ -83,6 +89,8 @@ public class AppSettingService : IHostedService
     {
         Save();
         _timer?.Dispose();
+        foreach (var mgr in _settingsMgrs.Values)
+            (mgr as IDisposable)?.Dispose();
         return Task.CompletedTask;
     }
 }

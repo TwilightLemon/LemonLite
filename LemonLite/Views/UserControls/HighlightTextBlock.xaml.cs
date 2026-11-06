@@ -42,8 +42,7 @@ public partial class HighlightTextBlock : UserControl
 
     private void HighlightTextBlock_Unloaded(object sender, RoutedEventArgs e)
     {
-        Loaded -= HighlightTextBlock_Loaded;
-        Unloaded -= HighlightTextBlock_Unloaded;
+        //不退订自身事件：控件可能被重新挂载，需保证再次 Unloaded 时仍能清理
         PART_Rectangle.Effect = null;
         _effect = null;
         CleanupOldClip();
@@ -68,6 +67,13 @@ public partial class HighlightTextBlock : UserControl
     private FontStyle _lastClipFontStyle;
     private double _lastClipConstraintWidth;
     private double _lastClipConstraintHeight;
+
+    //Measure 结果缓存：文本/字体属性变更时由 OnTextPropertyChanged 置脏
+    private bool _measureDirty = true;
+    private double _measureAvailWidth = double.NaN;
+    private FlowDirection _measureFlowDirection;
+    private double _measurePixelsPerDip = double.NaN;
+    private Size _measureResult;
 
     protected override Size MeasureOverride(Size availableSize)
     {
@@ -98,6 +104,16 @@ public partial class HighlightTextBlock : UserControl
                 return new Size(0, 0);
             }
 
+            var pixelsPerDip = VisualTreeHelper.GetDpi(this).PixelsPerDip;
+            //输入未变时直接返回缓存值，避免窗口缩放期间每帧重建 FormattedText
+            if (!_measureDirty &&
+                _measureAvailWidth.Equals(availableSize.Width) &&
+                _measureFlowDirection == FlowDirection &&
+                _measurePixelsPerDip.Equals(pixelsPerDip))
+            {
+                return _measureResult;
+            }
+
             // 计算文本的自然尺寸，仅用于确定期望高度
             var formattedText = new FormattedText(
                 Text,
@@ -106,7 +122,7 @@ public partial class HighlightTextBlock : UserControl
                 new Typeface(FontFamily, FontStyle, FontWeight, FontStretch),
                 FontSize,
                 Brushes.Black,
-                VisualTreeHelper.GetDpi(this).PixelsPerDip);
+                pixelsPerDip);
 
             if (!double.IsNaN(LineHeight) && LineHeight > 0)
                 formattedText.LineHeight = LineHeight;
@@ -128,7 +144,12 @@ public partial class HighlightTextBlock : UserControl
                 : textWidth;
             var desiredHeight = textHeight;
 
-            return new Size(desiredWidth, desiredHeight);
+            _measureDirty = false;
+            _measureAvailWidth = availableSize.Width;
+            _measureFlowDirection = FlowDirection;
+            _measurePixelsPerDip = pixelsPerDip;
+            _measureResult = new Size(desiredWidth, desiredHeight);
+            return _measureResult;
         }
     }
 
@@ -436,6 +457,7 @@ public partial class HighlightTextBlock : UserControl
         if (d is HighlightTextBlock control)
         {
             control._clipGeometryDirty = true;
+            control._measureDirty = true;
             control.InvalidateMeasure();
         }
     }
